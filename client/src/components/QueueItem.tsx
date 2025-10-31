@@ -7,9 +7,9 @@ import type { ClientFile } from "@shared/schema";
 
 interface QueueItemProps {
   file: ClientFile;
-  onTouch: (id: string) => void;
+  onTouch: (id: number) => void;
   onEdit: (file: ClientFile) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   isDragging?: boolean;
 }
 

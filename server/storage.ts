@@ -1,81 +1,70 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, clientFiles } from "@shared/schema";
+import { db } from "./db";
+import { eq, asc } from "drizzle-orm";
 
 export interface IStorage {
   getAllFiles(): Promise<ClientFile[]>;
-  getFile(id: string): Promise<ClientFile | undefined>;
+  getFile(id: number): Promise<ClientFile | undefined>;
   createFile(file: InsertClientFile): Promise<ClientFile>;
-  updateFile(id: string, updates: UpdateClientFile): Promise<ClientFile | undefined>;
-  deleteFile(id: string): Promise<boolean>;
-  touchFile(id: string): Promise<ClientFile | undefined>;
+  updateFile(id: number, updates: UpdateClientFile): Promise<ClientFile | undefined>;
+  deleteFile(id: number): Promise<boolean>;
+  touchFile(id: number): Promise<ClientFile | undefined>;
   reorderFiles(files: ClientFile[]): Promise<ClientFile[]>;
 }
 
-export class MemStorage implements IStorage {
-  private files: Map<string, ClientFile>;
-
-  constructor() {
-    this.files = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getAllFiles(): Promise<ClientFile[]> {
-    return Array.from(this.files.values()).sort((a, b) => a.queuePosition - b.queuePosition);
+    return await db.select().from(clientFiles).orderBy(asc(clientFiles.queuePosition));
   }
 
-  async getFile(id: string): Promise<ClientFile | undefined> {
-    return this.files.get(id);
+  async getFile(id: number): Promise<ClientFile | undefined> {
+    const [file] = await db.select().from(clientFiles).where(eq(clientFiles.id, id));
+    return file || undefined;
   }
 
   async createFile(insertFile: InsertClientFile): Promise<ClientFile> {
-    const id = randomUUID();
-    const now = new Date();
-    const file: ClientFile = {
-      id,
-      clientName: insertFile.clientName,
-      description: insertFile.description || null,
-      status: insertFile.status || "waiting",
-      queuePosition: insertFile.queuePosition,
-      createdAt: now,
-      lastTouchedAt: null,
-    };
-    this.files.set(id, file);
+    const [file] = await db
+      .insert(clientFiles)
+      .values(insertFile)
+      .returning();
     return file;
   }
 
-  async updateFile(id: string, updates: UpdateClientFile): Promise<ClientFile | undefined> {
-    const file = this.files.get(id);
-    if (!file) return undefined;
-
-    const updatedFile: ClientFile = {
-      ...file,
-      ...updates,
-    };
-    this.files.set(id, updatedFile);
-    return updatedFile;
+  async updateFile(id: number, updates: UpdateClientFile): Promise<ClientFile | undefined> {
+    const [file] = await db
+      .update(clientFiles)
+      .set(updates)
+      .where(eq(clientFiles.id, id))
+      .returning();
+    return file || undefined;
   }
 
-  async deleteFile(id: string): Promise<boolean> {
-    return this.files.delete(id);
+  async deleteFile(id: number): Promise<boolean> {
+    const result = await db
+      .delete(clientFiles)
+      .where(eq(clientFiles.id, id))
+      .returning();
+    return result.length > 0;
   }
 
-  async touchFile(id: string): Promise<ClientFile | undefined> {
-    const file = this.files.get(id);
-    if (!file) return undefined;
-
-    const updatedFile: ClientFile = {
-      ...file,
-      lastTouchedAt: new Date(),
-    };
-    this.files.set(id, updatedFile);
-    return updatedFile;
+  async touchFile(id: number): Promise<ClientFile | undefined> {
+    const [file] = await db
+      .update(clientFiles)
+      .set({ lastTouchedAt: new Date() })
+      .where(eq(clientFiles.id, id))
+      .returning();
+    return file || undefined;
   }
 
   async reorderFiles(files: ClientFile[]): Promise<ClientFile[]> {
-    files.forEach(file => {
-      this.files.set(file.id, file);
-    });
+    for (const file of files) {
+      await db
+        .update(clientFiles)
+        .set({ queuePosition: file.queuePosition })
+        .where(eq(clientFiles.id, file.id));
+    }
     return files;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

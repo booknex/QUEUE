@@ -16,7 +16,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/files/:id", async (req, res) => {
     try {
-      const file = await storage.getFile(req.params.id);
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid file ID" });
+      }
+      const file = await storage.getFile(id);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
@@ -41,8 +45,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/files/:id", async (req, res) => {
     try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid file ID" });
+      }
       const validated = updateClientFileSchema.parse(req.body);
-      const file = await storage.updateFile(req.params.id, validated);
+      const file = await storage.updateFile(id, validated);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
@@ -57,7 +65,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/files/:id", async (req, res) => {
     try {
-      const success = await storage.deleteFile(req.params.id);
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid file ID" });
+      }
+      const success = await storage.deleteFile(id);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
       }
@@ -69,7 +81,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/files/:id/touch", async (req, res) => {
     try {
-      const file = await storage.touchFile(req.params.id);
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid file ID" });
+      }
+      const file = await storage.touchFile(id);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }

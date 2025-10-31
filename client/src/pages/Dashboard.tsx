@@ -42,7 +42,7 @@ export default function Dashboard() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
       return await apiRequest("PATCH", `/api/files/${id}`, data);
     },
     onSuccess: () => {
@@ -64,7 +64,7 @@ export default function Dashboard() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       return await apiRequest("DELETE", `/api/files/${id}`, {});
     },
     onSuccess: () => {
@@ -84,7 +84,7 @@ export default function Dashboard() {
   });
 
   const touchMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       return await apiRequest("POST", `/api/files/${id}/touch`, {});
     },
     onSuccess: () => {
@@ -234,7 +234,7 @@ export default function Dashboard() {
                   data-testid="queue-list"
                 >
                   {sortedFiles.map((file, index) => (
-                    <Draggable key={file.id} draggableId={file.id} index={index}>
+                    <Draggable key={file.id} draggableId={String(file.id)} index={index}>
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
