@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -54,11 +55,27 @@ export function AddEditClientModal({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      clientName: editingFile?.clientName || "",
-      description: editingFile?.description || "",
-      status: editingFile?.status || "waiting",
+      clientName: "",
+      description: "",
+      status: "waiting",
     },
   });
+
+  useEffect(() => {
+    if (editingFile) {
+      form.reset({
+        clientName: editingFile.clientName,
+        description: editingFile.description || "",
+        status: editingFile.status as "waiting" | "in_progress" | "completed",
+      });
+    } else {
+      form.reset({
+        clientName: "",
+        description: "",
+        status: "waiting",
+      });
+    }
+  }, [editingFile, form]);
 
   const handleSubmit = (data: FormData) => {
     onSubmit(data);

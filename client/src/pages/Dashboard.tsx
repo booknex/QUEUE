@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
@@ -130,10 +131,10 @@ export default function Dashboard() {
     setModalOpen(true);
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
-    const items = Array.from(files);
+    const items = Array.from(sortedFiles);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
@@ -223,17 +224,39 @@ export default function Dashboard() {
         {sortedFiles.length === 0 ? (
           <EmptyState onAddClient={handleAddNew} />
         ) : (
-          <div className="space-y-3" data-testid="queue-list">
-            {sortedFiles.map((file) => (
-              <QueueItem
-                key={file.id}
-                file={file}
-                onTouch={touchMutation.mutate}
-                onEdit={handleEdit}
-                onDelete={deleteMutation.mutate}
-              />
-            ))}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="queue-list">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-3"
+                  data-testid="queue-list"
+                >
+                  {sortedFiles.map((file, index) => (
+                    <Draggable key={file.id} draggableId={file.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <QueueItem
+                            file={file}
+                            onTouch={touchMutation.mutate}
+                            onEdit={handleEdit}
+                            onDelete={deleteMutation.mutate}
+                            isDragging={snapshot.isDragging}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
       </main>
 
