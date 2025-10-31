@@ -1,0 +1,157 @@
+import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
+import type { ClientFile } from "@shared/schema";
+
+interface QueueItemProps {
+  file: ClientFile;
+  onTouch: (id: string) => void;
+  onEdit: (file: ClientFile) => void;
+  onDelete: (id: string) => void;
+  isDragging?: boolean;
+}
+
+function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null): {
+  level: "low" | "medium" | "high" | "critical";
+  color: string;
+} {
+  const referenceTime = lastTouchedAt || createdAt;
+  const hoursSince = (Date.now() - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
+
+  if (hoursSince < 4) {
+    return { level: "low", color: "bg-green-500" };
+  } else if (hoursSince < 8) {
+    return { level: "medium", color: "bg-yellow-500" };
+  } else if (hoursSince < 24) {
+    return { level: "high", color: "bg-orange-500" };
+  } else {
+    return { level: "critical", color: "bg-red-500" };
+  }
+}
+
+function getWaitTime(createdAt: Date, lastTouchedAt: Date | null): string {
+  const referenceTime = lastTouchedAt || createdAt;
+  return formatDistanceToNow(new Date(referenceTime), { addSuffix: false });
+}
+
+function getStatusConfig(status: string): {
+  label: string;
+  variant: "default" | "secondary" | "outline";
+  icon: React.ReactNode;
+} {
+  switch (status) {
+    case "in_progress":
+      return {
+        label: "In Progress",
+        variant: "default",
+        icon: <Loader2 className="w-3 h-3" />,
+      };
+    case "completed":
+      return {
+        label: "Completed",
+        variant: "outline",
+        icon: <CheckCircle2 className="w-3 h-3" />,
+      };
+    default:
+      return {
+        label: "Waiting",
+        variant: "secondary",
+        icon: <Circle className="w-3 h-3" />,
+      };
+  }
+}
+
+export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: QueueItemProps) {
+  const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt);
+  const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
+  const statusConfig = getStatusConfig(file.status);
+
+  return (
+    <Card
+      className={`relative overflow-visible transition-all duration-200 ${
+        isDragging ? "opacity-50 scale-95" : ""
+      }`}
+      data-testid={`card-queue-item-${file.id}`}
+    >
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-md ${urgency.color}`}
+        data-testid={`indicator-urgency-${file.id}`}
+      />
+      
+      <div className="flex items-start gap-4 p-4 pl-6">
+        <button
+          className="cursor-grab active:cursor-grabbing mt-1 text-muted-foreground hover-elevate p-1 rounded"
+          data-testid={`button-drag-${file.id}`}
+        >
+          <GripVertical className="w-5 h-5" />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-medium text-foreground mb-1" data-testid={`text-client-name-${file.id}`}>
+                {file.clientName}
+              </h3>
+              {file.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`text-description-${file.id}`}>
+                  {file.description}
+                </p>
+              )}
+            </div>
+            
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-sm md:text-base" data-testid={`text-wait-time-${file.id}`}>
+                <Clock className="w-4 h-4" />
+                <span>{waitTime}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Badge variant={statusConfig.variant} className="gap-1.5" data-testid={`badge-status-${file.id}`}>
+                {statusConfig.icon}
+                {statusConfig.label}
+              </Badge>
+              {file.lastTouchedAt && (
+                <span className="text-xs text-muted-foreground" data-testid={`text-last-touched-${file.id}`}>
+                  Last touched: {formatDistanceToNow(new Date(file.lastTouchedAt), { addSuffix: true })}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onTouch(file.id)}
+                data-testid={`button-touch-${file.id}`}
+              >
+                <Eye className="w-4 h-4 mr-1.5" />
+                Touch
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onEdit(file)}
+                data-testid={`button-edit-${file.id}`}
+              >
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onDelete(file.id)}
+                data-testid={`button-delete-${file.id}`}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}

@@ -1,0 +1,31 @@
+import { Card } from "@/components/ui/card";
+import { LucideIcon } from "lucide-react";
+
+interface StatsCardProps {
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
+  description?: string;
+  testId: string;
+}
+
+export function StatsCard({ title, value, icon: Icon, description, testId }: StatsCardProps) {
+  return (
+    <Card className="p-6" data-testid={testId}>
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <p className="text-3xl font-bold text-foreground" data-testid={`${testId}-value`}>
+            {value}
+          </p>
+          {description && (
+            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+        <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+          <Icon className="w-5 h-5" />
+        </div>
+      </div>
+    </Card>
+  );
+}
