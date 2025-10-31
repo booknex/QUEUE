@@ -1,6 +1,6 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, clientFiles } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, clientFiles, workSessions } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 
 export interface IStorage {
   getAllFiles(): Promise<ClientFile[]>;
@@ -8,8 +8,12 @@ export interface IStorage {
   createFile(file: InsertClientFile): Promise<ClientFile>;
   updateFile(id: number, updates: UpdateClientFile): Promise<ClientFile | undefined>;
   deleteFile(id: number): Promise<boolean>;
-  touchFile(id: number): Promise<ClientFile | undefined>;
+  touchFile(id: number, notes?: string | null): Promise<ClientFile | undefined>;
   reorderFiles(files: ClientFile[]): Promise<ClientFile[]>;
+  
+  createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
+  getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
+  getAllWorkSessions(): Promise<WorkSession[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -47,13 +51,24 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async touchFile(id: number): Promise<ClientFile | undefined> {
-    const [file] = await db
-      .update(clientFiles)
-      .set({ lastTouchedAt: new Date() })
-      .where(eq(clientFiles.id, id))
-      .returning();
-    return file || undefined;
+  async touchFile(id: number, notes?: string | null): Promise<ClientFile | undefined> {
+    return await db.transaction(async (tx) => {
+      const [file] = await tx
+        .update(clientFiles)
+        .set({ lastTouchedAt: new Date() })
+        .where(eq(clientFiles.id, id))
+        .returning();
+      
+      if (!file) {
+        return undefined;
+      }
+      
+      await tx
+        .insert(workSessions)
+        .values({ fileId: id, notes: notes || null });
+      
+      return file;
+    });
   }
 
   async reorderFiles(files: ClientFile[]): Promise<ClientFile[]> {
@@ -64,6 +79,29 @@ export class DatabaseStorage implements IStorage {
         .where(eq(clientFiles.id, file.id));
     }
     return files;
+  }
+
+  async createWorkSession(insertSession: InsertWorkSession): Promise<WorkSession> {
+    const [session] = await db
+      .insert(workSessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async getWorkSessionsByFile(fileId: number): Promise<WorkSession[]> {
+    return await db
+      .select()
+      .from(workSessions)
+      .where(eq(workSessions.fileId, fileId))
+      .orderBy(desc(workSessions.startedAt));
+  }
+
+  async getAllWorkSessions(): Promise<WorkSession[]> {
+    return await db
+      .select()
+      .from(workSessions)
+      .orderBy(desc(workSessions.startedAt));
   }
 }
 

@@ -1,9 +1,11 @@
-import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2, History } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import type { ClientFile } from "@shared/schema";
+import { useState } from "react";
+import { SessionHistory } from "./SessionHistory";
 
 interface QueueItemProps {
   file: ClientFile;
@@ -64,11 +66,18 @@ function getStatusConfig(status: string): {
 }
 
 export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: QueueItemProps) {
+  const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
 
   return (
+    <>
+    <SessionHistory 
+      file={file} 
+      open={sessionHistoryOpen} 
+      onOpenChange={setSessionHistoryOpen}
+    />
     <Card
       className={`relative overflow-visible transition-all duration-200 ${
         isDragging ? "opacity-50 scale-95" : ""
@@ -135,6 +144,15 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
               <Button
                 size="sm"
                 variant="ghost"
+                onClick={() => setSessionHistoryOpen(true)}
+                data-testid={`button-history-${file.id}`}
+              >
+                <History className="w-4 h-4 mr-1.5" />
+                History
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={() => onEdit(file)}
                 data-testid={`button-edit-${file.id}`}
               >
@@ -153,5 +171,6 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
         </div>
       </div>
     </Card>
+    </>
   );
 }

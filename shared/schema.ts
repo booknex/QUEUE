@@ -13,6 +13,13 @@ export const clientFiles = pgTable("client_files", {
   lastTouchedAt: timestamp("last_touched_at"),
 });
 
+export const workSessions = pgTable("work_sessions", {
+  id: serial("id").primaryKey(),
+  fileId: integer("file_id").notNull().references(() => clientFiles.id, { onDelete: "cascade" }),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  notes: text("notes"),
+});
+
 export const insertClientFileSchema = createInsertSchema(clientFiles).omit({
   id: true,
   createdAt: true,
@@ -30,3 +37,15 @@ export const updateClientFileSchema = z.object({
 });
 
 export type UpdateClientFile = z.infer<typeof updateClientFileSchema>;
+
+export const insertWorkSessionSchema = createInsertSchema(workSessions).omit({
+  id: true,
+  startedAt: true,
+});
+
+export type InsertWorkSession = z.infer<typeof insertWorkSessionSchema>;
+export type WorkSession = typeof workSessions.$inferSelect;
+
+export const touchFileSchema = z.object({
+  notes: z.string().optional(),
+});
