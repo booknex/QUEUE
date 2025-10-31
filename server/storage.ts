@@ -30,8 +30,11 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const file: ClientFile = {
-      ...insertFile,
       id,
+      clientName: insertFile.clientName,
+      description: insertFile.description || null,
+      status: insertFile.status || "waiting",
+      queuePosition: insertFile.queuePosition,
       createdAt: now,
       lastTouchedAt: null,
     };
