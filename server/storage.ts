@@ -53,9 +53,20 @@ export class DatabaseStorage implements IStorage {
 
   async touchFile(id: number, notes?: string | null): Promise<ClientFile | undefined> {
     return await db.transaction(async (tx) => {
+      const [topFile] = await tx
+        .select({ queuePosition: clientFiles.queuePosition })
+        .from(clientFiles)
+        .orderBy(desc(clientFiles.queuePosition))
+        .limit(1)
+        .for('update');
+      const maxPosition = topFile ? topFile.queuePosition : 0;
+      
       const [file] = await tx
         .update(clientFiles)
-        .set({ lastTouchedAt: new Date() })
+        .set({ 
+          lastTouchedAt: new Date(),
+          queuePosition: maxPosition + 1
+        })
         .where(eq(clientFiles.id, id))
         .returning();
       

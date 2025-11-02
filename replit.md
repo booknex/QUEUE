@@ -33,6 +33,7 @@ All core features are implemented and tested:
 - Drag-and-drop works horizontally with proper positioning
 - Consolidated History, Edit, and Delete into single "Actions" dropdown menu
 - Touch button remains separate as primary action
+- **Touch now moves card to end** - clicking Touch resets timer AND moves card to the back of the queue
 - Cleaner, more compact card UI with better button organization
 - Optimized droppable container width for smooth drag experience
 
