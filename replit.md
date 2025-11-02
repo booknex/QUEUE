@@ -27,7 +27,9 @@ All core features are implemented and tested:
 ## Recent Changes (November 2, 2025)
 ### Horizontal Layout & Menu Consolidation
 - Redesigned queue to display cards horizontally with scrolling
+- **Full-width layout** - removed max-width constraints to utilize all available horizontal space
 - Cards are now fixed width (320px) arranged side-by-side
+- On wide screens (1920px), 5-6 cards are visible without scrolling
 - Drag-and-drop works horizontally with proper positioning
 - Consolidated History, Edit, and Delete into single "Actions" dropdown menu
 - Touch button remains separate as primary action

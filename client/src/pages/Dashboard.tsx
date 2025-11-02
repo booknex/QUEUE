@@ -175,7 +175,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-semibold text-foreground" data-testid="text-page-title">
@@ -193,7 +193,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             title="Total Clients"
@@ -224,7 +224,7 @@ export default function Dashboard() {
         {sortedFiles.length === 0 ? (
           <EmptyState onAddClient={handleAddNew} />
         ) : (
-          <div className="overflow-x-auto overflow-y-visible pb-4">
+          <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6">
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="queue-list" direction="horizontal">
                 {(provided) => (
