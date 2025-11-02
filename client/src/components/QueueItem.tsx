@@ -79,7 +79,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
       onOpenChange={setSessionHistoryOpen}
     />
     <Card
-      className={`relative overflow-visible transition-all duration-200 ${
+      className={`relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
         isDragging ? "opacity-50 scale-95" : ""
       }`}
       data-testid={`card-queue-item-${file.id}`}
@@ -89,53 +89,52 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
         data-testid={`indicator-urgency-${file.id}`}
       />
       
-      <div className="flex items-start gap-4 p-4 pl-6">
-        <button
-          className="cursor-grab active:cursor-grabbing mt-1 text-muted-foreground hover-elevate p-1 rounded"
-          data-testid={`button-drag-${file.id}`}
-        >
-          <GripVertical className="w-5 h-5" />
-        </button>
+      <div className="flex flex-col gap-4 p-4 pl-6">
+        <div className="flex items-center justify-between">
+          <button
+            className="cursor-grab active:cursor-grabbing text-muted-foreground hover-elevate p-1 rounded"
+            data-testid={`button-drag-${file.id}`}
+          >
+            <GripVertical className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-sm" data-testid={`text-wait-time-${file.id}`}>
+            <Clock className="w-4 h-4" />
+            <span>{waitTime}</span>
+          </div>
+        </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-medium text-foreground mb-1" data-testid={`text-client-name-${file.id}`}>
-                {file.clientName}
-              </h3>
-              {file.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`text-description-${file.id}`}>
-                  {file.description}
-                </p>
-              )}
-            </div>
-            
-            <div className="flex flex-col items-end gap-2 flex-shrink-0">
-              <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-sm md:text-base" data-testid={`text-wait-time-${file.id}`}>
-                <Clock className="w-4 h-4" />
-                <span>{waitTime}</span>
-              </div>
-            </div>
+          <div className="mb-3">
+            <h3 className="text-lg font-medium text-foreground mb-1" data-testid={`text-client-name-${file.id}`}>
+              {file.clientName}
+            </h3>
+            {file.description && (
+              <p className="text-sm text-muted-foreground line-clamp-3" data-testid={`text-description-${file.id}`}>
+                {file.description}
+              </p>
+            )}
           </div>
 
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Badge variant={statusConfig.variant} className="gap-1.5" data-testid={`badge-status-${file.id}`}>
                 {statusConfig.icon}
                 {statusConfig.label}
               </Badge>
-              {file.lastTouchedAt && (
-                <span className="text-xs text-muted-foreground" data-testid={`text-last-touched-${file.id}`}>
-                  Last touched: {formatDistanceToNow(new Date(file.lastTouchedAt), { addSuffix: true })}
-                </span>
-              )}
             </div>
+            
+            {file.lastTouchedAt && (
+              <p className="text-xs text-muted-foreground" data-testid={`text-last-touched-${file.id}`}>
+                Last touched: {formatDistanceToNow(new Date(file.lastTouchedAt), { addSuffix: true })}
+              </p>
+            )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onTouch(file.id)}
+                className="w-full justify-start"
                 data-testid={`button-touch-${file.id}`}
               >
                 <Eye className="w-4 h-4 mr-1.5" />
@@ -145,6 +144,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
                 size="sm"
                 variant="ghost"
                 onClick={() => setSessionHistoryOpen(true)}
+                className="w-full justify-start"
                 data-testid={`button-history-${file.id}`}
               >
                 <History className="w-4 h-4 mr-1.5" />
@@ -154,6 +154,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
                 size="sm"
                 variant="ghost"
                 onClick={() => onEdit(file)}
+                className="w-full justify-start"
                 data-testid={`button-edit-${file.id}`}
               >
                 Edit
@@ -162,6 +163,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
                 size="sm"
                 variant="ghost"
                 onClick={() => onDelete(file.id)}
+                className="w-full justify-start"
                 data-testid={`button-delete-${file.id}`}
               >
                 Delete

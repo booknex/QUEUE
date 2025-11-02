@@ -24,8 +24,15 @@ All core features are implemented and tested:
 - ✅ Work session history tracking
 - ✅ View session history per client file
 
-## Recent Changes (October 31, 2025)
-### Database Migration & Work Sessions
+## Recent Changes (November 2, 2025)
+### Horizontal Layout Implementation
+- Redesigned queue to display cards horizontally with scrolling
+- Cards are now fixed width (320px) arranged side-by-side
+- Drag-and-drop works horizontally with proper positioning
+- Buttons arranged vertically within each card for better UX
+- Optimized droppable container width for smooth drag experience
+
+### Database Migration & Work Sessions (October 31, 2025)
 - Migrated from in-memory storage to PostgreSQL with Drizzle ORM
 - Changed ID type from UUID to serial integer for better performance
 - Added work_sessions table with foreign key to client_files

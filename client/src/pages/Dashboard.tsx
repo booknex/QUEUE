@@ -224,39 +224,42 @@ export default function Dashboard() {
         {sortedFiles.length === 0 ? (
           <EmptyState onAddClient={handleAddNew} />
         ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="queue-list">
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="space-y-3"
-                  data-testid="queue-list"
-                >
-                  {sortedFiles.map((file, index) => (
-                    <Draggable key={file.id} draggableId={String(file.id)} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <QueueItem
-                            file={file}
-                            onTouch={touchMutation.mutate}
-                            onEdit={handleEdit}
-                            onDelete={deleteMutation.mutate}
-                            isDragging={snapshot.isDragging}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <div className="overflow-x-auto overflow-y-visible pb-4">
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="queue-list" direction="horizontal">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="flex gap-4 min-w-max"
+                    data-testid="queue-list"
+                    style={{ width: `${sortedFiles.length * 336}px` }}
+                  >
+                    {sortedFiles.map((file, index) => (
+                      <Draggable key={file.id} draggableId={String(file.id)} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                          >
+                            <QueueItem
+                              file={file}
+                              onTouch={touchMutation.mutate}
+                              onEdit={handleEdit}
+                              onDelete={deleteMutation.mutate}
+                              isDragging={snapshot.isDragging}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
         )}
       </main>
 
