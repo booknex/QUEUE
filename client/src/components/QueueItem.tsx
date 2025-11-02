@@ -1,7 +1,13 @@
-import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2, History } from "lucide-react";
+import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import type { ClientFile } from "@shared/schema";
 import { useState } from "react";
@@ -140,34 +146,42 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: Queue
                 <Eye className="w-4 h-4 mr-1.5" />
                 Touch
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setSessionHistoryOpen(true)}
-                className="w-full justify-start"
-                data-testid={`button-history-${file.id}`}
-              >
-                <History className="w-4 h-4 mr-1.5" />
-                History
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onEdit(file)}
-                className="w-full justify-start"
-                data-testid={`button-edit-${file.id}`}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onDelete(file.id)}
-                className="w-full justify-start"
-                data-testid={`button-delete-${file.id}`}
-              >
-                Delete
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-full justify-start"
+                    data-testid={`button-menu-${file.id}`}
+                  >
+                    <MoreVertical className="w-4 h-4 mr-1.5" />
+                    Actions
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem
+                    onSelect={() => setSessionHistoryOpen(true)}
+                    data-testid={`menu-history-${file.id}`}
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    History
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => onEdit(file)}
+                    data-testid={`menu-edit-${file.id}`}
+                  >
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => onDelete(file.id)}
+                    data-testid={`menu-delete-${file.id}`}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

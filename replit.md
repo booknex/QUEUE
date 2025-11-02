@@ -25,11 +25,13 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 2, 2025)
-### Horizontal Layout Implementation
+### Horizontal Layout & Menu Consolidation
 - Redesigned queue to display cards horizontally with scrolling
 - Cards are now fixed width (320px) arranged side-by-side
 - Drag-and-drop works horizontally with proper positioning
-- Buttons arranged vertically within each card for better UX
+- Consolidated History, Edit, and Delete into single "Actions" dropdown menu
+- Touch button remains separate as primary action
+- Cleaner, more compact card UI with better button organization
 - Optimized droppable container width for smooth drag experience
 
 ### Database Migration & Work Sessions (October 31, 2025)
