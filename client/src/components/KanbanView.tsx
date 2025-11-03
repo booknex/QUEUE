@@ -11,16 +11,18 @@ import { Plus, ChevronDown } from "lucide-react";
 
 export function KanbanView() {
   const [activeView, setActiveView] = useState("opportunities");
-  const [selectedPipeline, setSelectedPipeline] = useState("All Pipelines");
+  const [selectedPipeline, setSelectedPipeline] = useState("all-pipelines");
 
-  // Sample pipelines - can be replaced with actual data
+  // Available pipelines
   const pipelines = [
-    "All Pipelines",
-    "Sales Pipeline",
-    "Marketing Pipeline",
-    "Support Pipeline",
-    "Product Pipeline",
+    { id: "all-pipelines", name: "All Pipelines" },
+    { id: "sales", name: "Sales" },
+    { id: "marketing", name: "Marketing" },
+    { id: "support", name: "Support" },
+    { id: "product", name: "Product" },
   ];
+
+  const currentPipeline = pipelines.find(p => p.id === selectedPipeline);
 
   return (
     <div className="space-y-4" data-testid="kanban-view">
@@ -37,18 +39,18 @@ export function KanbanView() {
                     className="w-48"
                     data-testid="button-pipeline-dropdown"
                   >
-                    {selectedPipeline}
+                    {currentPipeline?.name}
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
                   {pipelines.map((pipeline) => (
                     <DropdownMenuItem
-                      key={pipeline}
-                      onClick={() => setSelectedPipeline(pipeline)}
-                      data-testid={`menu-item-${pipeline.toLowerCase().replace(/\s+/g, '-')}`}
+                      key={pipeline.id}
+                      onClick={() => setSelectedPipeline(pipeline.id)}
+                      data-testid={`menu-item-${pipeline.id}`}
                     >
-                      {pipeline}
+                      {pipeline.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -141,40 +143,64 @@ export function KanbanView() {
           )}
 
           {activeView === "pipelines" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-pipelines">
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Lead</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No pipelines yet
+            <>
+              {selectedPipeline === "all-pipelines" && (
+                <div className="text-center py-16" data-testid="content-all-pipelines">
+                  <p className="text-muted-foreground mb-4">
+                    Select a specific pipeline from the dropdown to view its kanban board
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {pipelines.filter(p => p.id !== "all-pipelines").map((pipeline) => (
+                      <Button
+                        key={pipeline.id}
+                        variant="outline"
+                        onClick={() => setSelectedPipeline(pipeline.id)}
+                        data-testid={`button-select-${pipeline.id}`}
+                      >
+                        {pipeline.name}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Qualified</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No pipelines yet
-                </div>
-              </div>
+              {selectedPipeline !== "all-pipelines" && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid={`content-pipeline-${selectedPipeline}`}>
+                  <div className="space-y-3">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Lead</CardTitle>
+                      </CardHeader>
+                    </Card>
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No {currentPipeline?.name.toLowerCase()} leads yet
+                    </div>
+                  </div>
 
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Converted</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No pipelines yet
+                  <div className="space-y-3">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Qualified</CardTitle>
+                      </CardHeader>
+                    </Card>
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No {currentPipeline?.name.toLowerCase()} qualified yet
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Converted</CardTitle>
+                      </CardHeader>
+                    </Card>
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No {currentPipeline?.name.toLowerCase()} converted yet
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>
