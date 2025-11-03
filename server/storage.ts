@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type InsertOpportunity, type UpdateOpportunity, clientFiles, workSessions, pipelines, opportunities } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, clientFiles, workSessions, pipelines, opportunities, contacts } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql } from "drizzle-orm";
 
@@ -19,6 +19,10 @@ export interface IStorage {
   createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
   updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined>;
   deletePipeline(id: number): Promise<boolean>;
+
+  getAllContacts(): Promise<Contact[]>;
+  getContact(id: number): Promise<Contact | undefined>;
+  createContact(contact: InsertContact): Promise<Contact>;
 
   getAllOpportunities(): Promise<Opportunity[]>;
   getOpportunity(id: number): Promise<Opportunity | undefined>;
@@ -144,6 +148,26 @@ export class DatabaseStorage implements IStorage {
       .where(eq(pipelines.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  async getAllContacts(): Promise<Contact[]> {
+    return await db
+      .select()
+      .from(contacts)
+      .orderBy(asc(contacts.createdAt));
+  }
+
+  async getContact(id: number): Promise<Contact | undefined> {
+    const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
+    return contact || undefined;
+  }
+
+  async createContact(insertContact: InsertContact): Promise<Contact> {
+    const [contact] = await db
+      .insert(contacts)
+      .values(insertContact)
+      .returning();
+    return contact;
   }
 
   async getAllOpportunities(): Promise<Opportunity[]> {
