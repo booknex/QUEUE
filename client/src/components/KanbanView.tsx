@@ -65,7 +65,7 @@ export function KanbanView() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/columns"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/columns", "null"] });
       setNewColumnName("");
       setAddColumnOpen(false);
       toast({
@@ -87,7 +87,7 @@ export function KanbanView() {
       await apiRequest("DELETE", `/api/columns/${columnId}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/columns"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/columns", "null"] });
       queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
       toast({
         title: "Column deleted",

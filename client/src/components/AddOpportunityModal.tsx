@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -22,6 +22,7 @@ import {
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
+import type { KanbanColumn } from "@shared/schema";
 import { z } from "zod";
 
 interface AddOpportunityModalProps {
@@ -40,6 +41,15 @@ type FormData = z.infer<typeof formSchema>;
 
 export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps) {
   const { toast } = useToast();
+
+  const { data: opportunityColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns", "null"],
+    queryFn: async () => {
+      const response = await fetch("/api/columns?pipelineId=null");
+      if (!response.ok) throw new Error("Failed to fetch columns");
+      return response.json();
+    },
+  });
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,9 +81,15 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
 
       // Then create the opportunity with the contactId
       // Use the contact name as the opportunity title
+      // Use the first column's ID (default column)
+      const firstColumnId = opportunityColumns[0]?.id;
+      if (!firstColumnId) {
+        throw new Error("No columns available");
+      }
+
       const opportunityData: any = {
         title: data.title,
-        column: "new",
+        columnId: firstColumnId,
         contactId: contact.id,
       };
       
