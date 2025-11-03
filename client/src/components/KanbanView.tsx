@@ -108,6 +108,10 @@ export function KanbanView() {
     mutationFn: async ({ opportunityId, columnId, position }: { opportunityId: number; columnId: number; position: number }) => {
       await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId, position });
     },
+    onSuccess: () => {
+      // Invalidate the cache to refetch the updated positions
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+    },
     onError: () => {
       toast({
         title: "Error",
