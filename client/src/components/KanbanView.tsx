@@ -357,8 +357,8 @@ export function KanbanView() {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-3 min-h-[100px] rounded-md transition-colors ${
-                            snapshot.isDraggingOver ? "bg-accent/20" : ""
+                          className={`space-y-3 min-h-[200px] p-3 rounded-md transition-colors ${
+                            snapshot.isDraggingOver ? "bg-accent/30" : "bg-muted/20"
                           }`}
                         >
                           {localOpportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
