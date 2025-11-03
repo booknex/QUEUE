@@ -84,7 +84,7 @@ export function KanbanView() {
               </Button>
               <Button
                 size="sm"
-                variant={activeView === "pipelines" ? "default" : "outline"}
+                variant={activeView === "pipelines" || activeView === "pipeline-kanban" ? "default" : "outline"}
                 onClick={() => setActiveView("pipelines")}
                 data-testid="button-header-pipelines"
               >
@@ -111,7 +111,7 @@ export function KanbanView() {
             Opportunities
           </Button>
           <Button
-            variant={activeView === "pipelines" ? "default" : "ghost"}
+            variant={activeView === "pipelines" || activeView === "pipeline-kanban" ? "default" : "ghost"}
             className="w-full justify-start"
             onClick={() => setActiveView("pipelines")}
             data-testid="button-sidebar-contacts"
