@@ -153,7 +153,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
@@ -183,7 +183,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
@@ -213,7 +213,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
