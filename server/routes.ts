@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, Contact, Opportunity, OpportunityWithContact } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -238,6 +238,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete pipeline" });
+    }
+  });
+
+  function serializeKanbanColumn(column: KanbanColumn) {
+    return {
+      ...column,
+      createdAt: column.createdAt.toISOString(),
+    };
+  }
+
+  app.get("/api/columns", async (req, res) => {
+    try {
+      const pipelineIdParam = req.query.pipelineId as string | undefined;
+      const pipelineId = pipelineIdParam === "null" ? null : pipelineIdParam ? parseInt(pipelineIdParam) : undefined;
+      
+      const columns = await storage.getAllKanbanColumns(pipelineId);
+      res.json(columns.map(serializeKanbanColumn));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch columns" });
+    }
+  });
+
+  app.get("/api/columns/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid column ID" });
+      }
+      const column = await storage.getKanbanColumn(id);
+      if (!column) {
+        return res.status(404).json({ error: "Column not found" });
+      }
+      res.json(serializeKanbanColumn(column));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch column" });
+    }
+  });
+
+  app.post("/api/columns", async (req, res) => {
+    try {
+      const validated = insertKanbanColumnSchema.parse(req.body);
+      const column = await storage.createKanbanColumn(validated);
+      res.status(201).json(serializeKanbanColumn(column));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create column" });
+    }
+  });
+
+  app.patch("/api/columns/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid column ID" });
+      }
+      const validated = updateKanbanColumnSchema.parse(req.body);
+      const column = await storage.updateKanbanColumn(id, validated);
+      if (!column) {
+        return res.status(404).json({ error: "Column not found" });
+      }
+      res.json(serializeKanbanColumn(column));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update column" });
+    }
+  });
+
+  app.delete("/api/columns/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid column ID" });
+      }
+      const success = await storage.deleteKanbanColumn(id);
+      if (!success) {
+        return res.status(404).json({ error: "Column not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete column" });
     }
   });
 

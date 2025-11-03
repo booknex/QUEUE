@@ -1,6 +1,6 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, clientFiles, workSessions, pipelines, opportunities, contacts } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc, desc, sql } from "drizzle-orm";
+import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
 export interface IStorage {
   getAllFiles(): Promise<ClientFile[]>;
@@ -19,6 +19,12 @@ export interface IStorage {
   createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
   updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined>;
   deletePipeline(id: number): Promise<boolean>;
+
+  getAllKanbanColumns(pipelineId?: number | null): Promise<KanbanColumn[]>;
+  getKanbanColumn(id: number): Promise<KanbanColumn | undefined>;
+  createKanbanColumn(column: InsertKanbanColumn): Promise<KanbanColumn>;
+  updateKanbanColumn(id: number, updates: UpdateKanbanColumn): Promise<KanbanColumn | undefined>;
+  deleteKanbanColumn(id: number): Promise<boolean>;
 
   getAllContacts(): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
@@ -170,29 +176,76 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
+  async getAllKanbanColumns(pipelineId?: number | null): Promise<KanbanColumn[]> {
+    const whereClause = pipelineId === undefined 
+      ? isNull(kanbanColumns.pipelineId)
+      : pipelineId === null 
+        ? isNull(kanbanColumns.pipelineId)
+        : eq(kanbanColumns.pipelineId, pipelineId);
+    
+    return await db
+      .select()
+      .from(kanbanColumns)
+      .where(whereClause)
+      .orderBy(asc(kanbanColumns.position));
+  }
+
+  async getKanbanColumn(id: number): Promise<KanbanColumn | undefined> {
+    const [column] = await db.select().from(kanbanColumns).where(eq(kanbanColumns.id, id));
+    return column || undefined;
+  }
+
+  async createKanbanColumn(insertColumn: InsertKanbanColumn): Promise<KanbanColumn> {
+    const [column] = await db
+      .insert(kanbanColumns)
+      .values(insertColumn)
+      .returning();
+    return column;
+  }
+
+  async updateKanbanColumn(id: number, updates: UpdateKanbanColumn): Promise<KanbanColumn | undefined> {
+    const [column] = await db
+      .update(kanbanColumns)
+      .set(updates)
+      .where(eq(kanbanColumns.id, id))
+      .returning();
+    return column || undefined;
+  }
+
+  async deleteKanbanColumn(id: number): Promise<boolean> {
+    const result = await db
+      .delete(kanbanColumns)
+      .where(eq(kanbanColumns.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
   async getAllOpportunities(): Promise<OpportunityWithContact[]> {
     const results = await db
       .select({
         id: opportunities.id,
         title: opportunities.title,
         description: opportunities.description,
-        column: opportunities.column,
+        columnId: opportunities.columnId,
         contactId: opportunities.contactId,
         createdAt: opportunities.createdAt,
         contactName: contacts.name,
+        columnName: kanbanColumns.name,
       })
       .from(opportunities)
       .leftJoin(contacts, eq(opportunities.contactId, contacts.id))
+      .leftJoin(kanbanColumns, eq(opportunities.columnId, kanbanColumns.id))
       .orderBy(asc(opportunities.createdAt));
     
     return results.map((row) => ({
       id: row.id,
       title: row.title,
       description: row.description,
-      column: row.column,
+      columnId: row.columnId,
       contactId: row.contactId,
       createdAt: row.createdAt,
       contactName: row.contactName || "Unknown Contact",
+      columnName: row.columnName || "Unknown Column",
     }));
   }
 
