@@ -1,4 +1,4 @@
-import { Clock, GripVertical, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,6 @@ interface QueueItemProps {
   onTouch: (id: number) => void;
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
-  isDragging?: boolean;
   now?: number;
 }
 
@@ -99,7 +98,7 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
   return hoursSince >= 12;
 }
 
-export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = Date.now() }: QueueItemProps) {
+export function QueueItem({ file, onTouch, onEdit, onDelete, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
@@ -108,7 +107,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
   const attention = needsAttention(file.lastTouchedAt, now);
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
-    isDragging ? "opacity-50 scale-95" : attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
+    attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
   const edgeBarColor = recentlyTouched ? "bg-green-500" : attention ? "bg-red-500" : urgency.color;
@@ -132,13 +131,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
       />
       
       <div className="flex flex-col gap-4 p-4 pl-6">
-        <div className="flex items-center justify-between">
-          <button
-            className="cursor-grab active:cursor-grabbing text-muted-foreground hover-elevate p-1 rounded"
-            data-testid={`button-drag-${file.id}`}
-          >
-            <GripVertical className="w-5 h-5" />
-          </button>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-1.5 text-muted-foreground font-mono text-sm" data-testid={`text-wait-time-${file.id}`}>
             <Clock className="w-4 h-4" />
             <span>{waitTime}</span>
