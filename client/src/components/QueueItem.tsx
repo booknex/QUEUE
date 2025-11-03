@@ -42,7 +42,22 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
 
 function getWaitTime(createdAt: Date, lastTouchedAt: Date | null): string {
   const referenceTime = lastTouchedAt || createdAt;
-  return formatDistanceToNow(new Date(referenceTime), { addSuffix: false });
+  const totalSeconds = Math.floor((Date.now() - new Date(referenceTime).getTime()) / 1000);
+  
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h ${minutes}m`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  } else {
+    return `${seconds}s`;
+  }
 }
 
 function getStatusConfig(status: string): {

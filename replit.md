@@ -27,9 +27,10 @@ All core features are implemented and tested:
 - ✅ Optimized concurrency handling with row-level locking
 
 ## Recent Changes (November 3, 2025)
-### Realtime Timer Updates
-- **Timers now update every second** - no page refresh needed to see time tick up
-- Client-side interval updates display in realtime (e.g., "2 minutes" → "3 minutes")
+### Realtime Timer Updates with Seconds Precision
+- **Timers now update every second** - watch the seconds tick up live
+- **Seconds precision display** - shows exact wait time (e.g., "30m 15s", "2h 45m 30s", "45s")
+- Client-side interval updates display in realtime - see every second count
 - Urgency color indicators also update automatically as time passes
 - Server still syncs every 30 seconds for data consistency
 - Optimized performance - only triggers re-render of timer display, not full data refetch
@@ -122,8 +123,8 @@ All core features are implemented and tested:
 
 ### Timer Tracking
 - Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`
-- Displayed in human-readable format (e.g., "2 hours", "3 days")
-- **Updates in realtime every second** - no page refresh needed
+- Displayed with seconds precision (e.g., "2h 45m 30s", "30m 15s", "45s")
+- **Updates in realtime every second** - watch the seconds tick up live
 - Client-side timer ticks continuously for immediate feedback
 - Server sync every 30 seconds ensures data consistency
 - "Touch" button resets the timer to current time and moves card to end of queue
