@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +10,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, ChevronDown, Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Plus, ChevronDown, Settings, Trash2, X } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import Contacts from "@/pages/Contacts";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/schema";
 
 export function KanbanView() {
@@ -20,6 +30,9 @@ export function KanbanView() {
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
+  const [addColumnOpen, setAddColumnOpen] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
+  const { toast } = useToast();
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
@@ -37,6 +50,70 @@ export function KanbanView() {
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
     queryKey: ["/api/opportunities"],
   });
+
+  const createColumnMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const maxPosition = opportunityColumns.length > 0 
+        ? Math.max(...opportunityColumns.map(c => c.position))
+        : -1;
+      
+      const response = await apiRequest("POST", "/api/columns", {
+        name,
+        position: maxPosition + 1,
+        pipelineId: null,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/columns"] });
+      setNewColumnName("");
+      setAddColumnOpen(false);
+      toast({
+        title: "Column created",
+        description: "New column has been added to the board.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create column.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteColumnMutation = useMutation({
+    mutationFn: async (columnId: number) => {
+      await apiRequest("DELETE", `/api/columns/${columnId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/columns"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      toast({
+        title: "Column deleted",
+        description: "Column and its opportunities have been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete column.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddColumn = () => {
+    if (newColumnName.trim()) {
+      createColumnMutation.mutate(newColumnName.trim());
+    }
+  };
+
+  const handleDeleteColumn = (columnId: number) => {
+    if (confirm("Are you sure you want to delete this column? All opportunities in this column will also be deleted.")) {
+      deleteColumnMutation.mutate(columnId);
+    }
+  };
 
   const selectedPipeline = selectedPipelineId
     ? pipelines.find((p) => p.id === selectedPipelineId)
@@ -144,12 +221,21 @@ export function KanbanView() {
         {/* Content Area */}
         <div className="flex-1">
           {activeView === "opportunities" && (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
               {opportunityColumns.map((column) => (
                 <div key={column.id} className="space-y-3">
                   <Card>
-                    <CardHeader className="pb-3">
+                    <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
                       <CardTitle className="text-base">{column.name}</CardTitle>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDeleteColumn(column.id)}
+                        data-testid={`button-delete-column-${column.id}`}
+                        className="h-6 w-6"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
                     </CardHeader>
                   </Card>
                   {opportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
@@ -176,6 +262,23 @@ export function KanbanView() {
                   )}
                 </div>
               ))}
+              
+              {/* Add Column Button */}
+              <div className="space-y-3">
+                <Card className="border-dashed">
+                  <CardHeader className="pb-3">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={() => setAddColumnOpen(true)}
+                      data-testid="button-add-column"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Column
+                    </Button>
+                  </CardHeader>
+                </Card>
+              </div>
             </div>
           )}
 
@@ -285,6 +388,47 @@ export function KanbanView() {
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
       <AddOpportunityModal open={addOpportunityOpen} onClose={() => setAddOpportunityOpen(false)} />
+      
+      {/* Add Column Dialog */}
+      <Dialog open={addColumnOpen} onOpenChange={setAddColumnOpen}>
+        <DialogContent data-testid="dialog-add-column">
+          <DialogHeader>
+            <DialogTitle>Add New Column</DialogTitle>
+            <DialogDescription>
+              Create a new column for organizing opportunities.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={newColumnName}
+              onChange={(e) => setNewColumnName(e.target.value)}
+              placeholder="Enter column name..."
+              data-testid="input-column-name"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddColumn();
+                }
+              }}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setAddColumnOpen(false)}
+                data-testid="button-cancel-column"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddColumn}
+                disabled={!newColumnName.trim() || createColumnMutation.isPending}
+                data-testid="button-submit-column"
+              >
+                {createColumnMutation.isPending ? "Creating..." : "Create Column"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
