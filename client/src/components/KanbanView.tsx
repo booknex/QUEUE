@@ -115,14 +115,55 @@ export function KanbanView() {
       // Snapshot the previous value
       const previousOpportunities = queryClient.getQueryData<OpportunityWithContact[]>(["/api/opportunities"]);
 
-      // Optimistically update the cache
+      // Optimistically update the cache with proper reordering
       queryClient.setQueryData<OpportunityWithContact[]>(
         ["/api/opportunities"],
         (old) => {
           if (!old) return old;
-          return old.map((opp) =>
-            opp.id === opportunityId ? { ...opp, columnId, position } : opp
+          
+          const draggedItem = old.find((opp) => opp.id === opportunityId);
+          if (!draggedItem) return old;
+          
+          const sourceColumnId = draggedItem.columnId;
+          
+          // Create a copy to work with
+          let newOpportunities = [...old];
+          
+          // Remove the dragged item
+          newOpportunities = newOpportunities.filter((opp) => opp.id !== opportunityId);
+          
+          // Get all items in destination column, sorted by position
+          const destColumnItems = newOpportunities
+            .filter((opp) => opp.columnId === columnId)
+            .sort((a, b) => a.position - b.position);
+          
+          // Insert dragged item at new position
+          destColumnItems.splice(position, 0, { ...draggedItem, columnId, position });
+          
+          // Update positions for destination column
+          destColumnItems.forEach((item, idx) => {
+            item.position = idx;
+          });
+          
+          // If source and destination columns are different, reindex source column
+          let sourceColumnItems: OpportunityWithContact[] = [];
+          if (sourceColumnId !== columnId) {
+            sourceColumnItems = newOpportunities
+              .filter((opp) => opp.columnId === sourceColumnId)
+              .sort((a, b) => a.position - b.position);
+            
+            sourceColumnItems.forEach((item, idx) => {
+              item.position = idx;
+            });
+          }
+          
+          // Get items from other columns (unchanged)
+          const otherItems = newOpportunities.filter(
+            (opp) => opp.columnId !== columnId && opp.columnId !== sourceColumnId
           );
+          
+          // Combine everything
+          return [...destColumnItems, ...sourceColumnItems, ...otherItems];
         }
       );
 
@@ -333,9 +374,12 @@ export function KanbanView() {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       data-testid={`opportunity-card-${opportunity.id}`}
-                                      className={`cursor-grab active:cursor-grabbing transition-all duration-200 ease-in-out ${
-                                        snapshot.isDragging ? "shadow-lg rotate-2" : ""
+                                      className={`cursor-grab active:cursor-grabbing ${
+                                        snapshot.isDragging ? "opacity-50" : ""
                                       }`}
+                                      style={{
+                                        ...provided.draggableProps.style,
+                                      }}
                                     >
                                       <CardHeader className="pb-3">
                                         <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
