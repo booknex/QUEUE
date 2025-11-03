@@ -31,6 +31,7 @@ All core features are implemented and tested:
 ### Kanban Board - Separate Entity
 - **Independent kanban system** - separate from client queue files
 - **Header with navigation** - "Kanban Board" title with "Opportunities" and "Pipelines" buttons, plus "Add New" button
+- **Pipeline selector dropdown** - Located below title in header, filters by pipeline (All Pipelines, Sales, Marketing, Support, Product)
 - **Left sidebar** - Vertical navigation with "Opportunities" and "Pipelines" buttons
 - **Dual navigation** - Both header buttons and sidebar buttons control the view
 - **Opportunities view** - columns: New, In Progress, Closed

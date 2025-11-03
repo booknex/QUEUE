@@ -1,17 +1,59 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, ChevronDown } from "lucide-react";
 
 export function KanbanView() {
   const [activeView, setActiveView] = useState("opportunities");
+  const [selectedPipeline, setSelectedPipeline] = useState("All Pipelines");
+
+  // Sample pipelines - can be replaced with actual data
+  const pipelines = [
+    "All Pipelines",
+    "Sales Pipeline",
+    "Marketing Pipeline",
+    "Support Pipeline",
+    "Product Pipeline",
+  ];
 
   return (
     <div className="space-y-4" data-testid="kanban-view">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between gap-4">
-            <CardTitle>Kanban Board</CardTitle>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              <CardTitle>Kanban Board</CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-48"
+                    data-testid="button-pipeline-dropdown"
+                  >
+                    {selectedPipeline}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
+                  {pipelines.map((pipeline) => (
+                    <DropdownMenuItem
+                      key={pipeline}
+                      onClick={() => setSelectedPipeline(pipeline)}
+                      data-testid={`menu-item-${pipeline.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      {pipeline}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
