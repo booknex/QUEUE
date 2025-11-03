@@ -268,14 +268,6 @@ export function KanbanView() {
                       {pipeline.name}
                     </DropdownMenuItem>
                   ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setPipelineManagerOpen(true)}
-                    data-testid="menu-item-manage-pipelines"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    Manage Pipelines
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -290,8 +282,8 @@ export function KanbanView() {
               </Button>
               <Button
                 size="sm"
-                variant={activeView === "pipelines" || activeView === "pipeline-kanban" ? "default" : "outline"}
-                onClick={() => setActiveView("pipelines")}
+                variant="outline"
+                onClick={() => setPipelineManagerOpen(true)}
                 data-testid="button-header-pipelines"
               >
                 Pipelines
