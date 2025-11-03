@@ -28,16 +28,14 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 3, 2025)
-### Kanban Board View
-- **Kanban board below horizontal queue** - traditional column layout organizing by status
-- **Three columns**: Waiting, In Progress, Completed with count badges
-- **Vertical scrolling** per column (max height 600px)
-- **Full card functionality** - Touch button, Actions menu (Edit, Close, Delete)
-- **Same visual indicators** - green borders (<12h), red borders (≥12h/untouched)
-- **Real-time timers** with seconds precision in each card
-- **Auto-status update** - closing a file automatically sets status to "completed"
-- **Consistent counts** - Completed column and stat card always match
-- Provides alternative view to complement horizontal queue
+### Kanban Board - Separate Entity
+- **Independent kanban system** - separate from client queue files
+- **Header with actions** - "Kanban Board" title and "Add New" button
+- **Two tabs**: Opportunities and Pipelines
+- **Opportunities tab** - columns: New, In Progress, Closed
+- **Pipelines tab** - columns: Lead, Qualified, Converted
+- Each tab has its own kanban board with dedicated data
+- Positioned below the horizontal client queue scrollbar
 
 ### Clickable Completed Stat Card
 - **Completed stat card is now clickable** - click to view all closed files
@@ -168,12 +166,10 @@ All core features are implemented and tested:
 
 ## Key Features Explained
 
-### Dual View System
-The application provides two complementary views:
-1. **Horizontal Queue** - Priority-ordered scrolling cards (untouched first, oldest touched after)
-2. **Kanban Board** - Status-based columns (Waiting, In Progress, Completed)
-
-Both views show the same clients with identical functionality and real-time updates.
+### Application Structure
+The application has two main sections:
+1. **Client Queue** - Horizontal scrolling cards for daily client work management (priority-ordered: untouched first, oldest touched after)
+2. **Kanban Board** - Separate tabbed system for Opportunities and Pipelines (independent from client queue)
 
 ### Timer Tracking
 - Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`

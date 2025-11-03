@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
-import { KanbanBoard } from "@/components/KanbanBoard";
+import { KanbanView } from "@/components/KanbanView";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
@@ -275,17 +275,7 @@ export default function Dashboard() {
             </div>
 
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4" data-testid="text-kanban-title">
-                Kanban Board
-              </h2>
-              <KanbanBoard
-                files={files}
-                onTouch={touchMutation.mutate}
-                onEdit={handleEdit}
-                onDelete={deleteMutation.mutate}
-                onClose={handleClose}
-                now={now}
-              />
+              <KanbanView />
             </div>
           </>
         )}
