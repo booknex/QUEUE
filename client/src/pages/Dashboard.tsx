@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
@@ -113,21 +112,11 @@ export default function Dashboard() {
     },
   });
 
-  const reorderMutation = useMutation({
-    mutationFn: async (reorderedFiles: ClientFile[]) => {
-      return await apiRequest("POST", "/api/files/reorder", { files: reorderedFiles });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
-    },
-  });
-
   const handleSubmit = (data: any) => {
     if (editingFile) {
       updateMutation.mutate({ id: editingFile.id, data });
     } else {
-      const maxPosition = files.length > 0 ? Math.max(...files.map(f => f.queuePosition)) : -1;
-      createMutation.mutate({ ...data, queuePosition: maxPosition + 1 });
+      createMutation.mutate(data);
     }
   };
 
@@ -140,24 +129,6 @@ export default function Dashboard() {
     setEditingFile(null);
     setModalOpen(true);
   };
-
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-
-    const items = Array.from(sortedFiles);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    const reorderedFiles = items.map((file, index) => ({
-      ...file,
-      queuePosition: index,
-    }));
-
-    queryClient.setQueryData(["/api/files"], reorderedFiles);
-    reorderMutation.mutate(reorderedFiles);
-  };
-
-  const sortedFiles = [...files].sort((a, b) => a.queuePosition - b.queuePosition);
   
   const stats = {
     total: files.length,
@@ -238,45 +209,26 @@ export default function Dashboard() {
           />
         </div>
 
-        {sortedFiles.length === 0 ? (
+        {files.length === 0 ? (
           <EmptyState onAddClient={handleAddNew} />
         ) : (
           <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6">
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="queue-list" direction="horizontal">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="flex gap-4 min-w-max"
-                    data-testid="queue-list"
-                    style={{ width: `${sortedFiles.length * 336}px` }}
-                  >
-                    {sortedFiles.map((file, index) => (
-                      <Draggable key={file.id} draggableId={String(file.id)} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <QueueItem
-                              file={file}
-                              onTouch={touchMutation.mutate}
-                              onEdit={handleEdit}
-                              onDelete={deleteMutation.mutate}
-                              isDragging={snapshot.isDragging}
-                              now={now}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+            <div
+              className="flex gap-4 min-w-max"
+              data-testid="queue-list"
+              style={{ width: `${files.length * 336}px` }}
+            >
+              {files.map((file) => (
+                <QueueItem
+                  key={file.id}
+                  file={file}
+                  onTouch={touchMutation.mutate}
+                  onEdit={handleEdit}
+                  onDelete={deleteMutation.mutate}
+                  now={now}
+                />
+              ))}
+            </div>
           </div>
         )}
       </main>
