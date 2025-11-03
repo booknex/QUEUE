@@ -30,11 +30,10 @@ interface AddOpportunityModalProps {
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  contactName: z.string().min(1, "Contact name is required"),
+  title: z.string().min(1, "Contact name is required"),
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
+  description: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -46,18 +45,17 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      description: "",
-      contactName: "",
       contactPhone: "",
       contactEmail: "",
+      description: "",
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      // First create the contact
+      // First create the contact using the title field as the contact name
       const contactData: any = {
-        name: data.contactName,
+        name: data.title,
       };
       
       // Only include phone and email if they have values
@@ -72,6 +70,7 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
       const contact = await contactRes.json();
 
       // Then create the opportunity with the contactId
+      // Use the contact name as the opportunity title
       const opportunityData: any = {
         title: data.title,
         column: "new",
@@ -133,12 +132,51 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Opportunity Title *</FormLabel>
+                  <FormLabel>Contact Name *</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="Enter opportunity title..."
+                      placeholder="Enter contact name..."
                       data-testid="input-opportunity-title"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="contactPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Enter phone number..."
+                      data-testid="input-contact-phone"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="contactEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      type="email"
+                      placeholder="Enter email address..."
+                      data-testid="input-contact-email"
                     />
                   </FormControl>
                   <FormMessage />
@@ -165,69 +203,6 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
                 </FormItem>
               )}
             />
-
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-3">Contact Information</h4>
-              
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="contactName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contact Name *</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Enter contact name..."
-                          data-testid="input-contact-name"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contactPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          placeholder="Enter phone number..."
-                          data-testid="input-contact-phone"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contactEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          type="email"
-                          placeholder="Enter email address..."
-                          data-testid="input-contact-email"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
 
             <div className="flex justify-end gap-2">
               <Button
