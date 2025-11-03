@@ -32,7 +32,7 @@ All core features are implemented and tested:
 - **Independent kanban system** - separate from client queue files
 - **Header with navigation** - "Kanban Board" title with "Opportunities" and "Pipelines" buttons, plus "Add New" button
 - **Pipeline selector dropdown** - Located below title in header, selects which pipeline kanban to view
-- **Left sidebar** - Vertical navigation with "Opportunities" and "Pipelines" buttons
+- **Left sidebar** - Vertical navigation with "Opportunities" and "Contacts" buttons
 - **Dual navigation** - Both header buttons and sidebar buttons control the view
 - **Opportunities view** - Independent kanban with columns: New, In Progress, Closed
 - **Pipelines view** - Shows different content based on selected pipeline:

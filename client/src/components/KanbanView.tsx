@@ -97,9 +97,9 @@ export function KanbanView() {
             variant={activeView === "pipelines" ? "default" : "ghost"}
             className="w-full justify-start"
             onClick={() => setActiveView("pipelines")}
-            data-testid="button-sidebar-pipelines"
+            data-testid="button-sidebar-contacts"
           >
-            Pipelines
+            Contacts
           </Button>
         </div>
 
