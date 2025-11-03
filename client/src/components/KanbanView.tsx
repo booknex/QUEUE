@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,6 +104,22 @@ export function KanbanView() {
     },
   });
 
+  const updateOpportunityColumnMutation = useMutation({
+    mutationFn: async ({ opportunityId, columnId }: { opportunityId: number; columnId: number }) => {
+      await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to move opportunity.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddColumn = () => {
     if (newColumnName.trim()) {
       createColumnMutation.mutate(newColumnName.trim());
@@ -113,6 +130,26 @@ export function KanbanView() {
     if (confirm("Are you sure you want to delete this column? All opportunities in this column will also be deleted.")) {
       deleteColumnMutation.mutate(columnId);
     }
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    if (destination.droppableId === source.droppableId) {
+      return;
+    }
+
+    const opportunityId = parseInt(draggableId);
+    const newColumnId = parseInt(destination.droppableId);
+
+    updateOpportunityColumnMutation.mutate({
+      opportunityId,
+      columnId: newColumnId,
+    });
   };
 
   const selectedPipeline = selectedPipelineId
@@ -221,47 +258,75 @@ export function KanbanView() {
         {/* Content Area */}
         <div className="flex-1">
           {activeView === "opportunities" && (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
-              {opportunityColumns.map((column) => (
-                <div key={column.id} className="space-y-3">
-                  <Card>
-                    <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
-                      <CardTitle className="text-base">{column.name}</CardTitle>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDeleteColumn(column.id)}
-                        data-testid={`button-delete-column-${column.id}`}
-                        className="h-6 w-6"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </CardHeader>
-                  </Card>
-                  {opportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      No opportunities yet
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {opportunities
-                        .filter((opp) => opp.columnId === column.id)
-                        .map((opportunity) => (
-                          <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
-                            <CardHeader className="pb-3">
-                              <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
-                            </CardHeader>
-                            {opportunity.description && (
-                              <CardContent>
-                                <p className="text-sm text-muted-foreground">{opportunity.description}</p>
-                              </CardContent>
-                            )}
-                          </Card>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
+                {opportunityColumns.map((column) => (
+                  <div key={column.id} className="space-y-3">
+                    <Card>
+                      <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
+                        <CardTitle className="text-base">{column.name}</CardTitle>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteColumn(column.id)}
+                          data-testid={`button-delete-column-${column.id}`}
+                          className="h-6 w-6"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </CardHeader>
+                    </Card>
+                    <Droppable droppableId={column.id.toString()}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`space-y-3 min-h-[100px] rounded-md transition-colors ${
+                            snapshot.isDraggingOver ? "bg-accent/20" : ""
+                          }`}
+                        >
+                          {opportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground text-sm">
+                              No opportunities yet
+                            </div>
+                          ) : (
+                            opportunities
+                              .filter((opp) => opp.columnId === column.id)
+                              .map((opportunity, index) => (
+                                <Draggable
+                                  key={opportunity.id}
+                                  draggableId={opportunity.id.toString()}
+                                  index={index}
+                                >
+                                  {(provided, snapshot) => (
+                                    <Card
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      data-testid={`opportunity-card-${opportunity.id}`}
+                                      className={`cursor-grab active:cursor-grabbing ${
+                                        snapshot.isDragging ? "shadow-lg" : ""
+                                      }`}
+                                    >
+                                      <CardHeader className="pb-3">
+                                        <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
+                                      </CardHeader>
+                                      {opportunity.description && (
+                                        <CardContent>
+                                          <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                                        </CardContent>
+                                      )}
+                                    </Card>
+                                  )}
+                                </Draggable>
+                              ))
+                          )}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                ))}
               
               {/* Add Column Button */}
               <div className="space-y-3">
@@ -279,7 +344,8 @@ export function KanbanView() {
                   </CardHeader>
                 </Card>
               </div>
-            </div>
+              </div>
+            </DragDropContext>
           )}
 
           {activeView === "pipelines" && (
