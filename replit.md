@@ -30,10 +30,9 @@ All core features are implemented and tested:
 ## Recent Changes (November 3, 2025)
 ### Kanban Board - Separate Entity
 - **Independent kanban system** - separate from client queue files
-- **Header with actions** - "Kanban Board" title and "Add New" button
-- **Left sidebar navigation** - "Opportunities" and "Contacts" buttons
+- **Header with navigation** - "Kanban Board" title with "Opportunities" and "Pipelines" buttons, plus "Add New" button
 - **Opportunities view** - columns: New, In Progress, Closed
-- **Contacts view** - columns: Lead, Qualified, Converted
+- **Pipelines view** - columns: Lead, Qualified, Converted
 - Each view has its own kanban board with dedicated data
 - Positioned below the horizontal client queue scrollbar
 
@@ -169,7 +168,7 @@ All core features are implemented and tested:
 ### Application Structure
 The application has two main sections:
 1. **Client Queue** - Horizontal scrolling cards for daily client work management (priority-ordered: untouched first, oldest touched after)
-2. **Kanban Board** - Separate system with sidebar navigation for Opportunities and Contacts (independent from client queue)
+2. **Kanban Board** - Separate system with header navigation for Opportunities and Pipelines (independent from client queue)
 
 ### Timer Tracking
 - Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`
