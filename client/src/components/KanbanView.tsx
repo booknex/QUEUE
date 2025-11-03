@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export function KanbanView() {
-  const [activeTab, setActiveTab] = useState("opportunities");
+  const [activeView, setActiveView] = useState("opportunities");
 
   return (
     <div className="space-y-4" data-testid="kanban-view">
@@ -23,90 +22,104 @@ export function KanbanView() {
         </CardHeader>
       </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} data-testid="kanban-tabs">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="opportunities" data-testid="tab-opportunities">
+      <div className="flex gap-4">
+        {/* Sidebar */}
+        <div className="w-48 flex-shrink-0 space-y-2" data-testid="kanban-sidebar">
+          <Button
+            variant={activeView === "opportunities" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("opportunities")}
+            data-testid="button-sidebar-opportunities"
+          >
             Opportunities
-          </TabsTrigger>
-          <TabsTrigger value="pipelines" data-testid="tab-pipelines">
-            Pipelines
-          </TabsTrigger>
-        </TabsList>
+          </Button>
+          <Button
+            variant={activeView === "contacts" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("contacts")}
+            data-testid="button-sidebar-contacts"
+          >
+            Contacts
+          </Button>
+        </div>
 
-        <TabsContent value="opportunities" className="mt-4" data-testid="content-opportunities">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">New</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
+        {/* Content Area */}
+        <div className="flex-1">
+          {activeView === "opportunities" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-opportunities">
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">New</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">In Progress</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Closed</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">In Progress</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
+          {activeView === "contacts" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-contacts">
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Lead</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No contacts yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Qualified</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No contacts yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Converted</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No contacts yet
+                </div>
               </div>
             </div>
-
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Closed</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="pipelines" className="mt-4" data-testid="content-pipelines">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Lead</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Qualified</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Converted</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
