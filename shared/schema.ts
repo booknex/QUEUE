@@ -26,11 +26,20 @@ export const pipelines = pgTable("pipelines", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const contacts = pgTable("contacts", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  email: text("email"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const opportunities = pgTable("opportunities", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
   column: text("column").notNull().default("new"),
+  contactId: integer("contact_id").notNull().references(() => contacts.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -79,6 +88,18 @@ export type Pipeline = typeof pipelines.$inferSelect;
 export const updatePipelineSchema = z.object({
   name: z.string().min(1),
 });
+
+export const insertContactSchema = createInsertSchema(contacts).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+});
+
+export type InsertContact = z.infer<typeof insertContactSchema>;
+export type Contact = typeof contacts.$inferSelect;
 
 export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
   id: true,
