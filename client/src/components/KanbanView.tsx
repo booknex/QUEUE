@@ -140,10 +140,6 @@ export function KanbanView() {
         variant: "destructive",
       });
     },
-    onSettled: () => {
-      // Always refetch after error or success to ensure we're in sync
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
-    },
   });
 
   const handleAddColumn = () => {
