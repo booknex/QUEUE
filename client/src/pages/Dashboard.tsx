@@ -14,6 +14,7 @@ import type { ClientFile } from "@shared/schema";
 export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFile, setEditingFile] = useState<ClientFile | null>(null);
+  const [now, setNow] = useState(Date.now());
   const { toast } = useToast();
 
   const { data: files = [], isLoading } = useQuery<ClientFile[]>({
@@ -157,11 +158,18 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timerInterval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    const dataInterval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["/api/files"] });
     }, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(timerInterval);
+      clearInterval(dataInterval);
+    };
   }, []);
 
   if (isLoading) {
@@ -249,6 +257,7 @@ export default function Dashboard() {
                               onEdit={handleEdit}
                               onDelete={deleteMutation.mutate}
                               isDragging={snapshot.isDragging}
+                              now={now}
                             />
                           </div>
                         )}

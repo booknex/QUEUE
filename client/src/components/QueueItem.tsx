@@ -19,14 +19,15 @@ interface QueueItemProps {
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
   isDragging?: boolean;
+  now?: number;
 }
 
-function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null): {
+function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: number = Date.now()): {
   level: "low" | "medium" | "high" | "critical";
   color: string;
 } {
   const referenceTime = lastTouchedAt || createdAt;
-  const hoursSince = (Date.now() - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
+  const hoursSince = (now - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
 
   if (hoursSince < 4) {
     return { level: "low", color: "bg-green-500" };
@@ -71,9 +72,9 @@ function getStatusConfig(status: string): {
   }
 }
 
-export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging }: QueueItemProps) {
+export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
-  const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt);
+  const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
 

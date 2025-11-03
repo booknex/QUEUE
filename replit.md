@@ -13,8 +13,9 @@ All core features are implemented and tested:
 - ✅ Add, edit, and delete client files
 - ✅ Drag-and-drop priority reordering
 - ✅ Automatic timer tracking showing wait times
-- ✅ "Touch" functionality to reset timers when working on files
-- ✅ Visual urgency indicators (color-coded bars)
+- ✅ **Realtime timer updates** - ticks every second without page refresh
+- ✅ "Touch" functionality to reset timers and move cards to end
+- ✅ Visual urgency indicators (color-coded bars) that update automatically
 - ✅ Real-time dashboard statistics
 - ✅ Status management (waiting, in progress, completed)
 - ✅ Beautiful, responsive UI with excellent UX
@@ -23,9 +24,17 @@ All core features are implemented and tested:
 - ✅ PostgreSQL database with persistent storage
 - ✅ Work session history tracking
 - ✅ View session history per client file
+- ✅ Optimized concurrency handling with row-level locking
 
-## Recent Changes (November 2, 2025)
-### Horizontal Layout & Menu Consolidation
+## Recent Changes (November 3, 2025)
+### Realtime Timer Updates
+- **Timers now update every second** - no page refresh needed to see time tick up
+- Client-side interval updates display in realtime (e.g., "2 minutes" → "3 minutes")
+- Urgency color indicators also update automatically as time passes
+- Server still syncs every 30 seconds for data consistency
+- Optimized performance - only triggers re-render of timer display, not full data refetch
+
+### Horizontal Layout & Menu Consolidation (November 2, 2025)
 - Redesigned queue to display cards horizontally with scrolling
 - **Full-width layout** - removed max-width constraints to utilize all available horizontal space
 - Cards are now fixed width (320px) arranged side-by-side
@@ -34,6 +43,7 @@ All core features are implemented and tested:
 - Consolidated History, Edit, and Delete into single "Actions" dropdown menu
 - Touch button remains separate as primary action
 - **Touch now moves card to end** - clicking Touch resets timer AND moves card to the back of the queue
+- **Optimized row-level locking** - uses `LIMIT 1 FOR UPDATE` to prevent race conditions while maintaining high throughput
 - Cleaner, more compact card UI with better button organization
 - Optimized droppable container width for smooth drag experience
 
@@ -113,8 +123,10 @@ All core features are implemented and tested:
 ### Timer Tracking
 - Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`
 - Displayed in human-readable format (e.g., "2 hours", "3 days")
-- Updates automatically via 30-second polling
-- "Touch" button resets the timer to current time
+- **Updates in realtime every second** - no page refresh needed
+- Client-side timer ticks continuously for immediate feedback
+- Server sync every 30 seconds ensures data consistency
+- "Touch" button resets the timer to current time and moves card to end of queue
 
 ### Urgency Indicators
 Visual color-coded bars on the left of each queue item:
