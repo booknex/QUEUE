@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, clientFiles, workSessions } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, clientFiles, workSessions, pipelines } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql } from "drizzle-orm";
 
@@ -13,6 +13,12 @@ export interface IStorage {
   createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
   getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
+  
+  getAllPipelines(): Promise<Pipeline[]>;
+  getPipeline(id: number): Promise<Pipeline | undefined>;
+  createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
+  updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined>;
+  deletePipeline(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -95,6 +101,43 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(workSessions)
       .orderBy(desc(workSessions.startedAt));
+  }
+
+  async getAllPipelines(): Promise<Pipeline[]> {
+    return await db
+      .select()
+      .from(pipelines)
+      .orderBy(asc(pipelines.createdAt));
+  }
+
+  async getPipeline(id: number): Promise<Pipeline | undefined> {
+    const [pipeline] = await db.select().from(pipelines).where(eq(pipelines.id, id));
+    return pipeline || undefined;
+  }
+
+  async createPipeline(insertPipeline: InsertPipeline): Promise<Pipeline> {
+    const [pipeline] = await db
+      .insert(pipelines)
+      .values(insertPipeline)
+      .returning();
+    return pipeline;
+  }
+
+  async updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined> {
+    const [pipeline] = await db
+      .update(pipelines)
+      .set(updates)
+      .where(eq(pipelines.id, id))
+      .returning();
+    return pipeline || undefined;
+  }
+
+  async deletePipeline(id: number): Promise<boolean> {
+    const result = await db
+      .delete(pipelines)
+      .where(eq(pipelines.id, id))
+      .returning();
+    return result.length > 0;
   }
 }
 

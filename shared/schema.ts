@@ -20,6 +20,12 @@ export const workSessions = pgTable("work_sessions", {
   notes: text("notes"),
 });
 
+export const pipelines = pgTable("pipelines", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertClientFileSchema = createInsertSchema(clientFiles).omit({
   id: true,
   createdAt: true,
@@ -52,4 +58,16 @@ export type WorkSession = typeof workSessions.$inferSelect;
 
 export const touchFileSchema = z.object({
   notes: z.string().optional(),
+});
+
+export const insertPipelineSchema = createInsertSchema(pipelines).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPipeline = z.infer<typeof insertPipelineSchema>;
+export type Pipeline = typeof pipelines.$inferSelect;
+
+export const updatePipelineSchema = z.object({
+  name: z.string().min(1),
 });

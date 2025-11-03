@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -164,6 +164,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(sessions.map(serializeSession));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch work sessions" });
+    }
+  });
+
+  app.get("/api/pipelines", async (req, res) => {
+    try {
+      const pipelines = await storage.getAllPipelines();
+      res.json(pipelines);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pipelines" });
+    }
+  });
+
+  app.get("/api/pipelines/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid pipeline ID" });
+      }
+      const pipeline = await storage.getPipeline(id);
+      if (!pipeline) {
+        return res.status(404).json({ error: "Pipeline not found" });
+      }
+      res.json(pipeline);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch pipeline" });
+    }
+  });
+
+  app.post("/api/pipelines", async (req, res) => {
+    try {
+      const validated = insertPipelineSchema.parse(req.body);
+      const pipeline = await storage.createPipeline(validated);
+      res.status(201).json(pipeline);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create pipeline" });
+    }
+  });
+
+  app.patch("/api/pipelines/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid pipeline ID" });
+      }
+      const validated = updatePipelineSchema.parse(req.body);
+      const pipeline = await storage.updatePipeline(id, validated);
+      if (!pipeline) {
+        return res.status(404).json({ error: "Pipeline not found" });
+      }
+      res.json(pipeline);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update pipeline" });
+    }
+  });
+
+  app.delete("/api/pipelines/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid pipeline ID" });
+      }
+      const success = await storage.deletePipeline(id);
+      if (!success) {
+        return res.status(404).json({ error: "Pipeline not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete pipeline" });
     }
   });
 
