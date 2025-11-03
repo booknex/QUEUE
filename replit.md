@@ -17,12 +17,13 @@ The application follows a Linear + Material Design hybrid, emphasizing clean, in
 ### Technical Implementations
 The application has two main sections:
 1.  **Client Queue**: Horizontal scrolling cards for daily client work, priority-ordered (untouched first, then oldest touched). Automatic ordering by `lastTouchedAt` (untouched files first, then oldest touched ascending) has replaced manual drag-and-drop. "Touch" functionality resets timers and moves the card to the end of the queue.
-2.  **Kanban Board**: A separate system with header navigation for "Opportunities" and "Pipelines," independent from the client queue. It supports dynamic pipeline management, allowing users to create, edit, and delete pipelines via a modal, each with its dedicated kanban board (Lead, Qualified, Converted columns). The "Opportunities" view has columns: New, In Progress, Closed.
+2.  **Kanban Board**: A separate system with header navigation for "Opportunities" and "Pipelines," independent from the client queue. It supports dynamic pipeline management, allowing users to create, edit, and delete pipelines via a modal, each with its dedicated kanban board. Both the "Opportunities" view and individual pipeline views support fully dynamic column management - users can create and delete columns as needed. Default columns for Opportunities are: New, In Progress, Closed.
 
 **Key Features:**
 -   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
 -   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
+-   **Dynamic Column Management**: Users can create and delete kanban columns on both the Opportunities view and individual pipeline boards. Columns are stored in the `kanban_columns` table with position ordering. Deleting a column cascades to remove all opportunities in that column. New opportunities are automatically placed in the first column.
 -   **Opportunity Management**: Create and track opportunities through kanban workflow. When creating an opportunity, users must provide contact information (name required, phone and email optional). The system creates both the contact and opportunity together. AddOpportunityModal uses react-hook-form with zodResolver for form validation. All opportunity API endpoints serialize dates to ISO strings for type safety. **Opportunity cards display the contact name as the card title** instead of the opportunity title, with fallback to opportunity title if contact name is unavailable.
 -   **Contact Management**: All contacts created through opportunities are accessible via the Contacts view in the sidebar. Contacts are displayed in a list format showing name, phone, and email. Each opportunity is linked to a contact via foreign key.
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
@@ -34,7 +35,8 @@ The application has two main sections:
 -   **Data Models**:
     -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
     -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `createdAt`
-    -   **Opportunity**: `id`, `title`, `description` (nullable), `column` (new | in_progress | closed), `contactId` (foreign key), `createdAt`
+    -   **KanbanColumn**: `id`, `name`, `position`, `pipelineId` (nullable, null for Opportunities view), `createdAt`
+    -   **Opportunity**: `id`, `title`, `description` (nullable), `columnId` (foreign key to kanban_columns, cascade delete), `contactId` (foreign key to contacts, cascade delete), `createdAt`
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
 
 ## External Dependencies
