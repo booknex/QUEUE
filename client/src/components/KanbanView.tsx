@@ -13,7 +13,7 @@ import { Plus, ChevronDown, Settings } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import Contacts from "@/pages/Contacts";
-import type { Pipeline, OpportunityWithContact } from "@shared/schema";
+import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/schema";
 
 export function KanbanView() {
   const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban" | "contacts">("opportunities");
@@ -23,6 +23,15 @@ export function KanbanView() {
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
+  });
+
+  const { data: opportunityColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns", "null"],
+    queryFn: async () => {
+      const response = await fetch("/api/columns?pipelineId=null");
+      if (!response.ok) throw new Error("Failed to fetch columns");
+      return response.json();
+    },
   });
 
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
@@ -135,96 +144,38 @@ export function KanbanView() {
         {/* Content Area */}
         <div className="flex-1">
           {activeView === "opportunities" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-opportunities">
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">New</CardTitle>
-                  </CardHeader>
-                </Card>
-                {opportunities.filter((opp) => opp.column === "new").length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No opportunities yet
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {opportunities
-                      .filter((opp) => opp.column === "new")
-                      .map((opportunity) => (
-                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
-                          </CardHeader>
-                          {opportunity.description && (
-                            <CardContent>
-                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
-                            </CardContent>
-                          )}
-                        </Card>
-                      ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">In Progress</CardTitle>
-                  </CardHeader>
-                </Card>
-                {opportunities.filter((opp) => opp.column === "in_progress").length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No opportunities yet
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {opportunities
-                      .filter((opp) => opp.column === "in_progress")
-                      .map((opportunity) => (
-                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
-                          </CardHeader>
-                          {opportunity.description && (
-                            <CardContent>
-                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
-                            </CardContent>
-                          )}
-                        </Card>
-                      ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Closed</CardTitle>
-                  </CardHeader>
-                </Card>
-                {opportunities.filter((opp) => opp.column === "closed").length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No opportunities yet
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {opportunities
-                      .filter((opp) => opp.column === "closed")
-                      .map((opportunity) => (
-                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
-                          </CardHeader>
-                          {opportunity.description && (
-                            <CardContent>
-                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
-                            </CardContent>
-                          )}
-                        </Card>
-                      ))}
-                  </div>
-                )}
-              </div>
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
+              {opportunityColumns.map((column) => (
+                <div key={column.id} className="space-y-3">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">{column.name}</CardTitle>
+                    </CardHeader>
+                  </Card>
+                  {opportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No opportunities yet
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {opportunities
+                        .filter((opp) => opp.columnId === column.id)
+                        .map((opportunity) => (
+                          <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
+                            </CardHeader>
+                            {opportunity.description && (
+                              <CardContent>
+                                <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                              </CardContent>
+                            )}
+                          </Card>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
