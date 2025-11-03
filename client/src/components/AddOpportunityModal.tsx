@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { insertOpportunitySchema, type InsertOpportunity } from "@shared/schema";
+import { insertContactSchema } from "@shared/schema";
 import { z } from "zod";
 
 interface AddOpportunityModalProps {
@@ -29,8 +29,12 @@ interface AddOpportunityModalProps {
   onClose: () => void;
 }
 
-const formSchema = insertOpportunitySchema.extend({
-  column: z.string().default("new"),
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  contactName: z.string().min(1, "Contact name is required"),
+  contactPhone: z.string().optional(),
+  contactEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -43,21 +47,39 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
     defaultValues: {
       title: "",
       description: "",
-      column: "new",
+      contactName: "",
+      contactPhone: "",
+      contactEmail: "",
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: InsertOpportunity) => {
-      return await apiRequest("POST", "/api/opportunities", data);
+    mutationFn: async (data: FormData) => {
+      // First create the contact
+      const contactRes = await apiRequest("POST", "/api/contacts", {
+        name: data.contactName,
+        phone: data.contactPhone || null,
+        email: data.contactEmail || null,
+      });
+      const contact = await contactRes.json();
+
+      // Then create the opportunity with the contactId
+      const opportunityRes = await apiRequest("POST", "/api/opportunities", {
+        title: data.title,
+        description: data.description || null,
+        column: "new",
+        contactId: contact.id,
+      });
+      return await opportunityRes.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
       form.reset();
       onClose();
       toast({
         title: "Opportunity created",
-        description: "The opportunity has been added to the kanban board.",
+        description: "The opportunity and contact have been added.",
       });
     },
     onError: () => {
@@ -82,11 +104,11 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-add-opportunity">
+      <DialogContent className="sm:max-w-[550px]" data-testid="dialog-add-opportunity">
         <DialogHeader>
           <DialogTitle>Add New Opportunity</DialogTitle>
           <DialogDescription>
-            Create a new opportunity to track in your kanban board.
+            Create a new opportunity with contact information.
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +119,7 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title *</FormLabel>
+                  <FormLabel>Opportunity Title *</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -122,13 +144,76 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
                       value={field.value || ""}
                       placeholder="Enter opportunity description..."
                       data-testid="input-opportunity-description"
-                      rows={4}
+                      rows={3}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium mb-3">Contact Information</h4>
+              
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="contactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Name *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Enter contact name..."
+                          data-testid="input-contact-name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contactPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          placeholder="Enter phone number..."
+                          data-testid="input-contact-phone"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contactEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          type="email"
+                          placeholder="Enter email address..."
+                          data-testid="input-contact-email"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             <div className="flex justify-end gap-2">
               <Button
