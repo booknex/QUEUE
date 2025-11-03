@@ -10,6 +10,7 @@ export const clientFiles = pgTable("client_files", {
   status: text("status").notNull().default("waiting"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastTouchedAt: timestamp("last_touched_at"),
+  closedAt: timestamp("closed_at"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -32,6 +33,11 @@ export const updateClientFileSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["waiting", "in_progress", "completed"]).optional(),
   lastTouchedAt: z.date().optional(),
+  closedAt: z.date().optional(),
+});
+
+export const closeFileSchema = z.object({
+  closedAt: z.string().transform((str) => new Date(str)),
 });
 
 export type UpdateClientFile = z.infer<typeof updateClientFileSchema>;
