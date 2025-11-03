@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, Opportunity } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, Contact, Opportunity } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -238,6 +238,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete pipeline" });
+    }
+  });
+
+  function serializeContact(contact: Contact) {
+    return {
+      ...contact,
+      createdAt: contact.createdAt.toISOString(),
+    };
+  }
+
+  app.get("/api/contacts", async (req, res) => {
+    try {
+      const contacts = await storage.getAllContacts();
+      res.json(contacts.map(serializeContact));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch contacts" });
+    }
+  });
+
+  app.get("/api/contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid contact ID" });
+      }
+      const contact = await storage.getContact(id);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      res.json(serializeContact(contact));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch contact" });
+    }
+  });
+
+  app.post("/api/contacts", async (req, res) => {
+    try {
+      const validated = insertContactSchema.parse(req.body);
+      const contact = await storage.createContact(validated);
+      res.status(201).json(serializeContact(contact));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create contact" });
     }
   });
 
