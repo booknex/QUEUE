@@ -108,14 +108,14 @@ export function KanbanView() {
     mutationFn: async ({ opportunityId, columnId, position }: { opportunityId: number; columnId: number; position: number }) => {
       await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId, position });
     },
-    onSuccess: () => {
-      // Invalidate the cache to refetch the updated positions
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
-    },
-    onError: () => {
+    onError: (_error, _variables, context: any) => {
+      // Revert the cache on error
+      if (context?.previousOpportunities) {
+        queryClient.setQueryData(["/api/opportunities"], context.previousOpportunities);
+      }
       toast({
         title: "Error",
-        description: "Failed to move opportunity. Please refresh the page.",
+        description: "Failed to move opportunity.",
         variant: "destructive",
       });
     },
@@ -152,11 +152,76 @@ export function KanbanView() {
     const newColumnId = parseInt(destination.droppableId);
     const newPosition = destination.index;
 
-    updateOpportunityColumnMutation.mutate({
-      opportunityId,
-      columnId: newColumnId,
-      position: newPosition,
-    });
+    // Get current opportunities from cache
+    const currentOpportunities = queryClient.getQueryData<OpportunityWithContact[]>(["/api/opportunities"]);
+    
+    if (!currentOpportunities) {
+      return;
+    }
+
+    // Find the dragged item
+    const draggedItem = currentOpportunities.find((opp) => opp.id === opportunityId);
+    
+    if (!draggedItem) {
+      return;
+    }
+
+    const sourceColumnId = draggedItem.columnId;
+
+    // Update cache immediately (after drag animation completes)
+    const withoutDragged = currentOpportunities.filter((opp) => opp.id !== opportunityId);
+    
+    // Get all items in destination column, sorted by position
+    const destColumnItems = withoutDragged
+      .filter((opp) => opp.columnId === newColumnId)
+      .sort((a, b) => a.position - b.position);
+    
+    // Insert dragged item at new position
+    destColumnItems.splice(newPosition, 0, { ...draggedItem, columnId: newColumnId, position: newPosition });
+    
+    // Create new objects with updated positions for destination column (immutable)
+    const destColumnWithPositions = destColumnItems.map((item, idx) => ({
+      ...item,
+      position: idx
+    }));
+    
+    // If source and destination columns are different, reindex source column
+    let sourceColumnWithPositions: OpportunityWithContact[] = [];
+    if (sourceColumnId !== newColumnId) {
+      const sourceColumnItems = withoutDragged
+        .filter((opp) => opp.columnId === sourceColumnId)
+        .sort((a, b) => a.position - b.position);
+      
+      // Create new objects with updated positions (immutable)
+      sourceColumnWithPositions = sourceColumnItems.map((item, idx) => ({
+        ...item,
+        position: idx
+      }));
+    }
+    
+    // Get items from other columns (unchanged)
+    const otherItems = withoutDragged.filter(
+      (opp) => opp.columnId !== newColumnId && opp.columnId !== sourceColumnId
+    );
+    
+    // Update cache immediately
+    const updatedOpportunities = [...destColumnWithPositions, ...sourceColumnWithPositions, ...otherItems];
+    queryClient.setQueryData(["/api/opportunities"], updatedOpportunities);
+
+    // Send update to server in background
+    updateOpportunityColumnMutation.mutate(
+      {
+        opportunityId,
+        columnId: newColumnId,
+        position: newPosition,
+      },
+      {
+        onError: () => {
+          // Revert to original state on error
+          queryClient.setQueryData(["/api/opportunities"], currentOpportunities);
+        }
+      }
+    );
   };
 
   const selectedPipeline = selectedPipelineId
