@@ -23,14 +23,18 @@ The application has two main sections:
 -   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
 -   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
--   **Opportunity Management**: Create and track opportunities through kanban workflow. AddOpportunityModal uses react-hook-form with zodResolver for form validation. Title is required (min 1 character), description is optional. All opportunity API endpoints serialize dates to ISO strings for type safety.
+-   **Opportunity Management**: Create and track opportunities through kanban workflow. When creating an opportunity, users must provide contact information (name required, phone and email optional). The system creates both the contact and opportunity together. AddOpportunityModal uses react-hook-form with zodResolver for form validation. All opportunity API endpoints serialize dates to ISO strings for type safety.
+-   **Contact Management**: All contacts created through opportunities are accessible via the Contacts view in the sidebar. Contacts are displayed in a list format showing name, phone, and email. Each opportunity is linked to a contact via foreign key.
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
 
 ### System Design Choices
 -   **Frontend**: React 18 with TypeScript, TanStack Query v5 for data fetching, Wouter for routing, Shadcn UI with Tailwind CSS, date-fns.
 -   **Backend**: Express.js server, PostgreSQL database with Drizzle ORM, Zod validation, RESTful API design.
--   **Data Model (ClientFile)**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable).
+-   **Data Models**:
+    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
+    -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `createdAt`
+    -   **Opportunity**: `id`, `title`, `description` (nullable), `column` (new | in_progress | closed), `contactId` (foreign key), `createdAt`
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
 
 ## External Dependencies

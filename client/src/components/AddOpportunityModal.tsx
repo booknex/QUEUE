@@ -56,20 +56,34 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       // First create the contact
-      const contactRes = await apiRequest("POST", "/api/contacts", {
+      const contactData: any = {
         name: data.contactName,
-        phone: data.contactPhone || null,
-        email: data.contactEmail || null,
-      });
+      };
+      
+      // Only include phone and email if they have values
+      if (data.contactPhone && data.contactPhone.trim()) {
+        contactData.phone = data.contactPhone;
+      }
+      if (data.contactEmail && data.contactEmail.trim()) {
+        contactData.email = data.contactEmail;
+      }
+
+      const contactRes = await apiRequest("POST", "/api/contacts", contactData);
       const contact = await contactRes.json();
 
       // Then create the opportunity with the contactId
-      const opportunityRes = await apiRequest("POST", "/api/opportunities", {
+      const opportunityData: any = {
         title: data.title,
-        description: data.description || null,
         column: "new",
         contactId: contact.id,
-      });
+      };
+      
+      // Only include description if it has a value
+      if (data.description && data.description.trim()) {
+        opportunityData.description = data.description;
+      }
+
+      const opportunityRes = await apiRequest("POST", "/api/opportunities", opportunityData);
       return await opportunityRes.json();
     },
     onSuccess: () => {
