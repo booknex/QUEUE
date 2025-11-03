@@ -93,12 +93,23 @@ function isRecentlyTouched(lastTouchedAt: Date | null, now: number = Date.now())
   return hoursSince < 12;
 }
 
+function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): boolean {
+  if (!lastTouchedAt) return true;
+  const hoursSince = (now - new Date(lastTouchedAt).getTime()) / (1000 * 60 * 60);
+  return hoursSince >= 12;
+}
+
 export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
   const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
+  const attention = needsAttention(file.lastTouchedAt, now);
+  
+  const cardClassName = `relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
+    isDragging ? "opacity-50 scale-95" : attention ? "border-2 border-red-500" : recentlyTouched ? "grayscale" : ""
+  }`;
 
   return (
     <>
@@ -108,12 +119,10 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
       onOpenChange={setSessionHistoryOpen}
     />
     <Card
-      className={`relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
-        isDragging ? "opacity-50 scale-95" : ""
-      }`}
-      style={!isDragging && recentlyTouched ? { filter: 'grayscale(1)' } : undefined}
+      className={cardClassName}
       data-testid={`card-queue-item-${file.id}`}
       data-recently-touched={String(recentlyTouched)}
+      data-needs-attention={String(attention)}
     >
       <div
         className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-md ${urgency.color}`}

@@ -11,6 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ClientFile } from "@shared/schema";
 
+function parseClientFileDates(file: any): ClientFile {
+  return {
+    ...file,
+    createdAt: new Date(file.createdAt),
+    lastTouchedAt: file.lastTouchedAt ? new Date(file.lastTouchedAt) : null,
+  };
+}
+
 export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFile, setEditingFile] = useState<ClientFile | null>(null);
@@ -19,6 +27,7 @@ export default function Dashboard() {
 
   const { data: files = [], isLoading } = useQuery<ClientFile[]>({
     queryKey: ["/api/files"],
+    select: (data: any[]) => data.map(parseClientFileDates),
   });
 
   const createMutation = useMutation({

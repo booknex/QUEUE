@@ -28,12 +28,13 @@ All core features are implemented and tested:
 - ✅ Optimized concurrency handling with row-level locking
 
 ## Recent Changes (November 3, 2025)
-### 12-Hour Grey Out Feature
-- **Recently touched cards grey out automatically** - cards touched within 12 hours appear in grayscale (black & white)
-- Visual indicator helps identify which clients were recently worked on
-- Automatically un-greys after 12 hours pass (updates in realtime)
+### 12-Hour Visual Indicators
+- **Recently touched cards (< 12 hours):** Appear in grayscale (black & white) using Tailwind `grayscale` class
+- **Needs attention cards (≥ 12 hours or never touched):** Red border highlights using `border-red-500`
+- Visual indicators help identify client status at a glance
+- Automatically updates in realtime as thresholds are crossed (every second)
 - Works seamlessly with drag-and-drop and other features
-- Uses CSS grayscale filter for true grey appearance (not just transparency)
+- Backend serializes dates as ISO strings for reliable client-side parsing
 
 ### Realtime Timer Updates with Seconds Precision
 - **Timers now update every second** - watch the seconds tick up live

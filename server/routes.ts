@@ -3,12 +3,28 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClientFileSchema, updateClientFileSchema, touchFileSchema } from "@shared/schema";
 import { z } from "zod";
+import type { ClientFile, WorkSession } from "@shared/schema";
+
+function serializeFile(file: ClientFile) {
+  return {
+    ...file,
+    createdAt: file.createdAt.toISOString(),
+    lastTouchedAt: file.lastTouchedAt ? file.lastTouchedAt.toISOString() : null,
+  };
+}
+
+function serializeSession(session: WorkSession) {
+  return {
+    ...session,
+    startedAt: session.startedAt.toISOString(),
+  };
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/files", async (req, res) => {
     try {
       const files = await storage.getAllFiles();
-      res.json(files);
+      res.json(files.map(serializeFile));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch files" });
     }
@@ -24,7 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
-      res.json(file);
+      res.json(serializeFile(file));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch file" });
     }
@@ -34,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertClientFileSchema.parse(req.body);
       const file = await storage.createFile(validated);
-      res.status(201).json(file);
+      res.status(201).json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
@@ -54,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
-      res.json(file);
+      res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
@@ -93,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "File not found" });
       }
       
-      res.json(file);
+      res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
@@ -109,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid request data" });
       }
       const reorderedFiles = await storage.reorderFiles(files);
-      res.json(reorderedFiles);
+      res.json(reorderedFiles.map(serializeFile));
     } catch (error) {
       res.status(500).json({ error: "Failed to reorder files" });
     }
@@ -122,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid file ID" });
       }
       const sessions = await storage.getWorkSessionsByFile(id);
-      res.json(sessions);
+      res.json(sessions.map(serializeSession));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch work sessions" });
     }
@@ -131,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sessions", async (req, res) => {
     try {
       const sessions = await storage.getAllWorkSessions();
-      res.json(sessions);
+      res.json(sessions.map(serializeSession));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch work sessions" });
     }
