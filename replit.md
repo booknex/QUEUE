@@ -28,6 +28,13 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 3, 2025)
+### Clickable Completed Stat Card
+- **Completed stat card is now clickable** - click to view all closed files
+- **ClosedFilesModal component** - displays all files with closedAt dates
+- **Completed count** - now accurately reflects files with closedAt set (not just status)
+- **Clean UI** - shows client name, description, closed date, and status badge
+- Empty state when no closed files exist
+
 ### Close File Functionality
 - **Added closedAt field** to track when a file was closed
 - **CloseFileModal component** with date picker (defaults to today)
@@ -35,6 +42,7 @@ All core features are implemented and tested:
 - **API endpoint** POST /api/files/:id/close for setting close dates
 - **Date persistence** - reopening modal shows previously selected date
 - Fixed form reset bug to properly maintain selected dates
+- Fixed ordering bug - red cards (untouched) now properly appear first
 ### Automatic Ordering by Last Touched
 - **Removed drag-and-drop functionality** - manual reordering no longer needed
 - **Automatic ordering** - files sorted by lastTouchedAt automatically

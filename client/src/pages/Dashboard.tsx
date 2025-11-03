@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
+import { ClosedFilesModal } from "@/components/ClosedFilesModal";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [editingFile, setEditingFile] = useState<ClientFile | null>(null);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
+  const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const { toast } = useToast();
 
@@ -171,7 +173,7 @@ export default function Dashboard() {
     total: files.length,
     waiting: files.filter(f => f.status === "waiting").length,
     inProgress: files.filter(f => f.status === "in_progress").length,
-    completed: files.filter(f => f.status === "completed").length,
+    completed: files.filter(f => f.closedAt !== null).length,
   };
 
   useEffect(() => {
@@ -243,6 +245,7 @@ export default function Dashboard() {
             value={stats.completed}
             icon={CheckCircle2}
             testId="stat-completed"
+            onClick={() => setClosedFilesModalOpen(true)}
           />
         </div>
 
@@ -285,6 +288,12 @@ export default function Dashboard() {
         onSubmit={handleCloseSubmit}
         file={closingFile}
         isPending={closeMutation.isPending}
+      />
+
+      <ClosedFilesModal
+        open={closedFilesModalOpen}
+        onOpenChange={setClosedFilesModalOpen}
+        files={files}
       />
     </div>
   );

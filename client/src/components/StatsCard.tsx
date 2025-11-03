@@ -7,11 +7,18 @@ interface StatsCardProps {
   icon: LucideIcon;
   description?: string;
   testId: string;
+  onClick?: () => void;
 }
 
-export function StatsCard({ title, value, icon: Icon, description, testId }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, description, testId, onClick }: StatsCardProps) {
+  const isClickable = !!onClick;
+  
   return (
-    <Card className="p-6" data-testid={testId}>
+    <Card 
+      className={`p-6 ${isClickable ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
+      data-testid={testId}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
