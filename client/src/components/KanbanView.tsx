@@ -12,10 +12,11 @@ import {
 import { Plus, ChevronDown, Settings } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
+import Contacts from "@/pages/Contacts";
 import type { Pipeline, Opportunity } from "@shared/schema";
 
 export function KanbanView() {
-  const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban">("opportunities");
+  const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban" | "contacts">("opportunities");
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
@@ -122,9 +123,9 @@ export function KanbanView() {
             Opportunities
           </Button>
           <Button
-            variant={activeView === "pipelines" || activeView === "pipeline-kanban" ? "default" : "ghost"}
+            variant={activeView === "contacts" ? "default" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveView("pipelines")}
+            onClick={() => setActiveView("contacts")}
             data-testid="button-sidebar-contacts"
           >
             Contacts
@@ -320,6 +321,12 @@ export function KanbanView() {
                   No {selectedPipeline.name.toLowerCase()} converted yet
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeView === "contacts" && (
+            <div data-testid="content-contacts">
+              <Contacts />
             </div>
           )}
         </div>
