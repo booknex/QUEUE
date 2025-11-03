@@ -14,6 +14,7 @@ All core features are implemented and tested:
 - ✅ Drag-and-drop priority reordering
 - ✅ Automatic timer tracking showing wait times
 - ✅ **Realtime timer updates** - ticks every second without page refresh
+- ✅ **24-hour grey out** - recently touched cards appear dimmed automatically
 - ✅ "Touch" functionality to reset timers and move cards to end
 - ✅ Visual urgency indicators (color-coded bars) that update automatically
 - ✅ Real-time dashboard statistics
@@ -27,6 +28,12 @@ All core features are implemented and tested:
 - ✅ Optimized concurrency handling with row-level locking
 
 ## Recent Changes (November 3, 2025)
+### 24-Hour Grey Out Feature
+- **Recently touched cards grey out automatically** - cards touched within 24 hours appear dimmed (40% opacity)
+- Visual indicator helps identify which clients were recently worked on
+- Automatically un-greys after 24 hours pass (updates in realtime)
+- Works seamlessly with drag-and-drop and other features
+
 ### Realtime Timer Updates with Seconds Precision
 - **Timers now update every second** - watch the seconds tick up live
 - **Seconds precision display** - shows exact wait time (e.g., "30m 15s", "2h 45m 30s", "45s")
