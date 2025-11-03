@@ -105,10 +105,10 @@ export function KanbanView() {
   });
 
   const updateOpportunityColumnMutation = useMutation({
-    mutationFn: async ({ opportunityId, columnId }: { opportunityId: number; columnId: number }) => {
-      await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId });
+    mutationFn: async ({ opportunityId, columnId, position }: { opportunityId: number; columnId: number; position: number }) => {
+      await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId, position });
     },
-    onMutate: async ({ opportunityId, columnId }) => {
+    onMutate: async ({ opportunityId, columnId, position }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["/api/opportunities"] });
 
@@ -121,7 +121,7 @@ export function KanbanView() {
         (old) => {
           if (!old) return old;
           return old.map((opp) =>
-            opp.id === opportunityId ? { ...opp, columnId } : opp
+            opp.id === opportunityId ? { ...opp, columnId, position } : opp
           );
         }
       );
@@ -161,16 +161,22 @@ export function KanbanView() {
       return;
     }
 
-    if (destination.droppableId === source.droppableId) {
+    // If dropped in the same position, do nothing
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
       return;
     }
 
     const opportunityId = parseInt(draggableId);
     const newColumnId = parseInt(destination.droppableId);
+    const newPosition = destination.index;
 
     updateOpportunityColumnMutation.mutate({
       opportunityId,
       columnId: newColumnId,
+      position: newPosition,
     });
   };
 
@@ -314,6 +320,7 @@ export function KanbanView() {
                           ) : (
                             opportunities
                               .filter((opp) => opp.columnId === column.id)
+                              .sort((a, b) => a.position - b.position)
                               .map((opportunity, index) => (
                                 <Draggable
                                   key={opportunity.id}
@@ -326,8 +333,8 @@ export function KanbanView() {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       data-testid={`opportunity-card-${opportunity.id}`}
-                                      className={`cursor-grab active:cursor-grabbing ${
-                                        snapshot.isDragging ? "shadow-lg" : ""
+                                      className={`cursor-grab active:cursor-grabbing transition-all duration-200 ease-in-out ${
+                                        snapshot.isDragging ? "shadow-lg rotate-2" : ""
                                       }`}
                                     >
                                       <CardHeader className="pb-3">

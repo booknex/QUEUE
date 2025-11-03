@@ -48,6 +48,7 @@ export const opportunities = pgTable("opportunities", {
   description: text("description"),
   columnId: integer("column_id").notNull().references(() => kanbanColumns.id, { onDelete: "cascade" }),
   contactId: integer("contact_id").notNull().references(() => contacts.id, { onDelete: "cascade" }),
+  position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -143,6 +144,7 @@ export const updateOpportunitySchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   columnId: z.number().optional(),
+  position: z.number().optional(),
 });
 
 export type UpdateOpportunity = z.infer<typeof updateOpportunitySchema>;
