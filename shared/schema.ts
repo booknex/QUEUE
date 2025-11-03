@@ -8,7 +8,6 @@ export const clientFiles = pgTable("client_files", {
   clientName: text("client_name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("waiting"),
-  queuePosition: integer("queue_position").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastTouchedAt: timestamp("last_touched_at"),
 });
@@ -32,7 +31,6 @@ export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),
   description: z.string().optional(),
   status: z.enum(["waiting", "in_progress", "completed"]).optional(),
-  queuePosition: z.number().int().optional(),
   lastTouchedAt: z.date().optional(),
 });
 

@@ -118,19 +118,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files/reorder", async (req, res) => {
-    try {
-      const { files } = req.body;
-      if (!Array.isArray(files)) {
-        return res.status(400).json({ error: "Invalid request data" });
-      }
-      const reorderedFiles = await storage.reorderFiles(files);
-      res.json(reorderedFiles.map(serializeFile));
-    } catch (error) {
-      res.status(500).json({ error: "Failed to reorder files" });
-    }
-  });
-
   app.get("/api/files/:id/sessions", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
