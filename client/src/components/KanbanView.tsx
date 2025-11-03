@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -34,6 +34,9 @@ export function KanbanView() {
   const [addColumnOpen, setAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const { toast } = useToast();
+  
+  // Local state for drag-and-drop (prevents React Query cache flicker)
+  const [localOpportunities, setLocalOpportunities] = useState<OpportunityWithContact[]>([]);
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
@@ -51,6 +54,11 @@ export function KanbanView() {
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
     queryKey: ["/api/opportunities"],
   });
+  
+  // Sync React Query data to local state for drag operations
+  useEffect(() => {
+    setLocalOpportunities(opportunities);
+  }, [opportunities]);
 
   const createColumnMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -108,11 +116,11 @@ export function KanbanView() {
     mutationFn: async ({ opportunityId, columnId, position }: { opportunityId: number; columnId: number; position: number }) => {
       await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId, position });
     },
-    onError: (_error, _variables, context: any) => {
-      // Revert the cache on error
-      if (context?.previousOpportunities) {
-        queryClient.setQueryData(["/api/opportunities"], context.previousOpportunities);
-      }
+    onSuccess: () => {
+      // Silently update React Query cache to match local state
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+    },
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to move opportunity.",
@@ -152,13 +160,9 @@ export function KanbanView() {
     const newColumnId = parseInt(destination.droppableId);
     const newPosition = destination.index;
 
-    // Get current opportunities from cache
-    const currentOpportunities = queryClient.getQueryData<OpportunityWithContact[]>(["/api/opportunities"]);
+    // Work with local state instead of React Query cache
+    const currentOpportunities = [...localOpportunities];
     
-    if (!currentOpportunities) {
-      return;
-    }
-
     // Find the dragged item
     const draggedItem = currentOpportunities.find((opp) => opp.id === opportunityId);
     
@@ -168,7 +172,7 @@ export function KanbanView() {
 
     const sourceColumnId = draggedItem.columnId;
 
-    // Update cache immediately (after drag animation completes)
+    // Update local state immediately for instant visual feedback
     const withoutDragged = currentOpportunities.filter((opp) => opp.id !== opportunityId);
     
     // Get all items in destination column, sorted by position
@@ -204,9 +208,9 @@ export function KanbanView() {
       (opp) => opp.columnId !== newColumnId && opp.columnId !== sourceColumnId
     );
     
-    // Update cache immediately
+    // Update local state immediately (no React Query cache update = no flicker)
     const updatedOpportunities = [...destColumnWithPositions, ...sourceColumnWithPositions, ...otherItems];
-    queryClient.setQueryData(["/api/opportunities"], updatedOpportunities);
+    setLocalOpportunities(updatedOpportunities);
 
     // Send update to server in background
     updateOpportunityColumnMutation.mutate(
@@ -217,8 +221,8 @@ export function KanbanView() {
       },
       {
         onError: () => {
-          // Revert to original state on error
-          queryClient.setQueryData(["/api/opportunities"], currentOpportunities);
+          // Revert local state on error
+          setLocalOpportunities(currentOpportunities);
         }
       }
     );
@@ -357,12 +361,12 @@ export function KanbanView() {
                             snapshot.isDraggingOver ? "bg-accent/20" : ""
                           }`}
                         >
-                          {opportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
+                          {localOpportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
                             <div className="text-center py-8 text-muted-foreground text-sm">
                               No opportunities yet
                             </div>
                           ) : (
-                            opportunities
+                            localOpportunities
                               .filter((opp) => opp.columnId === column.id)
                               .sort((a, b) => a.position - b.position)
                               .map((opportunity, index) => (
