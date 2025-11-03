@@ -90,7 +90,7 @@ function getStatusConfig(status: string): {
 function isRecentlyTouched(lastTouchedAt: Date | null, now: number = Date.now()): boolean {
   if (!lastTouchedAt) return false;
   const hoursSince = (now - new Date(lastTouchedAt).getTime()) / (1000 * 60 * 60);
-  return hoursSince < 24;
+  return hoursSince < 12;
 }
 
 export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = Date.now() }: QueueItemProps) {
