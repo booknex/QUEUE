@@ -357,7 +357,7 @@ export function KanbanView() {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-3 min-h-[200px] p-3 rounded-md transition-colors ${
+                          className={`space-y-3 min-h-[700px] p-3 rounded-md transition-colors ${
                             snapshot.isDraggingOver ? "bg-accent/30" : "bg-muted/20"
                           }`}
                         >
