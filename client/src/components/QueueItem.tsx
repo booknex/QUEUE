@@ -111,7 +111,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
       className={`relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
         isDragging ? "opacity-50 scale-95" : ""
       }`}
-      style={!isDragging && recentlyTouched ? { opacity: 0.4 } : undefined}
+      style={!isDragging && recentlyTouched ? { filter: 'grayscale(1)' } : undefined}
       data-testid={`card-queue-item-${file.id}`}
       data-recently-touched={String(recentlyTouched)}
     >
