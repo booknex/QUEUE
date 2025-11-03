@@ -18,8 +18,7 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getAllFiles(): Promise<ClientFile[]> {
     return await db.select().from(clientFiles).orderBy(
-      sql`CASE WHEN ${clientFiles.lastTouchedAt} IS NULL THEN 0 ELSE 1 END`,
-      asc(clientFiles.lastTouchedAt)
+      sql`${clientFiles.lastTouchedAt} ASC NULLS FIRST`
     );
   }
 
