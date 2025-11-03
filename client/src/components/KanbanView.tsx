@@ -108,15 +108,41 @@ export function KanbanView() {
     mutationFn: async ({ opportunityId, columnId }: { opportunityId: number; columnId: number }) => {
       await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId });
     },
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["/api/opportunities"] });
+    onMutate: async ({ opportunityId, columnId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/opportunities"] });
+
+      // Snapshot the previous value
+      const previousOpportunities = queryClient.getQueryData<OpportunityWithContact[]>(["/api/opportunities"]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData<OpportunityWithContact[]>(
+        ["/api/opportunities"],
+        (old) => {
+          if (!old) return old;
+          return old.map((opp) =>
+            opp.id === opportunityId ? { ...opp, columnId } : opp
+          );
+        }
+      );
+
+      // Return context with the snapshot
+      return { previousOpportunities };
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      // Revert to the previous value on error
+      if (context?.previousOpportunities) {
+        queryClient.setQueryData(["/api/opportunities"], context.previousOpportunities);
+      }
       toast({
         title: "Error",
         description: "Failed to move opportunity.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we're in sync
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
     },
   });
 
