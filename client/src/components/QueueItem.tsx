@@ -29,11 +29,11 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
   const referenceTime = lastTouchedAt || createdAt;
   const hoursSince = (now - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
 
-  if (hoursSince < 4) {
+  if (hoursSince < 12) {
     return { level: "low", color: "bg-green-500" };
-  } else if (hoursSince < 8) {
-    return { level: "medium", color: "bg-yellow-500" };
   } else if (hoursSince < 24) {
+    return { level: "medium", color: "bg-yellow-500" };
+  } else if (hoursSince < 48) {
     return { level: "high", color: "bg-orange-500" };
   } else {
     return { level: "critical", color: "bg-red-500" };
@@ -111,6 +111,8 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
     isDragging ? "opacity-50 scale-95" : attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
+  const edgeBarColor = recentlyTouched ? "bg-green-500" : attention ? "bg-red-500" : urgency.color;
+
   return (
     <>
     <SessionHistory 
@@ -125,7 +127,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
       data-needs-attention={String(attention)}
     >
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-md ${urgency.color}`}
+        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-md ${edgeBarColor}`}
         data-testid={`indicator-urgency-${file.id}`}
       />
       
