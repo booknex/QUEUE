@@ -4,6 +4,7 @@ import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
+import { CloseFileModal } from "@/components/CloseFileModal";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
@@ -15,12 +16,15 @@ function parseClientFileDates(file: any): ClientFile {
     ...file,
     createdAt: new Date(file.createdAt),
     lastTouchedAt: file.lastTouchedAt ? new Date(file.lastTouchedAt) : null,
+    closedAt: file.closedAt ? new Date(file.closedAt) : null,
   };
 }
 
 export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFile, setEditingFile] = useState<ClientFile | null>(null);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
   const [now, setNow] = useState(Date.now());
   const { toast } = useToast();
 
@@ -112,6 +116,28 @@ export default function Dashboard() {
     },
   });
 
+  const closeMutation = useMutation({
+    mutationFn: async ({ id, closedAt }: { id: number; closedAt: string }) => {
+      return await apiRequest("POST", `/api/files/${id}/close`, { closedAt });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      setCloseModalOpen(false);
+      setClosingFile(null);
+      toast({
+        title: "File closed",
+        description: "The client file has been closed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to close file. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: any) => {
     if (editingFile) {
       updateMutation.mutate({ id: editingFile.id, data });
@@ -128,6 +154,17 @@ export default function Dashboard() {
   const handleAddNew = () => {
     setEditingFile(null);
     setModalOpen(true);
+  };
+
+  const handleClose = (file: ClientFile) => {
+    setClosingFile(file);
+    setCloseModalOpen(true);
+  };
+
+  const handleCloseSubmit = (data: { closedAt: string }) => {
+    if (closingFile) {
+      closeMutation.mutate({ id: closingFile.id, closedAt: data.closedAt });
+    }
   };
   
   const stats = {
@@ -225,6 +262,7 @@ export default function Dashboard() {
                   onTouch={touchMutation.mutate}
                   onEdit={handleEdit}
                   onDelete={deleteMutation.mutate}
+                  onClose={handleClose}
                   now={now}
                 />
               ))}
@@ -239,6 +277,14 @@ export default function Dashboard() {
         onSubmit={handleSubmit}
         editingFile={editingFile}
         isPending={createMutation.isPending || updateMutation.isPending}
+      />
+
+      <CloseFileModal
+        open={closeModalOpen}
+        onOpenChange={setCloseModalOpen}
+        onSubmit={handleCloseSubmit}
+        file={closingFile}
+        isPending={closeMutation.isPending}
       />
     </div>
   );

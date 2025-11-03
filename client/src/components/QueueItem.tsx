@@ -1,4 +1,4 @@
-import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ interface QueueItemProps {
   onTouch: (id: number) => void;
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
+  onClose: (file: ClientFile) => void;
   now?: number;
 }
 
@@ -98,7 +99,7 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
   return hoursSince >= 12;
 }
 
-export function QueueItem({ file, onTouch, onEdit, onDelete, now = Date.now() }: QueueItemProps) {
+export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
@@ -201,6 +202,13 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, now = Date.now() }:
                   >
                     <Edit2 className="w-4 h-4 mr-2" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => onClose(file)}
+                    data-testid={`menu-close-${file.id}`}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Close
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => onDelete(file.id)}
