@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, Contact, Opportunity } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, Contact, Opportunity, OpportunityWithContact } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -286,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  function serializeOpportunity(opportunity: Opportunity) {
+  function serializeOpportunity(opportunity: Opportunity | OpportunityWithContact) {
     return {
       ...opportunity,
       createdAt: opportunity.createdAt.toISOString(),

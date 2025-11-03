@@ -111,6 +111,10 @@ export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
 export type InsertOpportunity = z.infer<typeof insertOpportunitySchema>;
 export type Opportunity = typeof opportunities.$inferSelect;
 
+export type OpportunityWithContact = Opportunity & {
+  contactName: string;
+};
+
 export const updateOpportunitySchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),

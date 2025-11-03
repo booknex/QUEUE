@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, clientFiles, workSessions, pipelines, opportunities, contacts } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, clientFiles, workSessions, pipelines, opportunities, contacts } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql } from "drizzle-orm";
 
@@ -24,7 +24,7 @@ export interface IStorage {
   getContact(id: number): Promise<Contact | undefined>;
   createContact(contact: InsertContact): Promise<Contact>;
 
-  getAllOpportunities(): Promise<Opportunity[]>;
+  getAllOpportunities(): Promise<OpportunityWithContact[]>;
   getOpportunity(id: number): Promise<Opportunity | undefined>;
   createOpportunity(opportunity: InsertOpportunity): Promise<Opportunity>;
   updateOpportunity(id: number, updates: UpdateOpportunity): Promise<Opportunity | undefined>;
@@ -170,11 +170,30 @@ export class DatabaseStorage implements IStorage {
     return contact;
   }
 
-  async getAllOpportunities(): Promise<Opportunity[]> {
-    return await db
-      .select()
+  async getAllOpportunities(): Promise<OpportunityWithContact[]> {
+    const results = await db
+      .select({
+        id: opportunities.id,
+        title: opportunities.title,
+        description: opportunities.description,
+        column: opportunities.column,
+        contactId: opportunities.contactId,
+        createdAt: opportunities.createdAt,
+        contactName: contacts.name,
+      })
       .from(opportunities)
+      .leftJoin(contacts, eq(opportunities.contactId, contacts.id))
       .orderBy(asc(opportunities.createdAt));
+    
+    return results.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      column: row.column,
+      contactId: row.contactId,
+      createdAt: row.createdAt,
+      contactName: row.contactName || "Unknown Contact",
+    }));
   }
 
   async getOpportunity(id: number): Promise<Opportunity | undefined> {

@@ -13,7 +13,7 @@ import { Plus, ChevronDown, Settings } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import Contacts from "@/pages/Contacts";
-import type { Pipeline, Opportunity } from "@shared/schema";
+import type { Pipeline, OpportunityWithContact } from "@shared/schema";
 
 export function KanbanView() {
   const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban" | "contacts">("opportunities");
@@ -25,7 +25,7 @@ export function KanbanView() {
     queryKey: ["/api/pipelines"],
   });
 
-  const { data: opportunities = [] } = useQuery<Opportunity[]>({
+  const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
     queryKey: ["/api/opportunities"],
   });
 
@@ -153,7 +153,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
@@ -183,7 +183,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
@@ -213,7 +213,7 @@ export function KanbanView() {
                       .map((opportunity) => (
                         <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
                           <CardHeader className="pb-3">
-                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                            <CardTitle className="text-base">{opportunity.contactName}</CardTitle>
                           </CardHeader>
                           {opportunity.description && (
                             <CardContent>
