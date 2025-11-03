@@ -7,7 +7,7 @@ A beautiful, productivity-focused web application for managing daily client work
 Helps users organize their client files and track how long each file has been waiting for attention. Files are automatically ordered by when they were last touched, with untouched files appearing first. Perfect for professionals who need to manage multiple client engagements efficiently.
 
 ## Current State
-**Status**: Fully functional MVP with Database + Work Session History ✅
+**Status**: Fully functional MVP with Database + Work Session History + Close Functionality ✅
 
 All core features are implemented and tested:
 - ✅ Add, edit, and delete client files
@@ -19,6 +19,7 @@ All core features are implemented and tested:
 - ✅ Visual urgency indicators (color-coded edge bars) that update automatically
 - ✅ Real-time dashboard statistics
 - ✅ Status management (waiting, in progress, completed)
+- ✅ **Close files with specific date** - mark when work was completed
 - ✅ Beautiful, responsive UI with excellent UX
 - ✅ Empty states and loading states
 - ✅ Toast notifications for user actions
@@ -27,6 +28,13 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 3, 2025)
+### Close File Functionality
+- **Added closedAt field** to track when a file was closed
+- **CloseFileModal component** with date picker (defaults to today)
+- **Close action** in Actions dropdown menu
+- **API endpoint** POST /api/files/:id/close for setting close dates
+- **Date persistence** - reopening modal shows previously selected date
+- Fixed form reset bug to properly maintain selected dates
 ### Automatic Ordering by Last Touched
 - **Removed drag-and-drop functionality** - manual reordering no longer needed
 - **Automatic ordering** - files sorted by lastTouchedAt automatically
@@ -36,7 +44,7 @@ All core features are implemented and tested:
 - Removed queuePosition field from schema and database
 - Removed reorder API endpoint
 
-## Previous Changes (November 3, 2025)
+### Previous Changes (Earlier November 3, 2025)
 ### 12-Hour Visual Indicators
 - **Recently touched cards (< 12 hours):** Green border highlights using `border-green-500`
 - **Needs attention cards (≥ 12 hours or never touched):** Red border highlights using `border-red-500`
@@ -126,6 +134,7 @@ All core features are implemented and tested:
 - `status`: waiting | in_progress | completed
 - `createdAt`: Timestamp when file was created
 - `lastTouchedAt`: Timestamp when file was last worked on (nullable)
+- `closedAt`: Timestamp when file was closed (nullable)
 
 ### API Endpoints
 - `GET /api/files` - Get all client files (sorted by lastTouchedAt: nulls first, then oldest first)
@@ -134,6 +143,7 @@ All core features are implemented and tested:
 - `PATCH /api/files/:id` - Update file details
 - `DELETE /api/files/:id` - Delete file
 - `POST /api/files/:id/touch` - Reset timer by updating lastTouchedAt and log work session
+- `POST /api/files/:id/close` - Set closed date for a file
 - `GET /api/files/:id/sessions` - Get work session history for a file
 - `GET /api/sessions` - Get all work sessions
 
@@ -192,6 +202,8 @@ Comprehensive end-to-end testing completed covering:
 - ✅ Edit existing clients with pre-populated data
 - ✅ Delete clients with confirmation
 - ✅ Touch functionality to reset timers
+- ✅ Close files with specific dates
+- ✅ Date persistence in close modal
 - ✅ Status changes and stat updates
 - ✅ Modal interactions
 - ✅ Empty state display
