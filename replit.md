@@ -24,6 +24,7 @@ The application has two main sections:
 -   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
 -   **Dynamic Column Management**: Users can create and delete kanban columns on both the Opportunities view and individual pipeline boards. Columns are stored in the `kanban_columns` table with position ordering. Deleting a column cascades to remove all opportunities in that column. New opportunities are automatically placed in the first column.
+-   **Drag-and-Drop Opportunities**: Opportunity cards can be dragged between kanban columns using @hello-pangea/dnd library. When dropped, the opportunity's columnId is updated via PATCH /api/opportunities/:id endpoint. The UI automatically refetches and updates to show cards in their new columns. Visual feedback includes cursor changes (grab/grabbing), shadow effects while dragging, and column highlighting on hover.
 -   **Opportunity Management**: Create and track opportunities through kanban workflow. When creating an opportunity, users must provide contact information (name required, phone and email optional). The system creates both the contact and opportunity together. AddOpportunityModal uses react-hook-form with zodResolver for form validation. All opportunity API endpoints serialize dates to ISO strings for type safety. **Opportunity cards display the contact name as the card title** instead of the opportunity title, with fallback to opportunity title if contact name is unavailable.
 -   **Contact Management**: All contacts created through opportunities are accessible via the Contacts view in the sidebar. Contacts are displayed in a list format showing name, phone, and email. Each opportunity is linked to a contact via foreign key.
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
@@ -42,7 +43,8 @@ The application has two main sections:
 ## External Dependencies
 -   **PostgreSQL**: Primary database for persistent storage of client files, pipelines, and work sessions.
 -   **Drizzle ORM**: Used for interacting with the PostgreSQL database.
--   **TanStack Query v5**: For client-side data fetching, caching, and synchronization.
+-   **TanStack Query v5**: For client-side data fetching, caching, and synchronization with `staleTime: Infinity` configuration.
+-   **@hello-pangea/dnd**: Drag-and-drop library (fork of react-beautiful-dnd) for opportunity card reordering between kanban columns.
 -   **Shadcn UI**: UI component library.
 -   **Tailwind CSS**: For styling.
 -   **date-fns**: For date and time formatting.

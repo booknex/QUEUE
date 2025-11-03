@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -51,15 +51,6 @@ export function KanbanView() {
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
     queryKey: ["/api/opportunities"],
   });
-
-  useEffect(() => {
-    console.log('[KanbanView] Opportunities data updated:', opportunities);
-    console.log('[KanbanView] Columns:', opportunityColumns);
-    opportunityColumns.forEach(column => {
-      const oppsInColumn = opportunities.filter(opp => opp.columnId === column.id);
-      console.log(`[KanbanView] Column "${column.name}" (id=${column.id}) has ${oppsInColumn.length} opportunities:`, oppsInColumn.map(o => ({ id: o.id, title: o.title, columnId: o.columnId })));
-    });
-  }, [opportunities, opportunityColumns]);
 
   const createColumnMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -115,19 +106,12 @@ export function KanbanView() {
 
   const updateOpportunityColumnMutation = useMutation({
     mutationFn: async ({ opportunityId, columnId }: { opportunityId: number; columnId: number }) => {
-      const response = await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId });
-      const updatedOpportunity = await response.json();
-      console.log('[Drag] Updated opportunity:', updatedOpportunity);
-      return updatedOpportunity;
+      await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId });
     },
-    onSuccess: async (data) => {
-      console.log('[Drag] Mutation success, invalidating and refetching...');
+    onSuccess: async () => {
       await queryClient.refetchQueries({ queryKey: ["/api/opportunities"] });
-      const currentData = queryClient.getQueryData(["/api/opportunities"]);
-      console.log('[Drag] Current opportunities data after refetch:', currentData);
     },
-    onError: (error) => {
-      console.error('[Drag] Mutation error:', error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to move opportunity.",
