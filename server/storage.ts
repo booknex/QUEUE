@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, clientFiles, workSessions, pipelines } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type InsertOpportunity, type UpdateOpportunity, clientFiles, workSessions, pipelines, opportunities } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql } from "drizzle-orm";
 
@@ -19,6 +19,12 @@ export interface IStorage {
   createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
   updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined>;
   deletePipeline(id: number): Promise<boolean>;
+
+  getAllOpportunities(): Promise<Opportunity[]>;
+  getOpportunity(id: number): Promise<Opportunity | undefined>;
+  createOpportunity(opportunity: InsertOpportunity): Promise<Opportunity>;
+  updateOpportunity(id: number, updates: UpdateOpportunity): Promise<Opportunity | undefined>;
+  deleteOpportunity(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -136,6 +142,43 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(pipelines)
       .where(eq(pipelines.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getAllOpportunities(): Promise<Opportunity[]> {
+    return await db
+      .select()
+      .from(opportunities)
+      .orderBy(asc(opportunities.createdAt));
+  }
+
+  async getOpportunity(id: number): Promise<Opportunity | undefined> {
+    const [opportunity] = await db.select().from(opportunities).where(eq(opportunities.id, id));
+    return opportunity || undefined;
+  }
+
+  async createOpportunity(insertOpportunity: InsertOpportunity): Promise<Opportunity> {
+    const [opportunity] = await db
+      .insert(opportunities)
+      .values(insertOpportunity)
+      .returning();
+    return opportunity;
+  }
+
+  async updateOpportunity(id: number, updates: UpdateOpportunity): Promise<Opportunity | undefined> {
+    const [opportunity] = await db
+      .update(opportunities)
+      .set(updates)
+      .where(eq(opportunities.id, id))
+      .returning();
+    return opportunity || undefined;
+  }
+
+  async deleteOpportunity(id: number): Promise<boolean> {
+    const result = await db
+      .delete(opportunities)
+      .where(eq(opportunities.id, id))
       .returning();
     return result.length > 0;
   }

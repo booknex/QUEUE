@@ -26,6 +26,14 @@ export const pipelines = pgTable("pipelines", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const opportunities = pgTable("opportunities", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  column: text("column").notNull().default("new"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertClientFileSchema = createInsertSchema(clientFiles).omit({
   id: true,
   createdAt: true,
@@ -71,3 +79,19 @@ export type Pipeline = typeof pipelines.$inferSelect;
 export const updatePipelineSchema = z.object({
   name: z.string().min(1),
 });
+
+export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertOpportunity = z.infer<typeof insertOpportunitySchema>;
+export type Opportunity = typeof opportunities.$inferSelect;
+
+export const updateOpportunitySchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  column: z.enum(["new", "in_progress", "closed"]).optional(),
+});
+
+export type UpdateOpportunity = z.infer<typeof updateOpportunitySchema>;

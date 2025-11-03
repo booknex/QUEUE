@@ -11,15 +11,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, ChevronDown, Settings } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
-import type { Pipeline } from "@shared/schema";
+import { AddOpportunityModal } from "./AddOpportunityModal";
+import type { Pipeline, Opportunity } from "@shared/schema";
 
 export function KanbanView() {
   const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban">("opportunities");
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
+  const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
+  });
+
+  const { data: opportunities = [] } = useQuery<Opportunity[]>({
+    queryKey: ["/api/opportunities"],
   });
 
   const selectedPipeline = selectedPipelineId
@@ -90,9 +96,14 @@ export function KanbanView() {
               >
                 Pipelines
               </Button>
-              <Button size="sm" variant="outline" data-testid="button-kanban-add">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setAddOpportunityOpen(true)}
+                data-testid="button-kanban-add"
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Add New
+                Add Opportunity
               </Button>
             </div>
           </div>
@@ -130,9 +141,28 @@ export function KanbanView() {
                     <CardTitle className="text-base">New</CardTitle>
                   </CardHeader>
                 </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No opportunities yet
-                </div>
+                {opportunities.filter((opp) => opp.column === "new").length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No opportunities yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {opportunities
+                      .filter((opp) => opp.column === "new")
+                      .map((opportunity) => (
+                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                          </CardHeader>
+                          {opportunity.description && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -141,9 +171,28 @@ export function KanbanView() {
                     <CardTitle className="text-base">In Progress</CardTitle>
                   </CardHeader>
                 </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No opportunities yet
-                </div>
+                {opportunities.filter((opp) => opp.column === "in_progress").length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No opportunities yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {opportunities
+                      .filter((opp) => opp.column === "in_progress")
+                      .map((opportunity) => (
+                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                          </CardHeader>
+                          {opportunity.description && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -152,9 +201,28 @@ export function KanbanView() {
                     <CardTitle className="text-base">Closed</CardTitle>
                   </CardHeader>
                 </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No opportunities yet
-                </div>
+                {opportunities.filter((opp) => opp.column === "closed").length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No opportunities yet
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {opportunities
+                      .filter((opp) => opp.column === "closed")
+                      .map((opportunity) => (
+                        <Card key={opportunity.id} data-testid={`opportunity-card-${opportunity.id}`}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">{opportunity.title}</CardTitle>
+                          </CardHeader>
+                          {opportunity.description && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -258,6 +326,7 @@ export function KanbanView() {
       </div>
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
+      <AddOpportunityModal open={addOpportunityOpen} onClose={() => setAddOpportunityOpen(false)} />
     </div>
   );
 }

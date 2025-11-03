@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, Opportunity } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -238,6 +238,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete pipeline" });
+    }
+  });
+
+  function serializeOpportunity(opportunity: Opportunity) {
+    return {
+      ...opportunity,
+      createdAt: opportunity.createdAt.toISOString(),
+    };
+  }
+
+  app.get("/api/opportunities", async (req, res) => {
+    try {
+      const opportunities = await storage.getAllOpportunities();
+      res.json(opportunities.map(serializeOpportunity));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch opportunities" });
+    }
+  });
+
+  app.get("/api/opportunities/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid opportunity ID" });
+      }
+      const opportunity = await storage.getOpportunity(id);
+      if (!opportunity) {
+        return res.status(404).json({ error: "Opportunity not found" });
+      }
+      res.json(serializeOpportunity(opportunity));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch opportunity" });
+    }
+  });
+
+  app.post("/api/opportunities", async (req, res) => {
+    try {
+      const validated = insertOpportunitySchema.parse(req.body);
+      const opportunity = await storage.createOpportunity(validated);
+      res.status(201).json(serializeOpportunity(opportunity));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create opportunity" });
+    }
+  });
+
+  app.patch("/api/opportunities/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid opportunity ID" });
+      }
+      const validated = updateOpportunitySchema.parse(req.body);
+      const opportunity = await storage.updateOpportunity(id, validated);
+      if (!opportunity) {
+        return res.status(404).json({ error: "Opportunity not found" });
+      }
+      res.json(serializeOpportunity(opportunity));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update opportunity" });
+    }
+  });
+
+  app.delete("/api/opportunities/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid opportunity ID" });
+      }
+      const success = await storage.deleteOpportunity(id);
+      if (!success) {
+        return res.status(404).json({ error: "Opportunity not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete opportunity" });
     }
   });
 
