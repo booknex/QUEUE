@@ -28,6 +28,17 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 3, 2025)
+### Kanban Board View
+- **Kanban board below horizontal queue** - traditional column layout organizing by status
+- **Three columns**: Waiting, In Progress, Completed with count badges
+- **Vertical scrolling** per column (max height 600px)
+- **Full card functionality** - Touch button, Actions menu (Edit, Close, Delete)
+- **Same visual indicators** - green borders (<12h), red borders (≥12h/untouched)
+- **Real-time timers** with seconds precision in each card
+- **Auto-status update** - closing a file automatically sets status to "completed"
+- **Consistent counts** - Completed column and stat card always match
+- Provides alternative view to complement horizontal queue
+
 ### Clickable Completed Stat Card
 - **Completed stat card is now clickable** - click to view all closed files
 - **ClosedFilesModal component** - displays all files with closedAt dates
@@ -156,6 +167,13 @@ All core features are implemented and tested:
 - `GET /api/sessions` - Get all work sessions
 
 ## Key Features Explained
+
+### Dual View System
+The application provides two complementary views:
+1. **Horizontal Queue** - Priority-ordered scrolling cards (untouched first, oldest touched after)
+2. **Kanban Board** - Status-based columns (Waiting, In Progress, Completed)
+
+Both views show the same clients with identical functionality and real-time updates.
 
 ### Timer Tracking
 - Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`

@@ -128,7 +128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validated = closeFileSchema.parse(req.body);
       
-      const file = await storage.updateFile(id, { closedAt: validated.closedAt });
+      const file = await storage.updateFile(id, { 
+        closedAt: validated.closedAt,
+        status: "completed"
+      });
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }

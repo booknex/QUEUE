@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QueueItem } from "@/components/QueueItem";
+import { KanbanBoard } from "@/components/KanbanBoard";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
@@ -122,8 +123,8 @@ export default function Dashboard() {
     mutationFn: async ({ id, closedAt }: { id: number; closedAt: string }) => {
       return await apiRequest("POST", `/api/files/${id}/close`, { closedAt });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/files"] });
       setCloseModalOpen(false);
       setClosingFile(null);
       toast({
@@ -252,25 +253,41 @@ export default function Dashboard() {
         {files.length === 0 ? (
           <EmptyState onAddClient={handleAddNew} />
         ) : (
-          <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6">
-            <div
-              className="flex gap-4 min-w-max"
-              data-testid="queue-list"
-              style={{ width: `${files.length * 336}px` }}
-            >
-              {files.map((file) => (
-                <QueueItem
-                  key={file.id}
-                  file={file}
-                  onTouch={touchMutation.mutate}
-                  onEdit={handleEdit}
-                  onDelete={deleteMutation.mutate}
-                  onClose={handleClose}
-                  now={now}
-                />
-              ))}
+          <>
+            <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6 mb-8">
+              <div
+                className="flex gap-4 min-w-max"
+                data-testid="queue-list"
+                style={{ width: `${files.length * 336}px` }}
+              >
+                {files.map((file) => (
+                  <QueueItem
+                    key={file.id}
+                    file={file}
+                    onTouch={touchMutation.mutate}
+                    onEdit={handleEdit}
+                    onDelete={deleteMutation.mutate}
+                    onClose={handleClose}
+                    now={now}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4" data-testid="text-kanban-title">
+                Kanban Board
+              </h2>
+              <KanbanBoard
+                files={files}
+                onTouch={touchMutation.mutate}
+                onEdit={handleEdit}
+                onDelete={deleteMutation.mutate}
+                onClose={handleClose}
+                now={now}
+              />
+            </div>
+          </>
         )}
       </main>
 
