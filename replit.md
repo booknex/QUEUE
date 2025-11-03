@@ -4,19 +4,19 @@
 A beautiful, productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. Built with React, TypeScript, Express.js, and in-memory storage.
 
 ## Purpose
-Helps users organize their client files, prioritize work through drag-and-drop, and track how long each file has been waiting for attention. Perfect for professionals who need to manage multiple client engagements efficiently.
+Helps users organize their client files and track how long each file has been waiting for attention. Files are automatically ordered by when they were last touched, with untouched files appearing first. Perfect for professionals who need to manage multiple client engagements efficiently.
 
 ## Current State
 **Status**: Fully functional MVP with Database + Work Session History ✅
 
 All core features are implemented and tested:
 - ✅ Add, edit, and delete client files
-- ✅ Drag-and-drop priority reordering
+- ✅ **Automatic ordering by last touched** - untouched files first, then oldest touched first
 - ✅ Automatic timer tracking showing wait times
 - ✅ **Realtime timer updates** - ticks every second without page refresh
-- ✅ **12-hour green indicator** - recently touched cards show green border
-- ✅ "Touch" functionality to reset timers and move cards to end
-- ✅ Visual urgency indicators (color-coded bars) that update automatically
+- ✅ **12-hour visual indicators** - green borders for recently touched (<12h), red borders for needs attention (≥12h)
+- ✅ "Touch" functionality to reset timers
+- ✅ Visual urgency indicators (color-coded edge bars) that update automatically
 - ✅ Real-time dashboard statistics
 - ✅ Status management (waiting, in progress, completed)
 - ✅ Beautiful, responsive UI with excellent UX
@@ -25,9 +25,18 @@ All core features are implemented and tested:
 - ✅ PostgreSQL database with persistent storage
 - ✅ Work session history tracking
 - ✅ View session history per client file
-- ✅ Optimized concurrency handling with row-level locking
 
 ## Recent Changes (November 3, 2025)
+### Automatic Ordering by Last Touched
+- **Removed drag-and-drop functionality** - manual reordering no longer needed
+- **Automatic ordering** - files sorted by lastTouchedAt automatically
+- **Untouched files first** - clients that have never been touched appear at the front
+- **Then oldest touched** - touched clients ordered by lastTouchedAt ascending
+- **Simplified queue management** - no manual positioning required
+- Removed queuePosition field from schema and database
+- Removed reorder API endpoint
+
+## Previous Changes (November 3, 2025)
 ### 12-Hour Visual Indicators
 - **Recently touched cards (< 12 hours):** Green border highlights using `border-green-500`
 - **Needs attention cards (≥ 12 hours or never touched):** Red border highlights using `border-red-500`
@@ -74,12 +83,11 @@ All core features are implemented and tested:
 - TanStack Query v5 for data fetching and caching
 - Wouter for routing
 - Shadcn UI components with Tailwind CSS
-- @hello-pangea/dnd for drag-and-drop
 - date-fns for time formatting
 
 **Backend:**
 - Express.js server
-- In-memory storage (MemStorage)
+- PostgreSQL database with Drizzle ORM
 - Zod validation
 - RESTful API design
 
@@ -102,7 +110,8 @@ All core features are implemented and tested:
 │   │   └── index.css                  # Global styles
 ├── server/
 │   ├── routes.ts                      # API endpoint definitions
-│   ├── storage.ts                     # In-memory storage implementation
+│   ├── storage.ts                     # Database storage implementation
+│   ├── db.ts                          # Drizzle database connection
 │   └── index.ts                       # Express server setup
 ├── shared/
 │   └── schema.ts                      # TypeScript types and Zod schemas
@@ -111,22 +120,22 @@ All core features are implemented and tested:
 
 ### Data Model
 **ClientFile:**
-- `id`: Unique identifier (UUID)
+- `id`: Unique identifier (serial integer)
 - `clientName`: Name of the client (required)
 - `description`: Work description (optional)
 - `status`: waiting | in_progress | completed
-- `queuePosition`: Integer for drag-and-drop ordering
 - `createdAt`: Timestamp when file was created
 - `lastTouchedAt`: Timestamp when file was last worked on (nullable)
 
 ### API Endpoints
-- `GET /api/files` - Get all client files (sorted by queuePosition)
+- `GET /api/files` - Get all client files (sorted by lastTouchedAt: nulls first, then oldest first)
 - `POST /api/files` - Create new client file
 - `GET /api/files/:id` - Get specific file
 - `PATCH /api/files/:id` - Update file details
 - `DELETE /api/files/:id` - Delete file
-- `POST /api/files/:id/touch` - Reset timer by updating lastTouchedAt
-- `POST /api/files/reorder` - Update queue positions after drag-and-drop
+- `POST /api/files/:id/touch` - Reset timer by updating lastTouchedAt and log work session
+- `GET /api/files/:id/sessions` - Get work session history for a file
+- `GET /api/sessions` - Get all work sessions
 
 ## Key Features Explained
 
@@ -145,12 +154,12 @@ Visual color-coded bars on the left of each queue item:
 - 🟠 Orange (High): 8-24 hours waiting
 - 🔴 Red (Critical): > 24 hours waiting
 
-### Drag-and-Drop Reordering
-- Powered by @hello-pangea/dnd
-- Grab any queue item by the grip icon
-- Drag to new position
-- Automatically saves new order to backend
-- Optimistic UI updates for smooth UX
+### Automatic Ordering
+- Files automatically ordered by lastTouchedAt
+- Untouched files (lastTouchedAt = null) appear first
+- Touched files ordered by lastTouchedAt ascending (oldest first)
+- Most urgent clients naturally rise to the front
+- No manual reordering needed
 
 ### Dashboard Statistics
 Real-time counters showing:
@@ -170,12 +179,12 @@ The application follows a **Linear + Material Design hybrid** approach:
 
 ## User Workflow
 1. User adds new client via "Add Client" button
-2. Client appears in queue with automatic timer
-3. User can drag items to reorder by priority
-4. When starting work, user clicks "Touch" to reset timer
+2. Client appears at front of queue (untouched files show first)
+3. When starting work, user clicks "Touch" to reset timer
+4. Touched client automatically moves to appropriate position in queue
 5. User updates status as work progresses
-6. User can edit client details or delete when done
-7. Dashboard stats update in real-time
+6. User can view work session history, edit details, or delete when done
+7. Dashboard stats and timers update in real-time
 
 ## Testing
 Comprehensive end-to-end testing completed covering:
