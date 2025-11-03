@@ -23,6 +23,7 @@ The application has two main sections:
 -   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
 -   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
+-   **Opportunity Management**: Create and track opportunities through kanban workflow. AddOpportunityModal uses react-hook-form with zodResolver for form validation. Title is required (min 1 character), description is optional. All opportunity API endpoints serialize dates to ISO strings for type safety.
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
 

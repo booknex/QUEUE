@@ -83,6 +83,8 @@ export const updatePipelineSchema = z.object({
 export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
   id: true,
   createdAt: true,
+}).extend({
+  title: z.string().min(1, "Title is required"),
 });
 
 export type InsertOpportunity = z.infer<typeof insertOpportunitySchema>;
