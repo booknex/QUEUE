@@ -38,80 +38,103 @@ export function KanbanView() {
         </CardHeader>
       </Card>
 
-      <div>
-        {activeView === "opportunities" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-opportunities">
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">New</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
-              </div>
-            </div>
+      <div className="flex gap-4">
+        {/* Sidebar */}
+        <div className="w-48 flex-shrink-0 space-y-2" data-testid="kanban-sidebar">
+          <Button
+            variant={activeView === "opportunities" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("opportunities")}
+            data-testid="button-sidebar-opportunities"
+          >
+            Opportunities
+          </Button>
+          <Button
+            variant={activeView === "pipelines" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("pipelines")}
+            data-testid="button-sidebar-pipelines"
+          >
+            Pipelines
+          </Button>
+        </div>
 
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">In Progress</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
+        {/* Content Area */}
+        <div className="flex-1">
+          {activeView === "opportunities" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-opportunities">
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">New</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Closed</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No opportunities yet
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">In Progress</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {activeView === "pipelines" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-pipelines">
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Lead</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Closed</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No opportunities yet
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Qualified</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
+          {activeView === "pipelines" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="content-pipelines">
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Lead</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No pipelines yet
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Converted</CardTitle>
-                </CardHeader>
-              </Card>
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No pipelines yet
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Qualified</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No pipelines yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Converted</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No pipelines yet
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
