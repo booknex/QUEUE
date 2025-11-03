@@ -40,40 +40,38 @@ export function KanbanView() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
               <CardTitle>Kanban Board</CardTitle>
-              {activeView === "pipeline-kanban" && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-48"
-                      data-testid="button-pipeline-dropdown"
-                    >
-                      {dropdownButtonText}
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
-                    {pipelines.map((pipeline) => (
-                      <DropdownMenuItem
-                        key={pipeline.id}
-                        onClick={() => handlePipelineSelect(pipeline.id)}
-                        data-testid={`menu-item-pipeline-${pipeline.id}`}
-                      >
-                        {pipeline.name}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-48"
+                    data-testid="button-pipeline-dropdown"
+                  >
+                    {dropdownButtonText}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
+                  {pipelines.map((pipeline) => (
                     <DropdownMenuItem
-                      onClick={() => setPipelineManagerOpen(true)}
-                      data-testid="menu-item-manage-pipelines"
+                      key={pipeline.id}
+                      onClick={() => handlePipelineSelect(pipeline.id)}
+                      data-testid={`menu-item-pipeline-${pipeline.id}`}
                     >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Manage Pipelines
+                      {pipeline.name}
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setPipelineManagerOpen(true)}
+                    data-testid="menu-item-manage-pipelines"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Manage Pipelines
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="flex items-center gap-2">
               <Button
