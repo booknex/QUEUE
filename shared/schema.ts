@@ -26,6 +26,14 @@ export const pipelines = pgTable("pipelines", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const kanbanColumns = pgTable("kanban_columns", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  position: integer("position").notNull().default(0),
+  pipelineId: integer("pipeline_id").references(() => pipelines.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const contacts = pgTable("contacts", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -38,7 +46,7 @@ export const opportunities = pgTable("opportunities", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  column: text("column").notNull().default("new"),
+  columnId: integer("column_id").notNull().references(() => kanbanColumns.id, { onDelete: "cascade" }),
   contactId: integer("contact_id").notNull().references(() => contacts.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -89,6 +97,21 @@ export const updatePipelineSchema = z.object({
   name: z.string().min(1),
 });
 
+export const insertKanbanColumnSchema = createInsertSchema(kanbanColumns).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertKanbanColumn = z.infer<typeof insertKanbanColumnSchema>;
+export type KanbanColumn = typeof kanbanColumns.$inferSelect;
+
+export const updateKanbanColumnSchema = z.object({
+  name: z.string().min(1).optional(),
+  position: z.number().optional(),
+});
+
+export type UpdateKanbanColumn = z.infer<typeof updateKanbanColumnSchema>;
+
 export const insertContactSchema = createInsertSchema(contacts).omit({
   id: true,
   createdAt: true,
@@ -113,12 +136,13 @@ export type Opportunity = typeof opportunities.$inferSelect;
 
 export type OpportunityWithContact = Opportunity & {
   contactName: string;
+  columnName: string;
 };
 
 export const updateOpportunitySchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  column: z.enum(["new", "in_progress", "closed"]).optional(),
+  columnId: z.number().optional(),
 });
 
 export type UpdateOpportunity = z.infer<typeof updateOpportunitySchema>;
