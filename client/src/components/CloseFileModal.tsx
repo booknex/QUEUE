@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -48,9 +49,22 @@ export function CloseFileModal({
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      if (file?.closedAt) {
+        form.reset({
+          closedAt: new Date(file.closedAt).toISOString().split('T')[0],
+        });
+      } else {
+        form.reset({
+          closedAt: new Date().toISOString().split('T')[0],
+        });
+      }
+    }
+  }, [open, file, form]);
+
   const handleSubmit = (data: CloseFormValues) => {
     onSubmit(data);
-    form.reset();
   };
 
   return (
