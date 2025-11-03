@@ -28,15 +28,20 @@ All core features are implemented and tested:
 - ✅ View session history per client file
 
 ## Recent Changes (November 3, 2025)
-### Kanban Board - Separate Entity
+### Kanban Board - Separate Entity with Dedicated Pipeline Kanbans
 - **Independent kanban system** - separate from client queue files
 - **Header with navigation** - "Kanban Board" title with "Opportunities" and "Pipelines" buttons, plus "Add New" button
-- **Pipeline selector dropdown** - Located below title in header, filters by pipeline (All Pipelines, Sales, Marketing, Support, Product)
+- **Pipeline selector dropdown** - Located below title in header, selects which pipeline kanban to view
 - **Left sidebar** - Vertical navigation with "Opportunities" and "Pipelines" buttons
 - **Dual navigation** - Both header buttons and sidebar buttons control the view
-- **Opportunities view** - columns: New, In Progress, Closed
-- **Pipelines view** - columns: Lead, Qualified, Converted
-- Each view has its own kanban board with dedicated data
+- **Opportunities view** - Independent kanban with columns: New, In Progress, Closed
+- **Pipelines view** - Shows different content based on selected pipeline:
+  - **All Pipelines (default)** - Selection screen with quick-select buttons for each pipeline
+  - **Sales Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
+  - **Marketing Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
+  - **Support Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
+  - **Product Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
+- **Each pipeline is its own dedicated kanban board** with independent data and columns
 - Positioned below the horizontal client queue scrollbar
 
 ### Clickable Completed Stat Card
