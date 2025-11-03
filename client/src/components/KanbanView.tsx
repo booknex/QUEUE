@@ -108,76 +108,10 @@ export function KanbanView() {
     mutationFn: async ({ opportunityId, columnId, position }: { opportunityId: number; columnId: number; position: number }) => {
       await apiRequest("PATCH", `/api/opportunities/${opportunityId}`, { columnId, position });
     },
-    onMutate: async ({ opportunityId, columnId, position }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["/api/opportunities"] });
-
-      // Snapshot the previous value
-      const previousOpportunities = queryClient.getQueryData<OpportunityWithContact[]>(["/api/opportunities"]);
-
-      // Optimistically update the cache with proper reordering
-      queryClient.setQueryData<OpportunityWithContact[]>(
-        ["/api/opportunities"],
-        (old) => {
-          if (!old) return old;
-          
-          const draggedItem = old.find((opp) => opp.id === opportunityId);
-          if (!draggedItem) return old;
-          
-          const sourceColumnId = draggedItem.columnId;
-          
-          // Create a copy to work with
-          let newOpportunities = [...old];
-          
-          // Remove the dragged item
-          newOpportunities = newOpportunities.filter((opp) => opp.id !== opportunityId);
-          
-          // Get all items in destination column, sorted by position
-          const destColumnItems = newOpportunities
-            .filter((opp) => opp.columnId === columnId)
-            .sort((a, b) => a.position - b.position);
-          
-          // Insert dragged item at new position
-          destColumnItems.splice(position, 0, { ...draggedItem, columnId, position });
-          
-          // Update positions for destination column
-          destColumnItems.forEach((item, idx) => {
-            item.position = idx;
-          });
-          
-          // If source and destination columns are different, reindex source column
-          let sourceColumnItems: OpportunityWithContact[] = [];
-          if (sourceColumnId !== columnId) {
-            sourceColumnItems = newOpportunities
-              .filter((opp) => opp.columnId === sourceColumnId)
-              .sort((a, b) => a.position - b.position);
-            
-            sourceColumnItems.forEach((item, idx) => {
-              item.position = idx;
-            });
-          }
-          
-          // Get items from other columns (unchanged)
-          const otherItems = newOpportunities.filter(
-            (opp) => opp.columnId !== columnId && opp.columnId !== sourceColumnId
-          );
-          
-          // Combine everything
-          return [...destColumnItems, ...sourceColumnItems, ...otherItems];
-        }
-      );
-
-      // Return context with the snapshot
-      return { previousOpportunities };
-    },
-    onError: (_error, _variables, context) => {
-      // Revert to the previous value on error
-      if (context?.previousOpportunities) {
-        queryClient.setQueryData(["/api/opportunities"], context.previousOpportunities);
-      }
+    onError: () => {
       toast({
         title: "Error",
-        description: "Failed to move opportunity.",
+        description: "Failed to move opportunity. Please refresh the page.",
         variant: "destructive",
       });
     },
