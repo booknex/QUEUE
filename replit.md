@@ -14,7 +14,7 @@ All core features are implemented and tested:
 - ✅ Drag-and-drop priority reordering
 - ✅ Automatic timer tracking showing wait times
 - ✅ **Realtime timer updates** - ticks every second without page refresh
-- ✅ **12-hour grey out** - recently touched cards appear in grayscale (black & white)
+- ✅ **12-hour green indicator** - recently touched cards show green border
 - ✅ "Touch" functionality to reset timers and move cards to end
 - ✅ Visual urgency indicators (color-coded bars) that update automatically
 - ✅ Real-time dashboard statistics
@@ -29,7 +29,7 @@ All core features are implemented and tested:
 
 ## Recent Changes (November 3, 2025)
 ### 12-Hour Visual Indicators
-- **Recently touched cards (< 12 hours):** Appear in grayscale (black & white) using Tailwind `grayscale` class
+- **Recently touched cards (< 12 hours):** Green border highlights using `border-green-500`
 - **Needs attention cards (≥ 12 hours or never touched):** Red border highlights using `border-red-500`
 - Visual indicators help identify client status at a glance
 - Automatically updates in realtime as thresholds are crossed (every second)

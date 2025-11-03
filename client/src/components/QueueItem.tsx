@@ -108,7 +108,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, isDragging, now = D
   const attention = needsAttention(file.lastTouchedAt, now);
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-80 flex-shrink-0 ${
-    isDragging ? "opacity-50 scale-95" : attention ? "border-2 border-red-500" : recentlyTouched ? "grayscale" : ""
+    isDragging ? "opacity-50 scale-95" : attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
   return (
