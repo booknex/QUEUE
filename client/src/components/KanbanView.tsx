@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ import { PipelineManager } from "./PipelineManager";
 import type { Pipeline } from "@shared/schema";
 
 export function KanbanView() {
-  const [activeView, setActiveView] = useState("opportunities");
+  const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban">("opportunities");
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
 
@@ -22,13 +22,16 @@ export function KanbanView() {
     queryKey: ["/api/pipelines"],
   });
 
-  // Get the currently selected pipeline
   const selectedPipeline = selectedPipelineId
     ? pipelines.find((p) => p.id === selectedPipelineId)
     : null;
 
-  // Determine what to display in the dropdown button
-  const dropdownButtonText = selectedPipeline ? selectedPipeline.name : "All Pipelines";
+  const dropdownButtonText = selectedPipeline ? selectedPipeline.name : "Select Pipeline";
+
+  const handlePipelineSelect = (pipelineId: number) => {
+    setSelectedPipelineId(pipelineId);
+    setActiveView("pipeline-kanban");
+  };
 
   return (
     <div className="space-y-4" data-testid="kanban-view">
@@ -37,45 +40,40 @@ export function KanbanView() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
               <CardTitle>Kanban Board</CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-48"
-                    data-testid="button-pipeline-dropdown"
-                  >
-                    {dropdownButtonText}
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
-                  <DropdownMenuItem
-                    onClick={() => setSelectedPipelineId(null)}
-                    data-testid="menu-item-all-pipelines"
-                  >
-                    All Pipelines
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {pipelines.map((pipeline) => (
-                    <DropdownMenuItem
-                      key={pipeline.id}
-                      onClick={() => setSelectedPipelineId(pipeline.id)}
-                      data-testid={`menu-item-pipeline-${pipeline.id}`}
+              {activeView === "pipeline-kanban" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-48"
+                      data-testid="button-pipeline-dropdown"
                     >
-                      {pipeline.name}
+                      {dropdownButtonText}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
+                    {pipelines.map((pipeline) => (
+                      <DropdownMenuItem
+                        key={pipeline.id}
+                        onClick={() => handlePipelineSelect(pipeline.id)}
+                        data-testid={`menu-item-pipeline-${pipeline.id}`}
+                      >
+                        {pipeline.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setPipelineManagerOpen(true)}
+                      data-testid="menu-item-manage-pipelines"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Manage Pipelines
                     </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setPipelineManagerOpen(true)}
-                    data-testid="menu-item-manage-pipelines"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    Manage Pipelines
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -164,8 +162,8 @@ export function KanbanView() {
           )}
 
           {activeView === "pipelines" && (
-            <>
-              {selectedPipelineId === null && pipelines.length === 0 && (
+            <div className="space-y-4" data-testid="content-pipelines">
+              {pipelines.length === 0 ? (
                 <div className="text-center py-16" data-testid="content-no-pipelines">
                   <p className="text-muted-foreground mb-4">
                     No pipelines yet. Create your first pipeline to get started.
@@ -179,65 +177,84 @@ export function KanbanView() {
                     Create Pipeline
                   </Button>
                 </div>
-              )}
-
-              {selectedPipelineId === null && pipelines.length > 0 && (
-                <div className="text-center py-16" data-testid="content-all-pipelines">
-                  <p className="text-muted-foreground mb-4">
-                    Select a specific pipeline from the dropdown to view its kanban board
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">All Pipelines</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPipelineManagerOpen(true)}
+                      data-testid="button-manage-pipelines"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {pipelines.map((pipeline) => (
-                      <Button
-                        key={pipeline.id}
-                        variant="outline"
-                        onClick={() => setSelectedPipelineId(pipeline.id)}
-                        data-testid={`button-select-pipeline-${pipeline.id}`}
-                      >
-                        {pipeline.name}
-                      </Button>
+                      <Card key={pipeline.id} data-testid={`pipeline-card-${pipeline.id}`}>
+                        <CardHeader>
+                          <CardTitle className="text-base">{pipeline.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">
+                              Created {new Date(pipeline.createdAt).toLocaleDateString()}
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePipelineSelect(pipeline.id)}
+                              data-testid={`button-view-pipeline-${pipeline.id}`}
+                            >
+                              View Board
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 </div>
               )}
+            </div>
+          )}
 
-              {selectedPipelineId !== null && selectedPipeline && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid={`content-pipeline-${selectedPipelineId}`}>
-                  <div className="space-y-3">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Lead</CardTitle>
-                      </CardHeader>
-                    </Card>
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      No {selectedPipeline.name.toLowerCase()} leads yet
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Qualified</CardTitle>
-                      </CardHeader>
-                    </Card>
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      No {selectedPipeline.name.toLowerCase()} qualified yet
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Converted</CardTitle>
-                      </CardHeader>
-                    </Card>
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      No {selectedPipeline.name.toLowerCase()} converted yet
-                    </div>
-                  </div>
+          {activeView === "pipeline-kanban" && selectedPipeline && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid={`content-pipeline-${selectedPipelineId}`}>
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Lead</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No {selectedPipeline.name.toLowerCase()} leads yet
                 </div>
-              )}
-            </>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Qualified</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No {selectedPipeline.name.toLowerCase()} qualified yet
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Converted</CardTitle>
+                  </CardHeader>
+                </Card>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No {selectedPipeline.name.toLowerCase()} converted yet
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
