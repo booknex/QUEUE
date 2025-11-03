@@ -1,278 +1,43 @@
 # Client Queue Manager
 
 ## Overview
-A beautiful, productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. Built with React, TypeScript, Express.js, and in-memory storage.
-
-## Purpose
-Helps users organize their client files and track how long each file has been waiting for attention. Files are automatically ordered by when they were last touched, with untouched files appearing first. Perfect for professionals who need to manage multiple client engagements efficiently.
-
-## Current State
-**Status**: Fully functional MVP with Database + Work Session History + Close Functionality ✅
-
-All core features are implemented and tested:
-- ✅ Add, edit, and delete client files
-- ✅ **Automatic ordering by last touched** - untouched files first, then oldest touched first
-- ✅ Automatic timer tracking showing wait times
-- ✅ **Realtime timer updates** - ticks every second without page refresh
-- ✅ **12-hour visual indicators** - green borders for recently touched (<12h), red borders for needs attention (≥12h)
-- ✅ "Touch" functionality to reset timers
-- ✅ Visual urgency indicators (color-coded edge bars) that update automatically
-- ✅ Real-time dashboard statistics
-- ✅ Status management (waiting, in progress, completed)
-- ✅ **Close files with specific date** - mark when work was completed
-- ✅ Beautiful, responsive UI with excellent UX
-- ✅ Empty states and loading states
-- ✅ Toast notifications for user actions
-- ✅ PostgreSQL database with persistent storage
-- ✅ Work session history tracking
-- ✅ View session history per client file
-
-## Recent Changes (November 3, 2025)
-### Kanban Board - Separate Entity with Dedicated Pipeline Kanbans
-- **Independent kanban system** - separate from client queue files
-- **Header with navigation** - "Kanban Board" title with "Opportunities" and "Pipelines" buttons, plus "Add New" button
-- **Pipeline selector dropdown** - Located below title in header, selects which pipeline kanban to view
-- **Left sidebar** - Vertical navigation with "Opportunities" and "Contacts" buttons
-- **Dual navigation** - Both header buttons and sidebar buttons control the view
-- **Opportunities view** - Independent kanban with columns: New, In Progress, Closed
-- **Pipelines view** - Shows different content based on selected pipeline:
-  - **All Pipelines (default)** - Selection screen with quick-select buttons for each pipeline
-  - **Sales Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
-  - **Marketing Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
-  - **Support Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
-  - **Product Pipeline** - Dedicated kanban with Lead, Qualified, Converted columns
-- **Each pipeline is its own dedicated kanban board** with independent data and columns
-- Positioned below the horizontal client queue scrollbar
-
-### Clickable Completed Stat Card
-- **Completed stat card is now clickable** - click to view all closed files
-- **ClosedFilesModal component** - displays all files with closedAt dates
-- **Completed count** - now accurately reflects files with closedAt set (not just status)
-- **Clean UI** - shows client name, description, closed date, and status badge
-- Empty state when no closed files exist
-
-### Close File Functionality
-- **Added closedAt field** to track when a file was closed
-- **CloseFileModal component** with date picker (defaults to today)
-- **Close action** in Actions dropdown menu
-- **API endpoint** POST /api/files/:id/close for setting close dates
-- **Date persistence** - reopening modal shows previously selected date
-- Fixed form reset bug to properly maintain selected dates
-- Fixed ordering bug - red cards (untouched) now properly appear first
-### Automatic Ordering by Last Touched
-- **Removed drag-and-drop functionality** - manual reordering no longer needed
-- **Automatic ordering** - files sorted by lastTouchedAt automatically
-- **Untouched files first** - clients that have never been touched appear at the front
-- **Then oldest touched** - touched clients ordered by lastTouchedAt ascending
-- **Simplified queue management** - no manual positioning required
-- Removed queuePosition field from schema and database
-- Removed reorder API endpoint
-
-### Previous Changes (Earlier November 3, 2025)
-### 12-Hour Visual Indicators
-- **Recently touched cards (< 12 hours):** Green border highlights using `border-green-500`
-- **Needs attention cards (≥ 12 hours or never touched):** Red border highlights using `border-red-500`
-- Visual indicators help identify client status at a glance
-- Automatically updates in realtime as thresholds are crossed (every second)
-- Works seamlessly with drag-and-drop and other features
-- Backend serializes dates as ISO strings for reliable client-side parsing
-
-### Realtime Timer Updates with Seconds Precision
-- **Timers now update every second** - watch the seconds tick up live
-- **Seconds precision display** - shows exact wait time (e.g., "30m 15s", "2h 45m 30s", "45s")
-- Client-side interval updates display in realtime - see every second count
-- Urgency color indicators also update automatically as time passes
-- Server still syncs every 30 seconds for data consistency
-- Optimized performance - only triggers re-render of timer display, not full data refetch
-
-### Horizontal Layout & Menu Consolidation (November 2, 2025)
-- Redesigned queue to display cards horizontally with scrolling
-- **Full-width layout** - removed max-width constraints to utilize all available horizontal space
-- Cards are now fixed width (320px) arranged side-by-side
-- On wide screens (1920px), 5-6 cards are visible without scrolling
-- Drag-and-drop works horizontally with proper positioning
-- Consolidated History, Edit, and Delete into single "Actions" dropdown menu
-- Touch button remains separate as primary action
-- **Touch now moves card to end** - clicking Touch resets timer AND moves card to the back of the queue
-- **Optimized row-level locking** - uses `LIMIT 1 FOR UPDATE` to prevent race conditions while maintaining high throughput
-- Cleaner, more compact card UI with better button organization
-- Optimized droppable container width for smooth drag experience
-
-### Database Migration & Work Sessions (October 31, 2025)
-- Migrated from in-memory storage to PostgreSQL with Drizzle ORM
-- Changed ID type from UUID to serial integer for better performance
-- Added work_sessions table with foreign key to client_files
-- Implemented automatic session tracking when touching files
-- Created SessionHistory component to view work logs per client
-- Added History button to each queue item
-- All session endpoints tested and working
-
-## Project Architecture
-
-### Tech Stack
-**Frontend:**
-- React 18 with TypeScript
-- TanStack Query v5 for data fetching and caching
-- Wouter for routing
-- Shadcn UI components with Tailwind CSS
-- date-fns for time formatting
-
-**Backend:**
-- Express.js server
-- PostgreSQL database with Drizzle ORM
-- Zod validation
-- RESTful API design
-
-### Project Structure
-```
-├── client/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── QueueItem.tsx          # Individual queue item card
-│   │   │   ├── AddEditClientModal.tsx # Add/Edit client dialog
-│   │   │   ├── StatsCard.tsx          # Dashboard stat display
-│   │   │   ├── EmptyState.tsx         # Empty queue state
-│   │   │   └── ui/                    # Shadcn components
-│   │   ├── pages/
-│   │   │   ├── Dashboard.tsx          # Main application page
-│   │   │   └── not-found.tsx
-│   │   ├── lib/
-│   │   │   └── queryClient.ts         # TanStack Query config
-│   │   ├── App.tsx                    # Router setup
-│   │   └── index.css                  # Global styles
-├── server/
-│   ├── routes.ts                      # API endpoint definitions
-│   ├── storage.ts                     # Database storage implementation
-│   ├── db.ts                          # Drizzle database connection
-│   └── index.ts                       # Express server setup
-├── shared/
-│   └── schema.ts                      # TypeScript types and Zod schemas
-└── design_guidelines.md               # UI/UX design specifications
-```
-
-### Data Model
-**ClientFile:**
-- `id`: Unique identifier (serial integer)
-- `clientName`: Name of the client (required)
-- `description`: Work description (optional)
-- `status`: waiting | in_progress | completed
-- `createdAt`: Timestamp when file was created
-- `lastTouchedAt`: Timestamp when file was last worked on (nullable)
-- `closedAt`: Timestamp when file was closed (nullable)
-
-### API Endpoints
-- `GET /api/files` - Get all client files (sorted by lastTouchedAt: nulls first, then oldest first)
-- `POST /api/files` - Create new client file
-- `GET /api/files/:id` - Get specific file
-- `PATCH /api/files/:id` - Update file details
-- `DELETE /api/files/:id` - Delete file
-- `POST /api/files/:id/touch` - Reset timer by updating lastTouchedAt and log work session
-- `POST /api/files/:id/close` - Set closed date for a file
-- `GET /api/files/:id/sessions` - Get work session history for a file
-- `GET /api/sessions` - Get all work sessions
-
-## Key Features Explained
-
-### Application Structure
-The application has two main sections:
-1. **Client Queue** - Horizontal scrolling cards for daily client work management (priority-ordered: untouched first, oldest touched after)
-2. **Kanban Board** - Separate system with header navigation for Opportunities and Pipelines (independent from client queue)
-
-### Timer Tracking
-- Wait time is calculated from `lastTouchedAt` (if exists) or `createdAt`
-- Displayed with seconds precision (e.g., "2h 45m 30s", "30m 15s", "45s")
-- **Updates in realtime every second** - watch the seconds tick up live
-- Client-side timer ticks continuously for immediate feedback
-- Server sync every 30 seconds ensures data consistency
-- "Touch" button resets the timer to current time and moves card to end of queue
-
-### Urgency Indicators
-Visual color-coded bars on the left of each queue item:
-- 🟢 Green (Low): < 4 hours waiting
-- 🟡 Yellow (Medium): 4-8 hours waiting
-- 🟠 Orange (High): 8-24 hours waiting
-- 🔴 Red (Critical): > 24 hours waiting
-
-### Automatic Ordering
-- Files automatically ordered by lastTouchedAt
-- Untouched files (lastTouchedAt = null) appear first
-- Touched files ordered by lastTouchedAt ascending (oldest first)
-- Most urgent clients naturally rise to the front
-- No manual reordering needed
-
-### Dashboard Statistics
-Real-time counters showing:
-- Total Clients
-- Waiting (status: waiting)
-- In Progress (status: in_progress)
-- Completed (status: completed)
-
-## Design Philosophy
-The application follows a **Linear + Material Design hybrid** approach:
-- Clean, information-dense layouts
-- Consistent spacing and typography
-- Purposeful use of color for status and urgency
-- Smooth interactions and transitions
-- Excellent accessibility standards
-- Mobile-responsive design
-
-## User Workflow
-1. User adds new client via "Add Client" button
-2. Client appears at front of queue (untouched files show first)
-3. When starting work, user clicks "Touch" to reset timer
-4. Touched client automatically moves to appropriate position in queue
-5. User updates status as work progresses
-6. User can view work session history, edit details, or delete when done
-7. Dashboard stats and timers update in real-time
-
-## Testing
-Comprehensive end-to-end testing completed covering:
-- ✅ Add new clients with form validation
-- ✅ Edit existing clients with pre-populated data
-- ✅ Delete clients with confirmation
-- ✅ Touch functionality to reset timers
-- ✅ Close files with specific dates
-- ✅ Date persistence in close modal
-- ✅ Status changes and stat updates
-- ✅ Modal interactions
-- ✅ Empty state display
-
-## Future Enhancements
-**Phase 2 Features (Not Yet Implemented):**
-- Persistent database storage (PostgreSQL)
-- User authentication and multi-user support
-- File upload/attachment capability
-- Work session history and time logs
-- Advanced filtering and search
-- Reporting and analytics
-- Dark mode support
-- Export functionality
-- Keyboard shortcuts
-- Notifications and reminders
-
-## Development Guidelines
-- Follow design_guidelines.md for all UI implementations
-- Use TanStack Query for all data fetching
-- Validate all API inputs with Zod schemas
-- Maintain type safety throughout the stack
-- Add data-testid attributes to interactive elements
-- Keep components modular and reusable
-
-## Running the Application
-The workflow "Start application" runs `npm run dev` which:
-- Starts Express backend on port 5000
-- Starts Vite dev server
-- Serves frontend and backend on same port
-- Hot-reloads on file changes
-
-## Known Limitations
-- Data is stored in memory (resets on server restart)
-- No user authentication (single-user application)
-- No persistent storage
-- Limited to browser tab for updates (no websockets)
+A productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. It helps users organize client files and track wait times, automatically ordering files by touch status. The project aims to provide an efficient tool for professionals managing multiple client engagements. It features a fully functional MVP with database integration, work session history, and close functionality.
 
 ## User Preferences
 - User needs a simple, efficient way to manage daily client work
 - Visual indicators are important for quick scanning
 - Drag-and-drop is preferred for priority management
 - Timer tracking helps ensure no client is neglected
+
+## System Architecture
+
+### UI/UX Decisions
+The application follows a Linear + Material Design hybrid, emphasizing clean, information-dense layouts, consistent spacing and typography, purposeful color usage for status and urgency, smooth interactions, and mobile responsiveness. Key visual features include 12-hour visual indicators (green for recent, red for urgent) and real-time urgency color-coded bars (Green < 4h, Yellow 4-8h, Orange 8-24h, Red > 24h).
+
+### Technical Implementations
+The application has two main sections:
+1.  **Client Queue**: Horizontal scrolling cards for daily client work, priority-ordered (untouched first, then oldest touched). Automatic ordering by `lastTouchedAt` (untouched files first, then oldest touched ascending) has replaced manual drag-and-drop. "Touch" functionality resets timers and moves the card to the end of the queue.
+2.  **Kanban Board**: A separate system with header navigation for "Opportunities" and "Pipelines," independent from the client queue. It supports dynamic pipeline management, allowing users to create, edit, and delete pipelines via a modal, each with its dedicated kanban board (Lead, Qualified, Converted columns). The "Opportunities" view has columns: New, In Progress, Closed.
+
+**Key Features:**
+-   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
+-   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
+-   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
+-   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
+-   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
+
+### System Design Choices
+-   **Frontend**: React 18 with TypeScript, TanStack Query v5 for data fetching, Wouter for routing, Shadcn UI with Tailwind CSS, date-fns.
+-   **Backend**: Express.js server, PostgreSQL database with Drizzle ORM, Zod validation, RESTful API design.
+-   **Data Model (ClientFile)**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable).
+-   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
+
+## External Dependencies
+-   **PostgreSQL**: Primary database for persistent storage of client files, pipelines, and work sessions.
+-   **Drizzle ORM**: Used for interacting with the PostgreSQL database.
+-   **TanStack Query v5**: For client-side data fetching, caching, and synchronization.
+-   **Shadcn UI**: UI component library.
+-   **Tailwind CSS**: For styling.
+-   **date-fns**: For date and time formatting.
+-   **Zod**: For schema validation on both frontend and backend.
+-   **Vite**: Frontend development server and build tool.
