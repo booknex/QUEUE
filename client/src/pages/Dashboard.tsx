@@ -280,7 +280,9 @@ export default function Dashboard() {
               <div
                 className="flex gap-4"
                 data-testid="queue-list"
-                style={{ width: `${(pipelineColumns.length + 1) * 280}px` }}
+                style={{ 
+                  width: `${(pipelineColumns.length + 1) * 280 + pipelineColumns.length * 16}px` 
+                }}
               >
                 {files.map((file) => (
                   <QueueItem
