@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company } from "@shared/schema";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -21,10 +21,94 @@ function serializeSession(session: WorkSession) {
   };
 }
 
+function serializeCompany(company: Company) {
+  return {
+    ...company,
+    createdAt: company.createdAt.toISOString(),
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Company routes
+  app.get("/api/companies", async (req, res) => {
+    try {
+      const companies = await storage.getAllCompanies();
+      res.json(companies.map(serializeCompany));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch companies" });
+    }
+  });
+
+  app.get("/api/companies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid company ID" });
+      }
+      const company = await storage.getCompany(id);
+      if (!company) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.json(serializeCompany(company));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch company" });
+    }
+  });
+
+  app.post("/api/companies", async (req, res) => {
+    try {
+      const validated = insertCompanySchema.parse(req.body);
+      const company = await storage.createCompany(validated);
+      res.status(201).json(serializeCompany(company));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create company" });
+    }
+  });
+
+  app.patch("/api/companies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid company ID" });
+      }
+      const validated = updateCompanySchema.parse(req.body);
+      const company = await storage.updateCompany(id, validated);
+      if (!company) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.json(serializeCompany(company));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update company" });
+    }
+  });
+
+  app.delete("/api/companies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid company ID" });
+      }
+      const deleted = await storage.deleteCompany(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Company not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete company" });
+    }
+  });
+
+  // File routes
   app.get("/api/files", async (req, res) => {
     try {
-      const files = await storage.getAllFiles();
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      const files = await storage.getAllFiles(companyId);
       res.json(files.map(serializeFile));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch files" });
@@ -169,7 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/pipelines", async (req, res) => {
     try {
-      const pipelines = await storage.getAllPipelines();
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      const pipelines = await storage.getAllPipelines(companyId);
       res.json(pipelines);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch pipelines" });
@@ -334,7 +419,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/contacts", async (req, res) => {
     try {
-      const contacts = await storage.getAllContacts();
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      const contacts = await storage.getAllContacts(companyId);
       res.json(contacts.map(serializeContact));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch contacts" });

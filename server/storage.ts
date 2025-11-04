@@ -1,9 +1,15 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
 export interface IStorage {
-  getAllFiles(): Promise<ClientFile[]>;
+  getAllCompanies(): Promise<Company[]>;
+  getCompany(id: number): Promise<Company | undefined>;
+  createCompany(company: InsertCompany): Promise<Company>;
+  updateCompany(id: number, updates: UpdateCompany): Promise<Company | undefined>;
+  deleteCompany(id: number): Promise<boolean>;
+
+  getAllFiles(companyId?: number): Promise<ClientFile[]>;
   getFile(id: number): Promise<ClientFile | undefined>;
   createFile(file: InsertClientFile): Promise<ClientFile>;
   updateFile(id: number, updates: UpdateClientFile): Promise<ClientFile | undefined>;
@@ -14,7 +20,7 @@ export interface IStorage {
   getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
   
-  getAllPipelines(): Promise<Pipeline[]>;
+  getAllPipelines(companyId?: number): Promise<Pipeline[]>;
   getPipeline(id: number): Promise<Pipeline | undefined>;
   createPipeline(pipeline: InsertPipeline): Promise<Pipeline>;
   updatePipeline(id: number, updates: { name: string }): Promise<Pipeline | undefined>;
@@ -26,7 +32,7 @@ export interface IStorage {
   updateKanbanColumn(id: number, updates: UpdateKanbanColumn): Promise<KanbanColumn | undefined>;
   deleteKanbanColumn(id: number): Promise<boolean>;
 
-  getAllContacts(): Promise<Contact[]>;
+  getAllContacts(companyId?: number): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
   createContact(contact: InsertContact): Promise<Contact>;
 
@@ -38,13 +44,42 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getAllFiles(): Promise<ClientFile[]> {
-    const files = await db
+  async getAllCompanies(): Promise<Company[]> {
+    return await db.select().from(companies).orderBy(asc(companies.name));
+  }
+
+  async getCompany(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company || undefined;
+  }
+
+  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+    const [company] = await db.insert(companies).values(insertCompany).returning();
+    return company;
+  }
+
+  async updateCompany(id: number, updates: UpdateCompany): Promise<Company | undefined> {
+    const [company] = await db
+      .update(companies)
+      .set(updates)
+      .where(eq(companies.id, id))
+      .returning();
+    return company || undefined;
+  }
+
+  async deleteCompany(id: number): Promise<boolean> {
+    const result = await db.delete(companies).where(eq(companies.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllFiles(companyId?: number): Promise<ClientFile[]> {
+    const query = db
       .select({
         id: clientFiles.id,
         clientName: clientFiles.clientName,
         description: clientFiles.description,
         status: clientFiles.status,
+        companyId: clientFiles.companyId,
         createdAt: clientFiles.createdAt,
         lastTouchedAt: clientFiles.lastTouchedAt,
         closedAt: clientFiles.closedAt,
@@ -55,7 +90,11 @@ export class DatabaseStorage implements IStorage {
       .groupBy(clientFiles.id)
       .orderBy(sql`${clientFiles.lastTouchedAt} ASC NULLS FIRST`);
     
-    return files;
+    if (companyId !== undefined) {
+      query.where(eq(clientFiles.companyId, companyId));
+    }
+    
+    return await query;
   }
 
   async getFile(id: number): Promise<ClientFile | undefined> {
@@ -133,11 +172,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(workSessions.startedAt));
   }
 
-  async getAllPipelines(): Promise<Pipeline[]> {
-    return await db
-      .select()
-      .from(pipelines)
-      .orderBy(asc(pipelines.createdAt));
+  async getAllPipelines(companyId?: number): Promise<Pipeline[]> {
+    const query = db.select().from(pipelines).orderBy(asc(pipelines.createdAt));
+    
+    if (companyId !== undefined) {
+      query.where(eq(pipelines.companyId, companyId));
+    }
+    
+    return await query;
   }
 
   async getPipeline(id: number): Promise<Pipeline | undefined> {
@@ -170,11 +212,14 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async getAllContacts(): Promise<Contact[]> {
-    return await db
-      .select()
-      .from(contacts)
-      .orderBy(asc(contacts.createdAt));
+  async getAllContacts(companyId?: number): Promise<Contact[]> {
+    const query = db.select().from(contacts).orderBy(asc(contacts.createdAt));
+    
+    if (companyId !== undefined) {
+      query.where(eq(contacts.companyId, companyId));
+    }
+    
+    return await query;
   }
 
   async getContact(id: number): Promise<Contact | undefined> {
