@@ -325,10 +325,10 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
         </Card>
 
         {/* Content Area */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-6 px-6">
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="flex gap-4 min-w-max" data-testid="content-opportunities">
+              <div className="flex gap-4 min-w-max pb-4" data-testid="content-opportunities">
                 {pipelineColumns.map((column) => (
                   <div key={column.id} className="space-y-3 w-[280px] flex-shrink-0">
                     <Card className="bg-primary/5 border-primary/20">
