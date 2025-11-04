@@ -3,11 +3,18 @@ import { pgTable, text, varchar, integer, timestamp, serial } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const clientFiles = pgTable("client_files", {
   id: serial("id").primaryKey(),
   clientName: text("client_name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("waiting"),
+  companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastTouchedAt: timestamp("last_touched_at"),
   closedAt: timestamp("closed_at"),
@@ -23,6 +30,7 @@ export const workSessions = pgTable("work_sessions", {
 export const pipelines = pgTable("pipelines", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -39,6 +47,7 @@ export const contacts = pgTable("contacts", {
   name: text("name").notNull(),
   phone: text("phone"),
   email: text("email"),
+  companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -150,3 +159,19 @@ export const updateOpportunitySchema = z.object({
 });
 
 export type UpdateOpportunity = z.infer<typeof updateOpportunitySchema>;
+
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  name: z.string().min(1, "Company name is required"),
+});
+
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Company = typeof companies.$inferSelect;
+
+export const updateCompanySchema = z.object({
+  name: z.string().min(1, "Company name is required"),
+});
+
+export type UpdateCompany = z.infer<typeof updateCompanySchema>;
