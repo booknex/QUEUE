@@ -44,7 +44,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId }: AddOp
   const { toast } = useToast();
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
-    queryKey: ["/api/columns", selectedPipelineId],
+    queryKey: ["/api/columns", selectedPipelineId?.toString()],
     queryFn: async () => {
       const response = await fetch(`/api/columns?pipelineId=${selectedPipelineId}`);
       if (!response.ok) throw new Error("Failed to fetch columns");
