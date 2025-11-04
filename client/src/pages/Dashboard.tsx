@@ -11,7 +11,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { ClientFile } from "@shared/schema";
+import type { ClientFile, KanbanColumn } from "@shared/schema";
 
 function parseClientFileDates(file: any): ClientFile {
   return {
@@ -34,6 +34,10 @@ export default function Dashboard() {
   const { data: files = [], isLoading } = useQuery<ClientFile[]>({
     queryKey: ["/api/files"],
     select: (data: any[]) => data.map(parseClientFileDates),
+  });
+
+  const { data: allColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns"],
   });
 
   const createMutation = useMutation({
@@ -258,7 +262,7 @@ export default function Dashboard() {
               <div
                 className="flex gap-4 min-w-max"
                 data-testid="queue-list"
-                style={{ width: `${files.length * 280}px` }}
+                style={{ minWidth: `${(allColumns.length + 1) * 280}px` }}
               >
                 {files.map((file) => (
                   <QueueItem
