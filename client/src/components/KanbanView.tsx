@@ -350,7 +350,7 @@ export function KanbanView() {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-3 min-h-[700px] p-3 rounded-md transition-colors ${
+                          className={`space-y-2 min-h-[700px] p-3 rounded-md transition-colors ${
                             snapshot.isDraggingOver ? "bg-accent/30" : "bg-muted/20"
                           }`}
                         >
@@ -381,12 +381,12 @@ export function KanbanView() {
                                         ...provided.draggableProps.style,
                                       }}
                                     >
-                                      <CardHeader className="pb-3">
-                                        <CardTitle className="text-base">{opportunity.contactName || opportunity.title}</CardTitle>
+                                      <CardHeader className="pb-2 pt-3 px-3">
+                                        <CardTitle className="text-sm">{opportunity.contactName || opportunity.title}</CardTitle>
                                       </CardHeader>
                                       {opportunity.description && (
-                                        <CardContent>
-                                          <p className="text-sm text-muted-foreground">{opportunity.description}</p>
+                                        <CardContent className="pt-0 pb-3 px-3">
+                                          <p className="text-xs text-muted-foreground">{opportunity.description}</p>
                                         </CardContent>
                                       )}
                                     </Card>
