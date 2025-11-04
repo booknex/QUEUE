@@ -3,9 +3,20 @@ import { User, Phone, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Contact } from "@shared/schema";
 
-export default function Contacts() {
+interface ContactsProps {
+  selectedCompanyId: number | null;
+}
+
+export default function Contacts({ selectedCompanyId }: ContactsProps) {
   const { data: contacts, isLoading } = useQuery<Contact[]>({
-    queryKey: ["/api/contacts"],
+    queryKey: ["/api/contacts", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/contacts?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null,
   });
 
   if (isLoading) {

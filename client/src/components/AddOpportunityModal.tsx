@@ -29,6 +29,7 @@ interface AddOpportunityModalProps {
   open: boolean;
   onClose: () => void;
   selectedPipelineId: number | null;
+  selectedCompanyId: number | null;
 }
 
 const formSchema = z.object({
@@ -40,7 +41,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function AddOpportunityModal({ open, onClose, selectedPipelineId }: AddOpportunityModalProps) {
+export function AddOpportunityModal({ open, onClose, selectedPipelineId, selectedCompanyId }: AddOpportunityModalProps) {
   const { toast } = useToast();
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
@@ -77,6 +78,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId }: AddOp
       // First create the contact using the title field as the contact name
       const contactData: any = {
         name: data.title,
+        companyId: selectedCompanyId,
       };
       
       // Only include phone and email if they have values
@@ -110,8 +112,8 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId }: AddOp
       return await opportunityRes.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities", selectedCompanyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts", selectedCompanyId?.toString()] });
       form.reset();
       onClose();
       toast({

@@ -29,9 +29,10 @@ import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/sch
 interface KanbanViewProps {
   selectedPipelineId: number | null;
   onPipelineChange: (id: number) => void;
+  selectedCompanyId: number | null;
 }
 
-export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewProps) {
+export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
   const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
@@ -43,7 +44,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
   const [localOpportunities, setLocalOpportunities] = useState<OpportunityWithContact[]>([]);
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
-    queryKey: ["/api/pipelines"],
+    queryKey: ["/api/pipelines", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/pipelines?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch pipelines");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null,
   });
   
   // Fetch columns for the selected pipeline
@@ -58,7 +66,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
   });
 
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
-    queryKey: ["/api/opportunities"],
+    queryKey: ["/api/opportunities", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/opportunities?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch opportunities");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null,
   });
   
   // Sync React Query data to local state for drag operations
@@ -103,7 +118,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/columns", selectedPipelineId?.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities", selectedCompanyId?.toString()] });
       toast({
         title: "Column deleted",
         description: "Column and its opportunities have been removed.",
@@ -124,7 +139,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
     },
     onSuccess: () => {
       // Silently update React Query cache to match local state
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities", selectedCompanyId?.toString()] });
     },
     onError: () => {
       toast({
@@ -423,17 +438,18 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
 
           {activeView === "contacts" && (
             <div data-testid="content-contacts">
-              <Contacts />
+              <Contacts selectedCompanyId={selectedCompanyId} />
             </div>
           )}
         </div>
       </div>
 
-      <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
+      <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} selectedCompanyId={selectedCompanyId} />
       <AddOpportunityModal 
         open={addOpportunityOpen} 
         onClose={() => setAddOpportunityOpen(false)} 
         selectedPipelineId={selectedPipelineId}
+        selectedCompanyId={selectedCompanyId}
       />
       
       {/* Add Column Dialog */}

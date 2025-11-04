@@ -23,47 +23,40 @@ import {
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import type { Pipeline } from "@shared/schema";
+import type { Company } from "@shared/schema";
 
-interface PipelineManagerProps {
+interface CompanyManagerProps {
   open: boolean;
   onClose: () => void;
-  selectedCompanyId: number | null;
 }
 
-export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineManagerProps) {
-  const [editingPipeline, setEditingPipeline] = useState<Pipeline | null>(null);
-  const [deletingPipeline, setDeletingPipeline] = useState<Pipeline | null>(null);
+export function CompanyManager({ open, onClose }: CompanyManagerProps) {
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [name, setName] = useState("");
   const { toast } = useToast();
 
-  const { data: pipelines = [] } = useQuery<Pipeline[]>({
-    queryKey: ["/api/pipelines", selectedCompanyId?.toString()],
-    queryFn: async () => {
-      if (selectedCompanyId === null) return [];
-      const response = await fetch(`/api/pipelines?companyId=${selectedCompanyId}`);
-      if (!response.ok) throw new Error("Failed to fetch pipelines");
-      return response.json();
-    },
-    enabled: open && selectedCompanyId !== null,
+  const { data: companies = [] } = useQuery<Company[]>({
+    queryKey: ["/api/companies"],
+    enabled: open,
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: { name: string }) => {
-      return await apiRequest("POST", "/api/pipelines", { ...data, companyId: selectedCompanyId });
+      return await apiRequest("POST", "/api/companies", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/pipelines", selectedCompanyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setName("");
       toast({
-        title: "Pipeline created",
-        description: "The pipeline has been created successfully.",
+        title: "Company created",
+        description: "The company has been created successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to create pipeline.",
+        description: "Failed to create company.",
         variant: "destructive",
       });
     },
@@ -71,21 +64,21 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, name }: { id: number; name: string }) => {
-      return await apiRequest("PATCH", `/api/pipelines/${id}`, { name });
+      return await apiRequest("PATCH", `/api/companies/${id}`, { name });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/pipelines", selectedCompanyId?.toString()] });
-      setEditingPipeline(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      setEditingCompany(null);
       setName("");
       toast({
-        title: "Pipeline updated",
-        description: "The pipeline has been updated successfully.",
+        title: "Company updated",
+        description: "The company has been updated successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to update pipeline.",
+        description: "Failed to update company.",
         variant: "destructive",
       });
     },
@@ -93,20 +86,20 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/api/pipelines/${id}`);
+      return await apiRequest("DELETE", `/api/companies/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/pipelines", selectedCompanyId?.toString()] });
-      setDeletingPipeline(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      setDeletingCompany(null);
       toast({
-        title: "Pipeline deleted",
-        description: "The pipeline has been deleted successfully.",
+        title: "Company deleted",
+        description: "The company has been deleted successfully.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to delete pipeline.",
+        description: "Failed to delete company.",
         variant: "destructive",
       });
     },
@@ -116,63 +109,63 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
     e.preventDefault();
     if (!name.trim()) return;
 
-    if (editingPipeline) {
-      updateMutation.mutate({ id: editingPipeline.id, name: name.trim() });
+    if (editingCompany) {
+      updateMutation.mutate({ id: editingCompany.id, name: name.trim() });
     } else {
       createMutation.mutate({ name: name.trim() });
     }
   };
 
-  const handleEdit = (pipeline: Pipeline) => {
-    setEditingPipeline(pipeline);
-    setName(pipeline.name);
+  const handleEdit = (company: Company) => {
+    setEditingCompany(company);
+    setName(company.name);
   };
 
   const handleCancelEdit = () => {
-    setEditingPipeline(null);
+    setEditingCompany(null);
     setName("");
   };
 
-  const handleDelete = (pipeline: Pipeline) => {
-    setDeletingPipeline(pipeline);
+  const handleDelete = (company: Company) => {
+    setDeletingCompany(company);
   };
 
   const confirmDelete = () => {
-    if (deletingPipeline) {
-      deleteMutation.mutate(deletingPipeline.id);
+    if (deletingCompany) {
+      deleteMutation.mutate(deletingCompany.id);
     }
   };
 
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[500px]" data-testid="dialog-pipeline-manager">
+        <DialogContent className="sm:max-w-[500px]" data-testid="dialog-company-manager">
           <DialogHeader>
-            <DialogTitle>Manage Pipelines</DialogTitle>
+            <DialogTitle>Manage Companies</DialogTitle>
             <DialogDescription>
-              Add, edit, or delete your pipelines. Each pipeline will have its own dedicated kanban board.
+              Add, edit, or delete your companies. Each company will have its own client queue and kanban boards.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="pipeline-name">
-                {editingPipeline ? "Edit Pipeline" : "New Pipeline"}
+              <Label htmlFor="company-name">
+                {editingCompany ? "Edit Company" : "New Company"}
               </Label>
               <div className="flex gap-2">
                 <Input
-                  id="pipeline-name"
+                  id="company-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter pipeline name..."
-                  data-testid="input-pipeline-name"
+                  placeholder="Enter company name..."
+                  data-testid="input-company-name"
                 />
                 <Button
                   type="submit"
                   disabled={!name.trim() || createMutation.isPending || updateMutation.isPending}
-                  data-testid="button-submit-pipeline"
+                  data-testid="button-submit-company"
                 >
-                  {editingPipeline ? (
+                  {editingCompany ? (
                     <>
                       <Edit className="w-4 h-4 mr-2" />
                       Update
@@ -184,7 +177,7 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
                     </>
                   )}
                 </Button>
-                {editingPipeline && (
+                {editingCompany && (
                   <Button
                     type="button"
                     variant="outline"
@@ -199,34 +192,34 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
           </form>
 
           <div className="space-y-2">
-            <Label>Existing Pipelines</Label>
+            <Label>Existing Companies</Label>
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {pipelines.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4" data-testid="text-no-pipelines">
-                  No pipelines yet. Add one above.
+              {companies.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4" data-testid="text-no-companies">
+                  No companies yet. Add one above.
                 </p>
               ) : (
-                pipelines.map((pipeline) => (
+                companies.map((company) => (
                   <div
-                    key={pipeline.id}
+                    key={company.id}
                     className="flex items-center justify-between p-3 border rounded-md"
-                    data-testid={`pipeline-item-${pipeline.id}`}
+                    data-testid={`company-item-${company.id}`}
                   >
-                    <span className="font-medium">{pipeline.name}</span>
+                    <span className="font-medium">{company.name}</span>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleEdit(pipeline)}
-                        data-testid={`button-edit-pipeline-${pipeline.id}`}
+                        onClick={() => handleEdit(company)}
+                        data-testid={`button-edit-company-${company.id}`}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDelete(pipeline)}
-                        data-testid={`button-delete-pipeline-${pipeline.id}`}
+                        onClick={() => handleDelete(company)}
+                        data-testid={`button-delete-company-${company.id}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -239,12 +232,12 @@ export function PipelineManager({ open, onClose, selectedCompanyId }: PipelineMa
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deletingPipeline} onOpenChange={() => setDeletingPipeline(null)}>
+      <AlertDialog open={!!deletingCompany} onOpenChange={() => setDeletingCompany(null)}>
         <AlertDialogContent data-testid="dialog-confirm-delete">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Pipeline</AlertDialogTitle>
+            <AlertDialogTitle>Delete Company</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingPipeline?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{deletingCompany?.name}"? This will permanently delete all client files, pipelines, contacts, and opportunities associated with this company. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

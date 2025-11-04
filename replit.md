@@ -1,7 +1,7 @@
 # Client Queue Manager
 
 ## Overview
-A productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. It helps users organize client files and track wait times, automatically ordering files by touch status. The project aims to provide an efficient tool for professionals managing multiple client engagements. It features a fully functional MVP with database integration, work session history, and close functionality.
+A productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. It helps users organize client files and track wait times, automatically ordering files by touch status. The project aims to provide an efficient tool for professionals managing multiple client engagements across different companies/organizations. It features a fully functional MVP with database integration, work session history, multi-company support, and close functionality.
 
 ## User Preferences
 - User needs a simple, efficient way to manage daily client work
@@ -20,6 +20,7 @@ The application has two main sections:
 2.  **Kanban Board**: A separate system with header navigation for "Opportunities" and "Pipelines," independent from the client queue. It supports dynamic pipeline management, allowing users to create, edit, and delete pipelines via a modal, each with its dedicated kanban board. Both the "Opportunities" view and individual pipeline views support fully dynamic column management - users can create and delete columns as needed. Default columns for Opportunities are: New, In Progress, Closed.
 
 **Key Features:**
+-   **Multi-Company Support**: Users can manage multiple companies/organizations from a single application. A company dropdown selector in the header allows switching between different companies. Each company has its own isolated data (client files, pipelines, contacts, opportunities).
 -   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
 -   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision, and update every second client-side. Server syncs every 30 seconds.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
@@ -34,11 +35,14 @@ The application has two main sections:
 -   **Frontend**: React 18 with TypeScript, TanStack Query v5 for data fetching, Wouter for routing, Shadcn UI with Tailwind CSS, date-fns.
 -   **Backend**: Express.js server, PostgreSQL database with Drizzle ORM, Zod validation, RESTful API design.
 -   **Data Models**:
-    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
-    -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `createdAt`
+    -   **Company**: `id`, `name`, `createdAt` - Root organization entity
+    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `companyId` (foreign key, cascade delete), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
+    -   **Pipeline**: `id`, `name`, `companyId` (foreign key, cascade delete), `createdAt`
+    -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `companyId` (foreign key, cascade delete), `createdAt`
     -   **KanbanColumn**: `id`, `name`, `position`, `pipelineId` (nullable, null for Opportunities view), `createdAt`
     -   **Opportunity**: `id`, `title`, `description` (nullable), `columnId` (foreign key to kanban_columns, cascade delete), `contactId` (foreign key to contacts, cascade delete), `createdAt`
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
+-   **Company Isolation**: All client files, pipelines, and contacts are scoped to their parent company via foreign key relationships with cascade delete. API routes support optional `companyId` query parameter for filtering.
 
 ## External Dependencies
 -   **PostgreSQL**: Primary database for persistent storage of client files, pipelines, and work sessions.

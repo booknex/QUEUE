@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { QueueItem } from "@/components/QueueItem";
 import { KanbanView } from "@/components/KanbanView";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
+import { CompanyManager } from "@/components/CompanyManager";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { ClientFile, KanbanColumn, Pipeline } from "@shared/schema";
+import type { ClientFile, KanbanColumn, Pipeline, Company } from "@shared/schema";
 
 function parseClientFileDates(file: any): ClientFile {
   return {
@@ -28,17 +36,48 @@ export default function Dashboard() {
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
   const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
+  const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
   const { toast } = useToast();
 
+  const { data: companies = [] } = useQuery<Company[]>({
+    queryKey: ["/api/companies"],
+  });
+
+  useEffect(() => {
+    if (companies.length > 0 && selectedCompanyId === null) {
+      setSelectedCompanyId(companies[0].id);
+    }
+  }, [companies, selectedCompanyId]);
+
+  // Reset pipeline selection when company changes
+  useEffect(() => {
+    setSelectedPipelineId(null);
+  }, [selectedCompanyId]);
+
   const { data: files = [], isLoading } = useQuery<ClientFile[]>({
-    queryKey: ["/api/files"],
+    queryKey: ["/api/files", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/files?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch files");
+      return response.json();
+    },
     select: (data: any[]) => data.map(parseClientFileDates),
+    enabled: selectedCompanyId !== null,
   });
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
-    queryKey: ["/api/pipelines"],
+    queryKey: ["/api/pipelines", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/pipelines?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch pipelines");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null,
   });
 
   useEffect(() => {
@@ -60,10 +99,10 @@ export default function Dashboard() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/files", data);
+      return await apiRequest("POST", "/api/files", { ...data, companyId: selectedCompanyId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       setModalOpen(false);
       toast({
         title: "Client added",
@@ -84,7 +123,7 @@ export default function Dashboard() {
       return await apiRequest("PATCH", `/api/files/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       setModalOpen(false);
       setEditingFile(null);
       toast({
@@ -106,7 +145,7 @@ export default function Dashboard() {
       return await apiRequest("DELETE", `/api/files/${id}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       toast({
         title: "Client removed",
         description: "The client has been removed from your queue.",
@@ -126,7 +165,7 @@ export default function Dashboard() {
       return await apiRequest("POST", `/api/files/${id}/touch`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       toast({
         title: "File touched",
         description: "The timer has been reset for this client.",
@@ -146,7 +185,7 @@ export default function Dashboard() {
       return await apiRequest("POST", `/api/files/${id}/close`, { closedAt });
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["/api/files"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       setCloseModalOpen(false);
       setClosingFile(null);
       toast({
@@ -205,7 +244,7 @@ export default function Dashboard() {
     }, 1000);
 
     const dataInterval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
     }, 30000);
 
     return () => {
@@ -234,6 +273,41 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground mt-1">
                 Manage and prioritize your daily client work
               </p>
+              <div className="mt-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-64"
+                      data-testid="button-company-dropdown"
+                    >
+                      <Building2 className="w-4 h-4 mr-2" />
+                      {companies.find((c) => c.id === selectedCompanyId)?.name || "Select Company"}
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64" data-testid="menu-company-dropdown">
+                    {companies.map((company) => (
+                      <DropdownMenuItem
+                        key={company.id}
+                        onClick={() => setSelectedCompanyId(company.id)}
+                        data-testid={`menu-item-company-${company.id}`}
+                      >
+                        {company.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setCompanyManagerOpen(true)}
+                      data-testid="menu-item-manage-companies"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage Companies
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
             <Button onClick={handleAddNew} data-testid="button-add-client">
               <Plus className="w-4 h-4 mr-2" />
@@ -299,6 +373,7 @@ export default function Dashboard() {
               <KanbanView 
                 selectedPipelineId={selectedPipelineId}
                 onPipelineChange={setSelectedPipelineId}
+                selectedCompanyId={selectedCompanyId}
               />
             </div>
           </>
@@ -325,6 +400,11 @@ export default function Dashboard() {
         open={closedFilesModalOpen}
         onOpenChange={setClosedFilesModalOpen}
         files={files}
+      />
+
+      <CompanyManager
+        open={companyManagerOpen}
+        onClose={() => setCompanyManagerOpen(false)}
       />
     </div>
   );
