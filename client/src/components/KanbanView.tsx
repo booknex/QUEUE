@@ -26,7 +26,12 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/schema";
 
-export function KanbanView() {
+interface KanbanViewProps {
+  selectedPipelineId: number | null;
+  onPipelineChange: (id: number) => void;
+}
+
+export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewProps) {
   const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
@@ -40,15 +45,6 @@ export function KanbanView() {
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
   });
-  
-  // Default to first pipeline if none selected
-  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
-  
-  useEffect(() => {
-    if (pipelines.length > 0 && selectedPipelineId === null) {
-      setSelectedPipelineId(pipelines[0].id);
-    }
-  }, [pipelines, selectedPipelineId]);
   
   // Fetch columns for the selected pipeline
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
@@ -245,7 +241,7 @@ export function KanbanView() {
   const dropdownButtonText = selectedPipeline ? selectedPipeline.name : "Select Pipeline";
 
   const handlePipelineSelect = (pipelineId: number) => {
-    setSelectedPipelineId(pipelineId);
+    onPipelineChange(pipelineId);
   };
 
   return (

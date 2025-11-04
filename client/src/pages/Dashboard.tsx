@@ -11,7 +11,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { ClientFile, KanbanColumn } from "@shared/schema";
+import type { ClientFile, KanbanColumn, Pipeline } from "@shared/schema";
 
 function parseClientFileDates(file: any): ClientFile {
   return {
@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
   const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const { toast } = useToast();
 
   const { data: files = [], isLoading } = useQuery<ClientFile[]>({
@@ -36,8 +37,24 @@ export default function Dashboard() {
     select: (data: any[]) => data.map(parseClientFileDates),
   });
 
-  const { data: allColumns = [] } = useQuery<KanbanColumn[]>({
-    queryKey: ["/api/columns"],
+  const { data: pipelines = [] } = useQuery<Pipeline[]>({
+    queryKey: ["/api/pipelines"],
+  });
+
+  useEffect(() => {
+    if (pipelines.length > 0 && selectedPipelineId === null) {
+      setSelectedPipelineId(pipelines[0].id);
+    }
+  }, [pipelines, selectedPipelineId]);
+
+  const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns", selectedPipelineId?.toString()],
+    queryFn: async () => {
+      const response = await fetch(`/api/columns?pipelineId=${selectedPipelineId}`);
+      if (!response.ok) throw new Error("Failed to fetch columns");
+      return response.json();
+    },
+    enabled: selectedPipelineId !== null,
   });
 
   const createMutation = useMutation({
@@ -262,7 +279,7 @@ export default function Dashboard() {
               <div
                 className="flex gap-4 min-w-max"
                 data-testid="queue-list"
-                style={{ minWidth: `${(allColumns.length + 1) * 280}px` }}
+                style={{ minWidth: `${(pipelineColumns.length + 1) * 280}px` }}
               >
                 {files.map((file) => (
                   <QueueItem
@@ -279,7 +296,10 @@ export default function Dashboard() {
             </div>
 
             <div className="mb-6">
-              <KanbanView />
+              <KanbanView 
+                selectedPipelineId={selectedPipelineId}
+                onPipelineChange={setSelectedPipelineId}
+              />
             </div>
           </>
         )}
