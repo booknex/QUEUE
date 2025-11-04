@@ -329,12 +329,12 @@ export function KanbanView() {
         </Card>
 
         {/* Content Area */}
-        <div>
+        <div className="overflow-x-auto">
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${pipelineColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
+              <div className="flex gap-4 min-w-max" data-testid="content-opportunities">
                 {pipelineColumns.map((column) => (
-                  <div key={column.id} className="space-y-3">
+                  <div key={column.id} className="space-y-3 w-[280px] flex-shrink-0">
                     <Card className="bg-primary/5 border-primary/20">
                       <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
                         <CardTitle className="text-base text-primary">{column.name}</CardTitle>
@@ -406,7 +406,7 @@ export function KanbanView() {
                 ))}
               
               {/* Add Column Button */}
-              <div className="space-y-3">
+              <div className="space-y-3 w-[280px] flex-shrink-0">
                 <Card className="border-dashed">
                   <CardHeader className="pb-3">
                     <Button

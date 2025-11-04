@@ -258,7 +258,7 @@ export default function Dashboard() {
               <div
                 className="flex gap-4 min-w-max"
                 data-testid="queue-list"
-                style={{ width: `${files.length * 240}px` }}
+                style={{ width: `${files.length * 280}px` }}
               >
                 {files.map((file) => (
                   <QueueItem

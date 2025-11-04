@@ -107,7 +107,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
   const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
   const attention = needsAttention(file.lastTouchedAt, now);
   
-  const cardClassName = `relative overflow-visible transition-all duration-200 w-56 flex-shrink-0 ${
+  const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 ${
     attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
