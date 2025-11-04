@@ -277,9 +277,9 @@ export default function Dashboard() {
           <>
             <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6 mb-8">
               <div
-                className="flex gap-4 min-w-max"
+                className="flex gap-4"
                 data-testid="queue-list"
-                style={{ minWidth: `${(pipelineColumns.length + 1) * 280}px` }}
+                style={{ width: `${Math.max((pipelineColumns.length + 1) * 280, files.length * 280)}px` }}
               >
                 {files.map((file) => (
                   <QueueItem
