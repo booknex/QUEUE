@@ -27,8 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/schema";
 
 export function KanbanView() {
-  const [activeView, setActiveView] = useState<"opportunities" | "pipelines" | "pipeline-kanban" | "contacts">("opportunities");
-  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
+  const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -41,14 +40,25 @@ export function KanbanView() {
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines"],
   });
-
-  const { data: opportunityColumns = [] } = useQuery<KanbanColumn[]>({
-    queryKey: ["/api/columns", "null"],
+  
+  // Default to first pipeline if none selected
+  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    if (pipelines.length > 0 && selectedPipelineId === null) {
+      setSelectedPipelineId(pipelines[0].id);
+    }
+  }, [pipelines, selectedPipelineId]);
+  
+  // Fetch columns for the selected pipeline
+  const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns", selectedPipelineId?.toString()],
     queryFn: async () => {
-      const response = await fetch("/api/columns?pipelineId=null");
+      const response = await fetch(`/api/columns?pipelineId=${selectedPipelineId}`);
       if (!response.ok) throw new Error("Failed to fetch columns");
       return response.json();
     },
+    enabled: selectedPipelineId !== null,
   });
 
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
@@ -62,19 +72,19 @@ export function KanbanView() {
 
   const createColumnMutation = useMutation({
     mutationFn: async (name: string) => {
-      const maxPosition = opportunityColumns.length > 0 
-        ? Math.max(...opportunityColumns.map(c => c.position))
+      const maxPosition = pipelineColumns.length > 0 
+        ? Math.max(...pipelineColumns.map(c => c.position))
         : -1;
       
       const response = await apiRequest("POST", "/api/columns", {
         name,
         position: maxPosition + 1,
-        pipelineId: null,
+        pipelineId: selectedPipelineId,
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/columns", "null"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/columns", selectedPipelineId?.toString()] });
       setNewColumnName("");
       setAddColumnOpen(false);
       toast({
@@ -96,7 +106,7 @@ export function KanbanView() {
       await apiRequest("DELETE", `/api/columns/${columnId}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/columns", "null"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/columns", selectedPipelineId?.toString()] });
       queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
       toast({
         title: "Column deleted",
@@ -236,7 +246,6 @@ export function KanbanView() {
 
   const handlePipelineSelect = (pipelineId: number) => {
     setSelectedPipelineId(pipelineId);
-    setActiveView("pipeline-kanban");
   };
 
   return (
@@ -272,14 +281,6 @@ export function KanbanView() {
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant={activeView === "opportunities" ? "default" : "outline"}
-                onClick={() => setActiveView("opportunities")}
-                data-testid="button-header-opportunities"
-              >
-                Opportunities
-              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -327,8 +328,8 @@ export function KanbanView() {
         <div className="flex-1">
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${opportunityColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
-                {opportunityColumns.map((column) => (
+              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${pipelineColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
+                {pipelineColumns.map((column) => (
                   <div key={column.id} className="space-y-3">
                     <Card>
                       <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
@@ -418,102 +419,6 @@ export function KanbanView() {
               </div>
               </div>
             </DragDropContext>
-          )}
-
-          {activeView === "pipelines" && (
-            <div className="space-y-4" data-testid="content-pipelines">
-              {pipelines.length === 0 ? (
-                <div className="text-center py-16" data-testid="content-no-pipelines">
-                  <p className="text-muted-foreground mb-4">
-                    No pipelines yet. Create your first pipeline to get started.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPipelineManagerOpen(true)}
-                    data-testid="button-create-first-pipeline"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Pipeline
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">All Pipelines</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPipelineManagerOpen(true)}
-                      data-testid="button-manage-pipelines"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Manage
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {pipelines.map((pipeline) => (
-                      <Card key={pipeline.id} data-testid={`pipeline-card-${pipeline.id}`}>
-                        <CardHeader>
-                          <CardTitle className="text-base">{pipeline.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">
-                              Created {new Date(pipeline.createdAt).toLocaleDateString()}
-                            </p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handlePipelineSelect(pipeline.id)}
-                              data-testid={`button-view-pipeline-${pipeline.id}`}
-                            >
-                              View Board
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeView === "pipeline-kanban" && selectedPipeline && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid={`content-pipeline-${selectedPipelineId}`}>
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Lead</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No {selectedPipeline.name.toLowerCase()} leads yet
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Qualified</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No {selectedPipeline.name.toLowerCase()} qualified yet
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Converted</CardTitle>
-                  </CardHeader>
-                </Card>
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No {selectedPipeline.name.toLowerCase()} converted yet
-                </div>
-              </div>
-            </div>
           )}
 
           {activeView === "contacts" && (
