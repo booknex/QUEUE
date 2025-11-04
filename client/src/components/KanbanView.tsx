@@ -430,7 +430,11 @@ export function KanbanView() {
       </div>
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
-      <AddOpportunityModal open={addOpportunityOpen} onClose={() => setAddOpportunityOpen(false)} />
+      <AddOpportunityModal 
+        open={addOpportunityOpen} 
+        onClose={() => setAddOpportunityOpen(false)} 
+        selectedPipelineId={selectedPipelineId}
+      />
       
       {/* Add Column Dialog */}
       <Dialog open={addColumnOpen} onOpenChange={setAddColumnOpen}>

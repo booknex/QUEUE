@@ -28,6 +28,7 @@ import { z } from "zod";
 interface AddOpportunityModalProps {
   open: boolean;
   onClose: () => void;
+  selectedPipelineId: number | null;
 }
 
 const formSchema = z.object({
@@ -39,16 +40,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps) {
+export function AddOpportunityModal({ open, onClose, selectedPipelineId }: AddOpportunityModalProps) {
   const { toast } = useToast();
 
-  const { data: opportunityColumns = [] } = useQuery<KanbanColumn[]>({
-    queryKey: ["/api/columns", "null"],
+  const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
+    queryKey: ["/api/columns", selectedPipelineId],
     queryFn: async () => {
-      const response = await fetch("/api/columns?pipelineId=null");
+      const response = await fetch(`/api/columns?pipelineId=${selectedPipelineId}`);
       if (!response.ok) throw new Error("Failed to fetch columns");
       return response.json();
     },
+    enabled: selectedPipelineId !== null,
   });
 
   const form = useForm<FormData>({
@@ -63,6 +65,15 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Check if a pipeline is selected and has columns
+      if (selectedPipelineId === null) {
+        throw new Error("Please select a pipeline first");
+      }
+      
+      if (pipelineColumns.length === 0) {
+        throw new Error("Please add at least one column to this pipeline before creating opportunities");
+      }
+      
       // First create the contact using the title field as the contact name
       const contactData: any = {
         name: data.title,
@@ -82,10 +93,7 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
       // Then create the opportunity with the contactId
       // Use the contact name as the opportunity title
       // Use the first column's ID (default column)
-      const firstColumnId = opportunityColumns[0]?.id;
-      if (!firstColumnId) {
-        throw new Error("No columns available");
-      }
+      const firstColumnId = pipelineColumns[0].id;
 
       const opportunityData: any = {
         title: data.title,
@@ -111,10 +119,10 @@ export function AddOpportunityModal({ open, onClose }: AddOpportunityModalProps)
         description: "The opportunity and contact have been added.",
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to create opportunity.",
+        description: error.message || "Failed to create opportunity.",
         variant: "destructive",
       });
     },
