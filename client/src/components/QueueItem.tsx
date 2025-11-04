@@ -132,7 +132,10 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
       />
       
       <div className="flex flex-col gap-2 p-2.5 pl-4">
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs font-semibold" data-testid={`text-touch-count-${file.id}`}>
+            <span>{file.touchCount || 0} touches</span>
+          </div>
           <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs" data-testid={`text-wait-time-${file.id}`}>
             <Clock className="w-3 h-3" />
             <span>{waitTime}</span>

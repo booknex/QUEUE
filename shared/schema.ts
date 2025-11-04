@@ -58,7 +58,9 @@ export const insertClientFileSchema = createInsertSchema(clientFiles).omit({
 });
 
 export type InsertClientFile = z.infer<typeof insertClientFileSchema>;
-export type ClientFile = typeof clientFiles.$inferSelect;
+export type ClientFile = typeof clientFiles.$inferSelect & {
+  touchCount?: number;
+};
 
 export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),

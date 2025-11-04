@@ -39,9 +39,23 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getAllFiles(): Promise<ClientFile[]> {
-    return await db.select().from(clientFiles).orderBy(
-      sql`${clientFiles.lastTouchedAt} ASC NULLS FIRST`
-    );
+    const files = await db
+      .select({
+        id: clientFiles.id,
+        clientName: clientFiles.clientName,
+        description: clientFiles.description,
+        status: clientFiles.status,
+        createdAt: clientFiles.createdAt,
+        lastTouchedAt: clientFiles.lastTouchedAt,
+        closedAt: clientFiles.closedAt,
+        touchCount: sql<number>`CAST(COUNT(${workSessions.id}) AS INTEGER)`,
+      })
+      .from(clientFiles)
+      .leftJoin(workSessions, eq(clientFiles.id, workSessions.fileId))
+      .groupBy(clientFiles.id)
+      .orderBy(sql`${clientFiles.lastTouchedAt} ASC NULLS FIRST`);
+    
+    return files;
   }
 
   async getFile(id: number): Promise<ClientFile | undefined> {
@@ -228,6 +242,7 @@ export class DatabaseStorage implements IStorage {
         description: opportunities.description,
         columnId: opportunities.columnId,
         contactId: opportunities.contactId,
+        position: opportunities.position,
         createdAt: opportunities.createdAt,
         contactName: contacts.name,
         columnName: kanbanColumns.name,
@@ -243,6 +258,7 @@ export class DatabaseStorage implements IStorage {
       description: row.description,
       columnId: row.columnId,
       contactId: row.contactId,
+      position: row.position,
       createdAt: row.createdAt,
       contactName: row.contactName || "Unknown Contact",
       columnName: row.columnName || "Unknown Column",
