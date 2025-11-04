@@ -107,7 +107,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
   const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
   const attention = needsAttention(file.lastTouchedAt, now);
   
-  const cardClassName = `relative overflow-visible transition-all duration-200 w-64 flex-shrink-0 ${
+  const cardClassName = `relative overflow-visible transition-all duration-200 w-56 flex-shrink-0 ${
     attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
@@ -131,17 +131,17 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
         data-testid={`indicator-urgency-${file.id}`}
       />
       
-      <div className="flex flex-col gap-3 p-3 pl-5">
+      <div className="flex flex-col gap-2 p-2.5 pl-4">
         <div className="flex items-center justify-end">
-          <div className="flex items-center gap-1 text-muted-foreground font-mono text-xs" data-testid={`text-wait-time-${file.id}`}>
+          <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs" data-testid={`text-wait-time-${file.id}`}>
             <Clock className="w-3 h-3" />
             <span>{waitTime}</span>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="mb-2">
-            <h3 className="text-base font-medium text-foreground mb-1" data-testid={`text-client-name-${file.id}`}>
+          <div className="mb-1.5">
+            <h3 className="text-sm font-medium text-foreground mb-0.5" data-testid={`text-client-name-${file.id}`}>
               {file.clientName}
             </h3>
             {file.description && (
@@ -151,9 +151,9 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <Badge variant={statusConfig.variant} className="gap-1 text-xs" data-testid={`badge-status-${file.id}`}>
+              <Badge variant={statusConfig.variant} className="gap-0.5 text-xs py-0 h-5" data-testid={`badge-status-${file.id}`}>
                 {statusConfig.icon}
                 {statusConfig.label}
               </Badge>
@@ -165,15 +165,15 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
               </p>
             )}
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onTouch(file.id)}
-                className="w-full justify-start"
+                className="w-full justify-start h-7 text-xs"
                 data-testid={`button-touch-${file.id}`}
               >
-                <Eye className="w-3 h-3 mr-1.5" />
+                <Eye className="w-3 h-3 mr-1" />
                 Touch
               </Button>
               <DropdownMenu>
@@ -181,10 +181,10 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start h-7 text-xs"
                     data-testid={`button-menu-${file.id}`}
                   >
-                    <MoreVertical className="w-3 h-3 mr-1.5" />
+                    <MoreVertical className="w-3 h-3 mr-1" />
                     Actions
                   </Button>
                 </DropdownMenuTrigger>
