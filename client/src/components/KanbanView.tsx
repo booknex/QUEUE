@@ -250,59 +250,7 @@ export function KanbanView() {
 
   return (
     <div className="space-y-4" data-testid="kanban-view">
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-3">
-              <CardTitle>Kanban Board</CardTitle>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-48"
-                    data-testid="button-pipeline-dropdown"
-                  >
-                    {dropdownButtonText}
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
-                  {pipelines.map((pipeline) => (
-                    <DropdownMenuItem
-                      key={pipeline.id}
-                      onClick={() => handlePipelineSelect(pipeline.id)}
-                      data-testid={`menu-item-pipeline-${pipeline.id}`}
-                    >
-                      {pipeline.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPipelineManagerOpen(true)}
-                data-testid="button-header-pipelines"
-              >
-                Pipelines
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setAddOpportunityOpen(true)}
-                data-testid="button-kanban-add"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Opportunity
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
+      {/* Top row: Sidebar + Header Card */}
       <div className="flex gap-4">
         {/* Sidebar */}
         <div className="w-48 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
@@ -326,8 +274,63 @@ export function KanbanView() {
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1">
+        {/* Header Card */}
+        <Card className="flex-1">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-3">
+                <CardTitle>Kanban Board</CardTitle>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-48"
+                      data-testid="button-pipeline-dropdown"
+                    >
+                      {dropdownButtonText}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
+                    {pipelines.map((pipeline) => (
+                      <DropdownMenuItem
+                        key={pipeline.id}
+                        onClick={() => handlePipelineSelect(pipeline.id)}
+                        data-testid={`menu-item-pipeline-${pipeline.id}`}
+                      >
+                        {pipeline.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPipelineManagerOpen(true)}
+                  data-testid="button-header-pipelines"
+                >
+                  Pipelines
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setAddOpportunityOpen(true)}
+                  data-testid="button-kanban-add"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Opportunity
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Content Area */}
+      <div>
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${pipelineColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
@@ -428,7 +431,6 @@ export function KanbanView() {
               <Contacts />
             </div>
           )}
-        </div>
       </div>
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
