@@ -249,33 +249,33 @@ export function KanbanView() {
   };
 
   return (
-    <div className="space-y-4" data-testid="kanban-view">
-      {/* Top row: Sidebar + Header Card */}
-      <div className="flex gap-4">
-        {/* Sidebar */}
-        <div className="w-48 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
-          <div className="space-y-2">
-            <Button
-              variant={activeView === "opportunities" ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => setActiveView("opportunities")}
-              data-testid="button-sidebar-opportunities"
-            >
-              Opportunities
-            </Button>
-            <Button
-              variant={activeView === "contacts" ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => setActiveView("contacts")}
-              data-testid="button-sidebar-contacts"
-            >
-              Contacts
-            </Button>
-          </div>
+    <div className="flex gap-4" data-testid="kanban-view">
+      {/* Full-height Sidebar */}
+      <div className="w-48 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
+        <div className="space-y-2">
+          <Button
+            variant={activeView === "opportunities" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("opportunities")}
+            data-testid="button-sidebar-opportunities"
+          >
+            Opportunities
+          </Button>
+          <Button
+            variant={activeView === "contacts" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("contacts")}
+            data-testid="button-sidebar-contacts"
+          >
+            Contacts
+          </Button>
         </div>
+      </div>
 
+      {/* Right side: Header + Content */}
+      <div className="flex-1 space-y-4">
         {/* Header Card */}
-        <Card className="flex-1">
+        <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-3">
@@ -327,10 +327,9 @@ export function KanbanView() {
             </div>
           </CardHeader>
         </Card>
-      </div>
 
-      {/* Content Area */}
-      <div>
+        {/* Content Area */}
+        <div>
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${pipelineColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
@@ -431,6 +430,7 @@ export function KanbanView() {
               <Contacts />
             </div>
           )}
+        </div>
       </div>
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} />
