@@ -269,11 +269,11 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
       </div>
 
       {/* Right side: Header + Content */}
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 min-w-0">
         {/* Header Card */}
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="space-y-3">
                 <CardTitle>Kanban Board</CardTitle>
                 <DropdownMenu>
@@ -324,8 +324,8 @@ export function KanbanView({ selectedPipelineId, onPipelineChange }: KanbanViewP
           </CardHeader>
         </Card>
 
-        {/* Content Area */}
-        <div className="overflow-x-auto -mx-6 px-6">
+        {/* Content Area - Scrollable Columns */}
+        <div className="overflow-x-auto">
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="flex gap-4 min-w-max pb-4" data-testid="content-opportunities">
