@@ -2,15 +2,17 @@
 
 ## Design Approach
 
-**Selected Approach:** Design System - Linear + Material Design Hybrid
+**Selected Approach:** Design System - Linear + Material Design Hybrid with Blue Palette
 
-This productivity application prioritizes efficiency, clarity, and learnability. Drawing inspiration from Linear's clean task management interface and Material Design's data-dense patterns, the design emphasizes information hierarchy, quick scanning, and intuitive interactions.
+This productivity application prioritizes efficiency, clarity, and learnability. Drawing inspiration from Linear's clean task management interface and Material Design's data-dense patterns, the design emphasizes information hierarchy, quick scanning, and intuitive interactions. The application features a clean, sleek blue color palette with a light blue sidebar for the kanban board.
 
 **Core Principles:**
 - Information clarity over decoration
 - Consistent, predictable interactions
 - Dense but scannable layouts
 - Purposeful use of space for productivity
+- Clean and sleek blue color palette
+- Light blue accents for navigation and organization
 
 ---
 
@@ -48,6 +50,21 @@ This productivity application prioritizes efficiency, clarity, and learnability.
 - Queue items: Single column for clarity and drag-drop
 
 ---
+
+## Color Palette
+
+**Primary Blue:**
+- Sidebar Background: Light blue (hsl(210 100% 97%))
+- Sidebar Border: Light blue (hsl(210 80% 90%))
+- Primary Accent: Bright blue (hsl(210 100% 56%))
+- Kanban Column Headers: Blue tint (primary/5 background with primary/20 border)
+- Opportunity Cards: Blue left border (primary/60)
+- Drop Zones: Blue tint on hover (primary/10 with primary/30 border)
+
+**Dark Mode:**
+- Sidebar Background: Dark blue (hsl(215 30% 12%))
+- Sidebar Border: Dark blue border (hsl(215 30% 18%))
+- Maintains blue accent colors for consistency
 
 ## Component Library
 

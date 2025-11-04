@@ -305,23 +305,25 @@ export function KanbanView() {
 
       <div className="flex gap-4">
         {/* Sidebar */}
-        <div className="w-48 flex-shrink-0 space-y-2" data-testid="kanban-sidebar">
-          <Button
-            variant={activeView === "opportunities" ? "default" : "ghost"}
-            className="w-full justify-start"
-            onClick={() => setActiveView("opportunities")}
-            data-testid="button-sidebar-opportunities"
-          >
-            Opportunities
-          </Button>
-          <Button
-            variant={activeView === "contacts" ? "default" : "ghost"}
-            className="w-full justify-start"
-            onClick={() => setActiveView("contacts")}
-            data-testid="button-sidebar-contacts"
-          >
-            Contacts
-          </Button>
+        <div className="w-48 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
+          <div className="space-y-2">
+            <Button
+              variant={activeView === "opportunities" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveView("opportunities")}
+              data-testid="button-sidebar-opportunities"
+            >
+              Opportunities
+            </Button>
+            <Button
+              variant={activeView === "contacts" ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => setActiveView("contacts")}
+              data-testid="button-sidebar-contacts"
+            >
+              Contacts
+            </Button>
+          </div>
         </div>
 
         {/* Content Area */}
@@ -331,9 +333,9 @@ export function KanbanView() {
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${pipelineColumns.length + 1}, minmax(250px, 1fr))` }} data-testid="content-opportunities">
                 {pipelineColumns.map((column) => (
                   <div key={column.id} className="space-y-3">
-                    <Card>
+                    <Card className="bg-primary/5 border-primary/20">
                       <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
-                        <CardTitle className="text-base">{column.name}</CardTitle>
+                        <CardTitle className="text-base text-primary">{column.name}</CardTitle>
                         <Button
                           size="icon"
                           variant="ghost"
@@ -350,8 +352,8 @@ export function KanbanView() {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-2 min-h-[700px] p-3 rounded-md transition-colors ${
-                            snapshot.isDraggingOver ? "bg-accent/30" : "bg-muted/20"
+                          className={`space-y-2 min-h-[700px] p-3 rounded-md transition-colors border ${
+                            snapshot.isDraggingOver ? "bg-primary/10 border-primary/30" : "bg-muted/10 border-border"
                           }`}
                         >
                           {localOpportunities.filter((opp) => opp.columnId === column.id).length === 0 ? (
@@ -374,8 +376,8 @@ export function KanbanView() {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       data-testid={`opportunity-card-${opportunity.id}`}
-                                      className={`cursor-grab active:cursor-grabbing ${
-                                        snapshot.isDragging ? "opacity-50" : ""
+                                      className={`cursor-grab active:cursor-grabbing border-l-4 border-l-primary/60 hover-elevate ${
+                                        snapshot.isDragging ? "opacity-50 shadow-lg" : ""
                                       }`}
                                       style={{
                                         ...provided.draggableProps.style,
