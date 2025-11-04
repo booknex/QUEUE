@@ -251,7 +251,7 @@ export function KanbanView() {
   return (
     <div className="flex gap-4" data-testid="kanban-view">
       {/* Full-height Sidebar */}
-      <div className="w-48 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
+      <div className="w-56 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
         <div className="space-y-2">
           <Button
             variant={activeView === "opportunities" ? "default" : "ghost"}
