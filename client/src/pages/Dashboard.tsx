@@ -57,11 +57,6 @@ export default function Dashboard() {
     enabled: selectedPipelineId !== null,
   });
 
-  // Debug: Log when columns change
-  useEffect(() => {
-    console.log('Dashboard pipelineColumns updated:', pipelineColumns.length, 'columns');
-    console.log('Queue width should be:', Math.max((pipelineColumns.length + 1) * 280, files.length * 280), 'px');
-  }, [pipelineColumns, files.length]);
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -285,7 +280,7 @@ export default function Dashboard() {
               <div
                 className="flex gap-4"
                 data-testid="queue-list"
-                style={{ width: `${Math.max((pipelineColumns.length + 1) * 280, files.length * 280)}px` }}
+                style={{ width: `${(pipelineColumns.length + 1) * 280}px` }}
               >
                 {files.map((file) => (
                   <QueueItem
