@@ -90,17 +90,12 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     mutationFn: async (data: FormData) => {
       if (isEditMode && opportunity) {
         // Update existing opportunity and contact
+        // Always include all fields so users can clear values
         const contactData: any = {
           name: data.title,
+          phone: data.contactPhone && data.contactPhone.trim() ? data.contactPhone : "",
+          email: data.contactEmail && data.contactEmail.trim() ? data.contactEmail : "",
         };
-        
-        // Only include phone and email if they have values
-        if (data.contactPhone && data.contactPhone.trim()) {
-          contactData.phone = data.contactPhone;
-        }
-        if (data.contactEmail && data.contactEmail.trim()) {
-          contactData.email = data.contactEmail;
-        }
 
         // Update contact
         await apiRequest("PATCH", `/api/contacts/${opportunity.contactId}`, contactData);
@@ -108,12 +103,8 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         // Update opportunity
         const opportunityData: any = {
           title: data.title,
+          description: data.description && data.description.trim() ? data.description : "",
         };
-        
-        // Only include description if it has a value
-        if (data.description && data.description.trim()) {
-          opportunityData.description = data.description;
-        }
 
         const opportunityRes = await apiRequest("PATCH", `/api/opportunities/${opportunity.id}`, opportunityData);
         return await opportunityRes.json();
@@ -166,8 +157,8 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/opportunities", selectedCompanyId?.toString()] });
-      queryClient.invalidateQueries({ queryKey: ["/api/contacts", selectedCompanyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
       form.reset();
       onClose();
       toast({

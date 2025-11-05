@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -38,10 +38,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
+  const [editingOpportunity, setEditingOpportunity] = useState<OpportunityWithContact | null>(null);
   const { toast } = useToast();
   
   // Local state for drag-and-drop (prevents React Query cache flicker)
   const [localOpportunities, setLocalOpportunities] = useState<OpportunityWithContact[]>([]);
+  
+  // Track if user is dragging to prevent edit modal from opening
+  const isDraggingRef = useRef(false);
 
   const { data: pipelines = [] } = useQuery<Pipeline[]>({
     queryKey: ["/api/pipelines", selectedCompanyId?.toString()],
@@ -164,6 +168,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
   const handleDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
+    
+    // Mark that a drag has occurred
+    isDraggingRef.current = true;
+    
+    // Reset after a short delay to allow click to be processed
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 100);
 
     if (!destination) {
       return;
@@ -257,6 +269,20 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
   const handlePipelineSelect = (pipelineId: number) => {
     onPipelineChange(pipelineId);
+  };
+
+  const handleOpportunityClick = (opportunity: OpportunityWithContact) => {
+    // Don't open edit modal if user just finished dragging
+    if (isDraggingRef.current) {
+      return;
+    }
+    setEditingOpportunity(opportunity);
+    setAddOpportunityOpen(true);
+  };
+
+  const handleCloseOpportunityModal = () => {
+    setEditingOpportunity(null);
+    setAddOpportunityOpen(false);
   };
 
   return (
@@ -389,6 +415,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       data-testid={`opportunity-card-${opportunity.id}`}
+                                      onClick={() => handleOpportunityClick(opportunity)}
                                       className={`cursor-grab active:cursor-grabbing border-l-4 border-l-primary/60 hover-elevate ${
                                         snapshot.isDragging ? "opacity-50 shadow-lg" : ""
                                       }`}
@@ -447,9 +474,10 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} selectedCompanyId={selectedCompanyId} />
       <AddOpportunityModal 
         open={addOpportunityOpen} 
-        onClose={() => setAddOpportunityOpen(false)} 
+        onClose={handleCloseOpportunityModal} 
         selectedPipelineId={selectedPipelineId}
         selectedCompanyId={selectedCompanyId}
+        opportunity={editingOpportunity}
       />
       
       {/* Add Column Dialog */}
