@@ -8,6 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,7 +34,8 @@ import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
 import type { KanbanColumn, OpportunityWithContact } from "@shared/schema";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 
 interface AddOpportunityModalProps {
   open: boolean;
@@ -46,6 +57,7 @@ type FormData = z.infer<typeof formSchema>;
 export function AddOpportunityModal({ open, onClose, selectedPipelineId, selectedCompanyId, opportunity = null }: AddOpportunityModalProps) {
   const { toast } = useToast();
   const isEditMode = !!opportunity;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
     queryKey: ["/api/columns", selectedPipelineId?.toString()],
@@ -177,6 +189,31 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!opportunity) return;
+      await apiRequest("DELETE", `/api/opportunities/${opportunity.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      form.reset();
+      onClose();
+      setShowDeleteConfirm(false);
+      toast({
+        title: "Opportunity deleted",
+        description: "The opportunity has been deleted successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete opportunity.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: FormData) => {
     saveMutation.mutate(data);
   };
@@ -279,29 +316,72 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               )}
             />
 
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={saveMutation.isPending}
-                data-testid="button-cancel-opportunity"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={saveMutation.isPending}
-                data-testid="button-submit-opportunity"
-              >
-                {saveMutation.isPending 
-                  ? (isEditMode ? "Updating..." : "Creating...") 
-                  : (isEditMode ? "Update Opportunity" : "Create Opportunity")}
-              </Button>
+            <div className="flex justify-between gap-2">
+              <div>
+                {isEditMode && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={saveMutation.isPending || deleteMutation.isPending}
+                    data-testid="button-delete-opportunity"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={saveMutation.isPending || deleteMutation.isPending}
+                  data-testid="button-cancel-opportunity"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saveMutation.isPending || deleteMutation.isPending}
+                  data-testid="button-submit-opportunity"
+                >
+                  {saveMutation.isPending 
+                    ? (isEditMode ? "Updating..." : "Creating...") 
+                    : (isEditMode ? "Update Opportunity" : "Create Opportunity")}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
       </DialogContent>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent data-testid="dialog-delete-opportunity-confirm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Opportunity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this opportunity? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              disabled={deleteMutation.isPending}
+              data-testid="button-cancel-delete-opportunity"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover-elevate"
+              data-testid="button-confirm-delete-opportunity"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
