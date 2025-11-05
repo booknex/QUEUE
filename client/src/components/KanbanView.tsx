@@ -295,15 +295,15 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="w-48"
+                      size="default"
+                      className="w-72"
                       data-testid="button-pipeline-dropdown"
                     >
                       {dropdownButtonText}
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48" data-testid="menu-pipeline-dropdown">
+                  <DropdownMenuContent align="start" className="w-72" data-testid="menu-pipeline-dropdown">
                     {pipelines.map((pipeline) => (
                       <DropdownMenuItem
                         key={pipeline.id}
