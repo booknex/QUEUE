@@ -133,10 +133,7 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
       />
       
       <div className="flex flex-col p-2.5 pl-4 h-full">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs font-semibold" data-testid={`text-touch-count-${file.id}`}>
-            <span>{file.touchCount || 0} touches</span>
-          </div>
+        <div className="flex items-center justify-end mb-2">
           <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs" data-testid={`text-wait-time-${file.id}`}>
             <Clock className="w-3 h-3" />
             <span>{waitTime}</span>
@@ -222,11 +219,16 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
               e.stopPropagation();
               onTouch(file);
             }}
-            className="w-full justify-start h-7 text-xs"
+            className="w-full justify-between h-7 text-xs"
             data-testid={`button-touch-${file.id}`}
           >
-            <Eye className="w-3 h-3 mr-1" />
-            Touch
+            <div className="flex items-center">
+              <Eye className="w-3 h-3 mr-1" />
+              Touch
+            </div>
+            <span className="font-mono text-muted-foreground font-semibold" data-testid={`text-touch-count-${file.id}`}>
+              {file.touchCount || 0}
+            </span>
           </Button>
         </div>
       </div>
