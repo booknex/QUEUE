@@ -5,7 +5,7 @@ type WebSocketEvent =
   | { type: "file:created" | "file:updated" | "file:deleted" | "file:touched" | "file:closed"; companyId: number }
   | { type: "company:created" | "company:updated" | "company:deleted"; companyId: number }
   | { type: "pipeline:created" | "pipeline:updated" | "pipeline:deleted"; companyId: number }
-  | { type: "column:created" | "column:deleted"; pipelineId: number }
+  | { type: "column:created" | "column:updated" | "column:deleted"; pipelineId: number }
   | { type: "opportunity:created" | "opportunity:updated" | "opportunity:deleted"; companyId: number }
   | { type: "contact:created"; companyId: number };
 
@@ -93,6 +93,7 @@ function handleWebSocketEvent(event: WebSocketEvent) {
       break;
 
     case "column:created":
+    case "column:updated":
     case "column:deleted":
       queryClient.invalidateQueries({ queryKey: ["/api/columns", event.pipelineId.toString()] });
       queryClient.invalidateQueries({ queryKey: ["/api/opportunities"] });

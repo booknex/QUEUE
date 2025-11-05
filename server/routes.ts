@@ -406,6 +406,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!column) {
         return res.status(404).json({ error: "Column not found" });
       }
+      if (column.pipelineId !== null) {
+        broadcast({ type: "column:updated", pipelineId: column.pipelineId });
+      }
       res.json(serializeKanbanColumn(column));
     } catch (error) {
       if (error instanceof z.ZodError) {
