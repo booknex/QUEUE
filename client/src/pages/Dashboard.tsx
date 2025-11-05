@@ -347,37 +347,37 @@ export default function Dashboard() {
         </div>
 
         {files.length === 0 ? (
-          <EmptyState onAddClient={handleAddNew} />
+          <div className="mb-8">
+            <EmptyState onAddClient={handleAddNew} />
+          </div>
         ) : (
-          <>
-            <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6 mb-8">
-              <div
-                className="flex gap-4 min-w-max"
-                data-testid="queue-list"
-              >
-                {files.map((file) => (
-                  <QueueItem
-                    key={file.id}
-                    file={file}
-                    onTouch={touchMutation.mutate}
-                    onEdit={handleEdit}
-                    onDelete={deleteMutation.mutate}
-                    onClose={handleClose}
-                    now={now}
-                  />
-                ))}
-              </div>
+          <div className="overflow-x-auto overflow-y-visible pb-4 -mx-6 px-6 mb-8">
+            <div
+              className="flex gap-4 min-w-max"
+              data-testid="queue-list"
+            >
+              {files.map((file) => (
+                <QueueItem
+                  key={file.id}
+                  file={file}
+                  onTouch={touchMutation.mutate}
+                  onEdit={handleEdit}
+                  onDelete={deleteMutation.mutate}
+                  onClose={handleClose}
+                  now={now}
+                />
+              ))}
             </div>
-
-            <div className="mb-6">
-              <KanbanView 
-                selectedPipelineId={selectedPipelineId}
-                onPipelineChange={setSelectedPipelineId}
-                selectedCompanyId={selectedCompanyId}
-              />
-            </div>
-          </>
+          </div>
         )}
+
+        <div className="mb-6">
+          <KanbanView 
+            selectedPipelineId={selectedPipelineId}
+            onPipelineChange={setSelectedPipelineId}
+            selectedCompanyId={selectedCompanyId}
+          />
+        </div>
       </main>
 
       <AddEditClientModal
