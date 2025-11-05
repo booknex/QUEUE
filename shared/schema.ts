@@ -15,6 +15,7 @@ export const clientFiles = pgTable("client_files", {
   description: text("description"),
   status: text("status").notNull().default("waiting"),
   companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  pipelineId: integer("pipeline_id").references(() => pipelines.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastTouchedAt: timestamp("last_touched_at"),
   closedAt: timestamp("closed_at"),
@@ -75,6 +76,7 @@ export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),
   description: z.string().optional(),
   status: z.enum(["waiting", "in_progress"]).optional(),
+  pipelineId: z.number().nullable().optional(),
   lastTouchedAt: z.date().optional(),
   closedAt: z.date().optional(),
 });
