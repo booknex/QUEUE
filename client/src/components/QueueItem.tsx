@@ -21,7 +21,6 @@ interface QueueItemProps {
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
   onClose: (file: ClientFile) => void;
-  onPipelineChange: (fileId: number, pipelineId: number | null) => void;
   now?: number;
 }
 
@@ -96,7 +95,7 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
   return hoursSince >= 12;
 }
 
-export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose, onPipelineChange, now = Date.now() }: QueueItemProps) {
+export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
@@ -190,44 +189,6 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
                 <Eye className="w-3 h-3 mr-1" />
                 Touch
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full justify-start h-7 text-xs"
-                    data-testid={`button-pipeline-${file.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Tag className="w-3 h-3 mr-1" />
-                    {currentPipeline ? currentPipeline.name : "Set Pipeline"}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
-                  {file.pipelineId && (
-                    <>
-                      <DropdownMenuItem
-                        onSelect={() => onPipelineChange(file.id, null)}
-                        data-testid={`menu-pipeline-none-${file.id}`}
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Remove Pipeline
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  {pipelines.map((pipeline) => (
-                    <DropdownMenuItem
-                      key={pipeline.id}
-                      onSelect={() => onPipelineChange(file.id, pipeline.id)}
-                      data-testid={`menu-pipeline-${pipeline.id}-${file.id}`}
-                    >
-                      <Tag className="w-4 h-4 mr-2" />
-                      {pipeline.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
