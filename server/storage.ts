@@ -37,6 +37,7 @@ export interface IStorage {
   findDuplicateContact(companyId: number, name: string, email?: string | null, phone?: string | null): Promise<Contact | undefined>;
   createContact(contact: InsertContact): Promise<Contact>;
   updateContact(id: number, updates: UpdateContact): Promise<Contact | undefined>;
+  deleteContact(id: number): Promise<boolean>;
 
   getAllOpportunities(): Promise<OpportunityWithContact[]>;
   getOpportunity(id: number): Promise<Opportunity | undefined>;
@@ -292,6 +293,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(contacts.id, id))
       .returning();
     return contact || undefined;
+  }
+
+  async deleteContact(id: number): Promise<boolean> {
+    const result = await db
+      .delete(contacts)
+      .where(eq(contacts.id, id));
+    return true;
   }
 
   async getAllKanbanColumns(pipelineId?: number | null): Promise<KanbanColumn[]> {

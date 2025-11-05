@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { User, Phone, Mail, Plus, Upload } from "lucide-react";
+import { useState, useMemo } from "react";
+import { User, Phone, Mail, Plus, Upload, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AddContactModal } from "@/components/AddContactModal";
 import { UploadContactsModal } from "@/components/UploadContactsModal";
+import { EditContactModal } from "@/components/EditContactModal";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
@@ -15,6 +17,8 @@ interface ContactsProps {
 export default function Contacts({ selectedCompanyId }: ContactsProps) {
   const [showAddContact, setShowAddContact] = useState(false);
   const [showUploadContacts, setShowUploadContacts] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const { data: contacts, isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts", selectedCompanyId?.toString()],
@@ -27,6 +31,18 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
     enabled: selectedCompanyId !== null,
   });
 
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return [];
+    if (!searchQuery.trim()) return contacts;
+    
+    const query = searchQuery.toLowerCase();
+    return contacts.filter(contact => 
+      contact.name?.toLowerCase().includes(query) ||
+      contact.email?.toLowerCase().includes(query) ||
+      contact.phone?.toLowerCase().includes(query)
+    );
+  }, [contacts, searchQuery]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -35,19 +51,25 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
     );
   }
 
-  const displayedContacts = contacts?.slice(0, 10) || [];
-  const totalContacts = contacts?.length || 0;
+  const displayedContacts = filteredContacts.slice(0, 10);
+  const totalContacts = filteredContacts.length;
+  const totalAllContacts = contacts?.length || 0;
 
   return (
     <div className="h-full flex flex-col p-6">
       <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
-        <div className="mb-6">
-          <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="mb-6 space-y-4">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold">Contacts</h1>
               <p className="text-muted-foreground">
                 View and manage all your contacts
-                {totalContacts > 10 && (
+                {searchQuery && totalContacts !== totalAllContacts && (
+                  <span className="ml-1">
+                    (found {totalContacts} of {totalAllContacts})
+                  </span>
+                )}
+                {!searchQuery && totalContacts > 10 && (
                   <span className="ml-1">
                     (showing 10 of {totalContacts})
                   </span>
@@ -74,6 +96,17 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
               </Button>
             </div>
           </div>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search contacts by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+              data-testid="input-search-contacts"
+            />
+          </div>
         </div>
 
         {!contacts || contacts.length === 0 ? (
@@ -93,7 +126,8 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
               {displayedContacts.map((contact) => (
                 <Card
                   key={contact.id}
-                  className="hover-elevate"
+                  className="hover-elevate cursor-pointer"
+                  onClick={() => setSelectedContact(contact)}
                   data-testid={`contact-card-${contact.id}`}
                 >
                   <CardContent className="p-4">
@@ -163,6 +197,13 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
       <UploadContactsModal
         open={showUploadContacts}
         onClose={() => setShowUploadContacts(false)}
+        selectedCompanyId={selectedCompanyId}
+      />
+
+      <EditContactModal
+        open={!!selectedContact}
+        onClose={() => setSelectedContact(null)}
+        contact={selectedContact}
         selectedCompanyId={selectedCompanyId}
       />
     </div>

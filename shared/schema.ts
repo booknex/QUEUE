@@ -140,8 +140,16 @@ export type Contact = typeof contacts.$inferSelect;
 
 export const updateContactSchema = z.object({
   name: z.string().min(1).optional(),
-  phone: z.string().optional(),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  phone: z.string().nullable().optional().transform(v => {
+    if (v === null) return null;
+    if (!v || !v.trim()) return null;
+    return v.trim();
+  }),
+  email: z.string().email("Invalid email address").nullable().optional().or(z.literal("")).transform(v => {
+    if (v === null) return null;
+    if (!v || !v.trim()) return null;
+    return v.trim();
+  }),
 });
 
 export type UpdateContact = z.infer<typeof updateContactSchema>;

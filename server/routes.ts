@@ -602,6 +602,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid contact ID" });
+      }
+      
+      const contact = await storage.getContact(id);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      const companyId = contact.companyId;
+      await storage.deleteContact(id);
+      broadcast({ type: "contact:deleted", companyId });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete contact" });
+    }
+  });
+
   function serializeOpportunity(opportunity: Opportunity | OpportunityWithContact) {
     return {
       ...opportunity,
