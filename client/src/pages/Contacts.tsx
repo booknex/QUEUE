@@ -120,8 +120,8 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="overflow-y-auto flex-1" data-testid="contacts-scroll-container">
-            <div className="space-y-3 pr-2" data-testid="contacts-list">
+          <div className="overflow-y-auto max-h-[600px] border rounded-md p-3" data-testid="contacts-scroll-container">
+            <div className="space-y-3" data-testid="contacts-list">
               {filteredContacts.map((contact) => (
                 <Card
                   key={contact.id}
