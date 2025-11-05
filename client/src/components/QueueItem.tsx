@@ -107,7 +107,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
   const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
   const attention = needsAttention(file.lastTouchedAt, now);
   
-  const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 ${
+  const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${
     attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
   }`;
 
@@ -125,6 +125,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
       data-testid={`card-queue-item-${file.id}`}
       data-recently-touched={String(recentlyTouched)}
       data-needs-attention={String(attention)}
+      onClick={() => onEdit(file)}
     >
       <div
         className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-md ${edgeBarColor}`}
@@ -172,7 +173,10 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onTouch(file.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTouch(file.id);
+                }}
                 className="w-full justify-start h-7 text-xs"
                 data-testid={`button-touch-${file.id}`}
               >
@@ -186,6 +190,7 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                     variant="ghost"
                     className="w-full justify-start h-7 text-xs"
                     data-testid={`button-menu-${file.id}`}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <MoreVertical className="w-3 h-3 mr-1" />
                     Actions
@@ -193,18 +198,14 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
                   <DropdownMenuItem
-                    onSelect={() => setSessionHistoryOpen(true)}
+                    onSelect={(e) => {
+                      e.stopPropagation();
+                      setSessionHistoryOpen(true);
+                    }}
                     data-testid={`menu-history-${file.id}`}
                   >
                     <History className="w-4 h-4 mr-2" />
                     History
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => onEdit(file)}
-                    data-testid={`menu-edit-${file.id}`}
-                  >
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() => onClose(file)}
