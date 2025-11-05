@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema } from "@shared/schema";
 import { z } from "zod";
 import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company } from "@shared/schema";
+import { broadcast } from "./websocket";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -59,6 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertCompanySchema.parse(req.body);
       const company = await storage.createCompany(validated);
+      broadcast({ type: "company:created", companyId: company.id });
       res.status(201).json(serializeCompany(company));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -79,6 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!company) {
         return res.status(404).json({ error: "Company not found" });
       }
+      broadcast({ type: "company:updated", companyId: company.id });
       res.json(serializeCompany(company));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -98,6 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!deleted) {
         return res.status(404).json({ error: "Company not found" });
       }
+      broadcast({ type: "company:deleted", companyId: id });
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete company" });
@@ -135,6 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertClientFileSchema.parse(req.body);
       const file = await storage.createFile(validated);
+      broadcast({ type: "file:created", companyId: file.companyId });
       res.status(201).json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -155,6 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
+      broadcast({ type: "file:updated", companyId: file.companyId });
       res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -170,9 +176,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid file ID" });
       }
+      const file = await storage.getFile(id);
       const success = await storage.deleteFile(id);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
+      }
+      if (file) {
+        broadcast({ type: "file:deleted", companyId: file.companyId });
       }
       res.status(204).send();
     } catch (error) {
@@ -194,6 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "File not found" });
       }
       
+      broadcast({ type: "file:touched", companyId: file.companyId });
       res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -220,6 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "File not found" });
       }
       
+      broadcast({ type: "file:closed", companyId: file.companyId });
       res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -281,6 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertPipelineSchema.parse(req.body);
       const pipeline = await storage.createPipeline(validated);
+      broadcast({ type: "pipeline:created", companyId: pipeline.companyId });
       res.status(201).json(pipeline);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -301,6 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pipeline) {
         return res.status(404).json({ error: "Pipeline not found" });
       }
+      broadcast({ type: "pipeline:updated", companyId: pipeline.companyId });
       res.json(pipeline);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -316,9 +330,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid pipeline ID" });
       }
+      const pipeline = await storage.getPipeline(id);
       const success = await storage.deletePipeline(id);
       if (!success) {
         return res.status(404).json({ error: "Pipeline not found" });
+      }
+      if (pipeline) {
+        broadcast({ type: "pipeline:deleted", companyId: pipeline.companyId });
       }
       res.status(204).send();
     } catch (error) {
@@ -365,6 +383,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertKanbanColumnSchema.parse(req.body);
       const column = await storage.createKanbanColumn(validated);
+      if (column.pipelineId !== null) {
+        broadcast({ type: "column:created", pipelineId: column.pipelineId });
+      }
       res.status(201).json(serializeKanbanColumn(column));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -400,9 +421,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid column ID" });
       }
+      const column = await storage.getKanbanColumn(id);
       const success = await storage.deleteKanbanColumn(id);
       if (!success) {
         return res.status(404).json({ error: "Column not found" });
+      }
+      if (column && column.pipelineId !== null) {
+        broadcast({ type: "column:deleted", pipelineId: column.pipelineId });
       }
       res.status(204).send();
     } catch (error) {
@@ -447,6 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertContactSchema.parse(req.body);
       const contact = await storage.createContact(validated);
+      broadcast({ type: "contact:created", companyId: contact.companyId });
       res.status(201).json(serializeContact(contact));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -492,6 +518,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertOpportunitySchema.parse(req.body);
       const opportunity = await storage.createOpportunity(validated);
+      const contact = await storage.getContact(opportunity.contactId);
+      if (contact) {
+        broadcast({ type: "opportunity:created", companyId: contact.companyId });
+      }
       res.status(201).json(serializeOpportunity(opportunity));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -512,6 +542,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!opportunity) {
         return res.status(404).json({ error: "Opportunity not found" });
       }
+      const contact = await storage.getContact(opportunity.contactId);
+      if (contact) {
+        broadcast({ type: "opportunity:updated", companyId: contact.companyId });
+      }
       res.json(serializeOpportunity(opportunity));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -527,9 +561,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid opportunity ID" });
       }
+      const opportunity = await storage.getOpportunity(id);
       const success = await storage.deleteOpportunity(id);
       if (!success) {
         return res.status(404).json({ error: "Opportunity not found" });
+      }
+      if (opportunity) {
+        const contact = await storage.getContact(opportunity.contactId);
+        if (contact) {
+          broadcast({ type: "opportunity:deleted", companyId: contact.companyId });
+        }
       }
       res.status(204).send();
     } catch (error) {
