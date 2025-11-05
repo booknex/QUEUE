@@ -13,11 +13,12 @@ import { formatDistanceToNow } from "date-fns";
 import type { ClientFile, Pipeline } from "@shared/schema";
 import { useState } from "react";
 import { SessionHistory } from "./SessionHistory";
+import { TouchNoteModal } from "./TouchNoteModal";
 
 interface QueueItemProps {
   file: ClientFile;
   pipelines: Pipeline[];
-  onTouch: (id: number) => void;
+  onTouch: (id: number, note?: string) => void;
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
   onClose: (file: ClientFile) => void;
@@ -97,6 +98,7 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
 
 export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
+  const [touchNoteOpen, setTouchNoteOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
@@ -112,6 +114,10 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
   }`;
 
   const edgeBarColor = recentlyTouched ? "bg-green-500" : attention ? "bg-red-500" : urgency.color;
+
+  const handleTouchSubmit = (note: string) => {
+    onTouch(file.id, note);
+  };
 
   return (
     <>
@@ -176,19 +182,6 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
             )}
 
             <div className="flex flex-col gap-1">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTouch(file.id);
-                }}
-                className="w-full justify-start h-7 text-xs"
-                data-testid={`button-touch-${file.id}`}
-              >
-                <Eye className="w-3 h-3 mr-1" />
-                Touch
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -226,11 +219,30 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTouchNoteOpen(true);
+                }}
+                className="w-full justify-start h-7 text-xs"
+                data-testid={`button-touch-${file.id}`}
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                Touch
+              </Button>
             </div>
           </div>
         </div>
       </div>
     </Card>
+    <TouchNoteModal
+      file={file}
+      open={touchNoteOpen}
+      onOpenChange={setTouchNoteOpen}
+      onSubmit={handleTouchSubmit}
+    />
     </>
   );
 }

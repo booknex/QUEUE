@@ -161,8 +161,8 @@ export default function Dashboard() {
   });
 
   const touchMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest("POST", `/api/files/${id}/touch`, {});
+    mutationFn: async ({ id, note }: { id: number; note?: string }) => {
+      return await apiRequest("POST", `/api/files/${id}/touch`, { notes: note || "" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
@@ -229,6 +229,10 @@ export default function Dashboard() {
     if (closingFile) {
       closeMutation.mutate({ id: closingFile.id, closedAt: data.closedAt });
     }
+  };
+
+  const handleTouch = (id: number, note?: string) => {
+    touchMutation.mutate({ id, note });
   };
   
   const stats = {
@@ -361,7 +365,7 @@ export default function Dashboard() {
                   key={file.id}
                   file={file}
                   pipelines={pipelines}
-                  onTouch={touchMutation.mutate}
+                  onTouch={handleTouch}
                   onEdit={handleEdit}
                   onDelete={deleteMutation.mutate}
                   onClose={handleClose}
