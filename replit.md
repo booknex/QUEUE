@@ -29,6 +29,7 @@ The application has two main sections:
 -   **Drag-and-Drop Opportunities**: Opportunity cards can be dragged between kanban columns using @hello-pangea/dnd library. When dropped, the opportunity's columnId is updated via PATCH /api/opportunities/:id endpoint. The UI automatically refetches and updates to show cards in their new columns. Visual feedback includes cursor changes (grab/grabbing), shadow effects while dragging, and column highlighting on hover.
 -   **Opportunity Management**: Create and track opportunities through kanban workflow. When creating an opportunity, users must provide contact information (name required, phone and email optional). The system creates both the contact and opportunity together. AddOpportunityModal uses react-hook-form with zodResolver for form validation. All opportunity API endpoints serialize dates to ISO strings for type safety. **Opportunity cards display the contact name as the card title** instead of the opportunity title, with fallback to opportunity title if contact name is unavailable.
 -   **Contact Management**: All contacts created through opportunities are accessible via the Contacts view in the sidebar. Contacts are displayed in a list format showing name, phone, and email. Each opportunity is linked to a contact via foreign key.
+-   **Pipeline Assignment**: Client cards in the queue view can be assigned to pipelines via a dropdown menu in the card's action area. When assigned, a blue badge displays the pipeline name on the card. The "Set Pipeline" button changes to show the pipeline name when assigned. Users can remove pipeline assignments via the "Remove Pipeline" option. This feature is stored in the `pipelineId` column of client_files table with foreign key relationship to pipelines (cascade set null on delete).
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
 
@@ -37,7 +38,7 @@ The application has two main sections:
 -   **Backend**: Express.js server, PostgreSQL database with Drizzle ORM, Zod validation, RESTful API design, WebSocket server for real-time events.
 -   **Data Models**:
     -   **Company**: `id`, `name`, `createdAt` - Root organization entity
-    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress | completed), `companyId` (foreign key, cascade delete), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
+    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress), `companyId` (foreign key, cascade delete), `pipelineId` (nullable, foreign key to pipelines, cascade set null), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
     -   **Pipeline**: `id`, `name`, `companyId` (foreign key, cascade delete), `createdAt`
     -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `companyId` (foreign key, cascade delete), `createdAt`
     -   **KanbanColumn**: `id`, `name`, `position`, `pipelineId` (nullable, null for Opportunities view), `createdAt`
