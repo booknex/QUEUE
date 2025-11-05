@@ -51,7 +51,6 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
     );
   }
 
-  const displayedContacts = filteredContacts.slice(0, 10);
   const totalContacts = filteredContacts.length;
   const totalAllContacts = contacts?.length || 0;
 
@@ -69,9 +68,9 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
                     (found {totalContacts} of {totalAllContacts})
                   </span>
                 )}
-                {!searchQuery && totalContacts > 10 && (
+                {!searchQuery && totalContacts > 0 && (
                   <span className="ml-1">
-                    (showing 10 of {totalContacts})
+                    ({totalContacts} {totalContacts === 1 ? 'contact' : 'contacts'})
                   </span>
                 )}
               </p>
@@ -121,9 +120,9 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="overflow-auto flex-1" data-testid="contacts-scroll-container">
+          <div className="overflow-y-auto flex-1" data-testid="contacts-scroll-container">
             <div className="space-y-3 pr-2" data-testid="contacts-list">
-              {displayedContacts.map((contact) => (
+              {filteredContacts.map((contact) => (
                 <Card
                   key={contact.id}
                   className="hover-elevate cursor-pointer"
