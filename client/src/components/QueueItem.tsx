@@ -1,4 +1,4 @@
-import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2, XCircle } from "lucide-react";
+import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2, Trash2, XCircle, Tag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,16 +9,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import type { ClientFile } from "@shared/schema";
+import type { ClientFile, Pipeline } from "@shared/schema";
 import { useState } from "react";
 import { SessionHistory } from "./SessionHistory";
 
 interface QueueItemProps {
   file: ClientFile;
+  pipelines: Pipeline[];
   onTouch: (id: number) => void;
   onEdit: (file: ClientFile) => void;
   onDelete: (id: number) => void;
   onClose: (file: ClientFile) => void;
+  onPipelineChange: (fileId: number, pipelineId: number | null) => void;
   now?: number;
 }
 
@@ -93,13 +95,17 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
   return hoursSince >= 12;
 }
 
-export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date.now() }: QueueItemProps) {
+export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose, onPipelineChange, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
   const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
   const attention = needsAttention(file.lastTouchedAt, now);
+  
+  const currentPipeline = file.pipelineId 
+    ? pipelines.find(p => p.id === file.pipelineId) 
+    : null;
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${
     attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
@@ -155,6 +161,12 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                 {statusConfig.icon}
                 {statusConfig.label}
               </Badge>
+              {currentPipeline && (
+                <Badge variant="outline" className="gap-0.5 text-xs py-0 h-5" data-testid={`badge-pipeline-${file.id}`}>
+                  <Tag className="w-3 h-3" />
+                  {currentPipeline.name}
+                </Badge>
+              )}
             </div>
             
             {file.lastTouchedAt && (
@@ -177,6 +189,41 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                 <Eye className="w-3 h-3 mr-1" />
                 Touch
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full justify-start h-7 text-xs"
+                    data-testid={`button-pipeline-${file.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Tag className="w-3 h-3 mr-1" />
+                    {currentPipeline ? currentPipeline.name : "Set Pipeline"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
+                  {currentPipeline && (
+                    <DropdownMenuItem
+                      onSelect={() => onPipelineChange(file.id, null)}
+                      data-testid={`menu-pipeline-none-${file.id}`}
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Remove Pipeline
+                    </DropdownMenuItem>
+                  )}
+                  {pipelines.map((pipeline) => (
+                    <DropdownMenuItem
+                      key={pipeline.id}
+                      onSelect={() => onPipelineChange(file.id, pipeline.id)}
+                      data-testid={`menu-pipeline-${pipeline.id}-${file.id}`}
+                    >
+                      <Tag className="w-4 h-4 mr-2" />
+                      {pipeline.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button

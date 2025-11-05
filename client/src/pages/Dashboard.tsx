@@ -202,6 +202,26 @@ export default function Dashboard() {
     },
   });
 
+  const pipelineAssignMutation = useMutation({
+    mutationFn: async ({ id, pipelineId }: { id: number; pipelineId: number | null }) => {
+      return await apiRequest("PATCH", `/api/files/${id}`, { pipelineId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
+      toast({
+        title: "Pipeline updated",
+        description: "The client has been assigned to the pipeline.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to assign pipeline. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: any) => {
     if (editingFile) {
       updateMutation.mutate({ id: editingFile.id, data });
@@ -229,6 +249,10 @@ export default function Dashboard() {
     if (closingFile) {
       closeMutation.mutate({ id: closingFile.id, closedAt: data.closedAt });
     }
+  };
+
+  const handlePipelineChange = (fileId: number, pipelineId: number | null) => {
+    pipelineAssignMutation.mutate({ id: fileId, pipelineId });
   };
   
   const stats = {
@@ -360,10 +384,12 @@ export default function Dashboard() {
                 <QueueItem
                   key={file.id}
                   file={file}
+                  pipelines={pipelines}
                   onTouch={touchMutation.mutate}
                   onEdit={handleEdit}
                   onDelete={deleteMutation.mutate}
                   onClose={handleClose}
+                  onPipelineChange={handlePipelineChange}
                   now={now}
                 />
               ))}
