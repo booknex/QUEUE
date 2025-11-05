@@ -22,14 +22,16 @@ import {
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
-import type { KanbanColumn } from "@shared/schema";
+import type { KanbanColumn, OpportunityWithContact } from "@shared/schema";
 import { z } from "zod";
+import { useEffect } from "react";
 
 interface AddOpportunityModalProps {
   open: boolean;
   onClose: () => void;
   selectedPipelineId: number | null;
   selectedCompanyId: number | null;
+  opportunity?: OpportunityWithContact | null;
 }
 
 const formSchema = z.object({
@@ -41,8 +43,9 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function AddOpportunityModal({ open, onClose, selectedPipelineId, selectedCompanyId }: AddOpportunityModalProps) {
+export function AddOpportunityModal({ open, onClose, selectedPipelineId, selectedCompanyId, opportunity = null }: AddOpportunityModalProps) {
   const { toast } = useToast();
+  const isEditMode = !!opportunity;
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
     queryKey: ["/api/columns", selectedPipelineId?.toString()],
@@ -64,52 +67,103 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     },
   });
 
-  const createMutation = useMutation({
+  // Reset form when opportunity changes (for edit mode)
+  useEffect(() => {
+    if (opportunity) {
+      form.reset({
+        title: opportunity.contactName || "",
+        contactPhone: opportunity.contactPhone || "",
+        contactEmail: opportunity.contactEmail || "",
+        description: opportunity.description || "",
+      });
+    } else {
+      form.reset({
+        title: "",
+        contactPhone: "",
+        contactEmail: "",
+        description: "",
+      });
+    }
+  }, [opportunity, form]);
+
+  const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      // Check if a pipeline is selected and has columns
-      if (selectedPipelineId === null) {
-        throw new Error("Please select a pipeline first");
-      }
-      
-      if (pipelineColumns.length === 0) {
-        throw new Error("Please add at least one column to this pipeline before creating opportunities");
-      }
-      
-      // First create the contact using the title field as the contact name
-      const contactData: any = {
-        name: data.title,
-        companyId: selectedCompanyId,
-      };
-      
-      // Only include phone and email if they have values
-      if (data.contactPhone && data.contactPhone.trim()) {
-        contactData.phone = data.contactPhone;
-      }
-      if (data.contactEmail && data.contactEmail.trim()) {
-        contactData.email = data.contactEmail;
-      }
+      if (isEditMode && opportunity) {
+        // Update existing opportunity and contact
+        const contactData: any = {
+          name: data.title,
+        };
+        
+        // Only include phone and email if they have values
+        if (data.contactPhone && data.contactPhone.trim()) {
+          contactData.phone = data.contactPhone;
+        }
+        if (data.contactEmail && data.contactEmail.trim()) {
+          contactData.email = data.contactEmail;
+        }
 
-      const contactRes = await apiRequest("POST", "/api/contacts", contactData);
-      const contact = await contactRes.json();
+        // Update contact
+        await apiRequest("PATCH", `/api/contacts/${opportunity.contactId}`, contactData);
 
-      // Then create the opportunity with the contactId
-      // Use the contact name as the opportunity title
-      // Use the first column's ID (default column)
-      const firstColumnId = pipelineColumns[0].id;
+        // Update opportunity
+        const opportunityData: any = {
+          title: data.title,
+        };
+        
+        // Only include description if it has a value
+        if (data.description && data.description.trim()) {
+          opportunityData.description = data.description;
+        }
 
-      const opportunityData: any = {
-        title: data.title,
-        columnId: firstColumnId,
-        contactId: contact.id,
-      };
-      
-      // Only include description if it has a value
-      if (data.description && data.description.trim()) {
-        opportunityData.description = data.description;
+        const opportunityRes = await apiRequest("PATCH", `/api/opportunities/${opportunity.id}`, opportunityData);
+        return await opportunityRes.json();
+      } else {
+        // Create new opportunity and contact
+        // Check if a pipeline is selected and has columns
+        if (selectedPipelineId === null) {
+          throw new Error("Please select a pipeline first");
+        }
+        
+        if (pipelineColumns.length === 0) {
+          throw new Error("Please add at least one column to this pipeline before creating opportunities");
+        }
+        
+        // First create the contact using the title field as the contact name
+        const contactData: any = {
+          name: data.title,
+          companyId: selectedCompanyId,
+        };
+        
+        // Only include phone and email if they have values
+        if (data.contactPhone && data.contactPhone.trim()) {
+          contactData.phone = data.contactPhone;
+        }
+        if (data.contactEmail && data.contactEmail.trim()) {
+          contactData.email = data.contactEmail;
+        }
+
+        const contactRes = await apiRequest("POST", "/api/contacts", contactData);
+        const contact = await contactRes.json();
+
+        // Then create the opportunity with the contactId
+        // Use the contact name as the opportunity title
+        // Use the first column's ID (default column)
+        const firstColumnId = pipelineColumns[0].id;
+
+        const opportunityData: any = {
+          title: data.title,
+          columnId: firstColumnId,
+          contactId: contact.id,
+        };
+        
+        // Only include description if it has a value
+        if (data.description && data.description.trim()) {
+          opportunityData.description = data.description;
+        }
+
+        const opportunityRes = await apiRequest("POST", "/api/opportunities", opportunityData);
+        return await opportunityRes.json();
       }
-
-      const opportunityRes = await apiRequest("POST", "/api/opportunities", opportunityData);
-      return await opportunityRes.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/opportunities", selectedCompanyId?.toString()] });
@@ -117,25 +171,27 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
       form.reset();
       onClose();
       toast({
-        title: "Opportunity created",
-        description: "The opportunity and contact have been added.",
+        title: isEditMode ? "Opportunity updated" : "Opportunity created",
+        description: isEditMode 
+          ? "The opportunity and contact have been updated."
+          : "The opportunity and contact have been added.",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create opportunity.",
+        description: error.message || (isEditMode ? "Failed to update opportunity." : "Failed to create opportunity."),
         variant: "destructive",
       });
     },
   });
 
   const handleSubmit = (data: FormData) => {
-    createMutation.mutate(data);
+    saveMutation.mutate(data);
   };
 
   const handleClose = () => {
-    if (!createMutation.isPending) {
+    if (!saveMutation.isPending) {
       form.reset();
       onClose();
     }
@@ -145,9 +201,11 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px]" data-testid="dialog-add-opportunity">
         <DialogHeader>
-          <DialogTitle>Add New Opportunity</DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Opportunity" : "Add New Opportunity"}</DialogTitle>
           <DialogDescription>
-            Create a new opportunity with contact information.
+            {isEditMode 
+              ? "Update the opportunity and contact information."
+              : "Create a new opportunity with contact information."}
           </DialogDescription>
         </DialogHeader>
 
@@ -235,17 +293,19 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 data-testid="button-cancel-opportunity"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={saveMutation.isPending}
                 data-testid="button-submit-opportunity"
               >
-                {createMutation.isPending ? "Creating..." : "Create Opportunity"}
+                {saveMutation.isPending 
+                  ? (isEditMode ? "Updating..." : "Creating...") 
+                  : (isEditMode ? "Update Opportunity" : "Create Opportunity")}
               </Button>
             </div>
           </form>
