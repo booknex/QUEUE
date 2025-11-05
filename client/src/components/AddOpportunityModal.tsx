@@ -146,6 +146,13 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         }
 
         const contactRes = await apiRequest("POST", "/api/contacts", contactData);
+        if (!contactRes.ok) {
+          const errorData = await contactRes.json();
+          if (contactRes.status === 409) {
+            throw new Error(`Contact "${data.title}" already exists. Please use a different name or update the existing contact.`);
+          }
+          throw new Error(errorData.error || "Failed to create contact");
+        }
         const contact = await contactRes.json();
 
         // Then create the opportunity with the contactId

@@ -34,6 +34,7 @@ export interface IStorage {
 
   getAllContacts(companyId?: number): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
+  findDuplicateContact(companyId: number, name: string, email?: string | null, phone?: string | null): Promise<Contact | undefined>;
   createContact(contact: InsertContact): Promise<Contact>;
   updateContact(id: number, updates: UpdateContact): Promise<Contact | undefined>;
 
@@ -227,6 +228,53 @@ export class DatabaseStorage implements IStorage {
   async getContact(id: number): Promise<Contact | undefined> {
     const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
     return contact || undefined;
+  }
+
+  async findDuplicateContact(companyId: number, name: string, email?: string | null, phone?: string | null): Promise<Contact | undefined> {
+    // Check for duplicate by name within the same company
+    const [nameMatch] = await db
+      .select()
+      .from(contacts)
+      .where(and(
+        eq(contacts.companyId, companyId),
+        eq(contacts.name, name)
+      ));
+    
+    if (nameMatch) {
+      return nameMatch;
+    }
+    
+    // Check for duplicate by email if email is provided
+    if (email && email.trim()) {
+      const [emailMatch] = await db
+        .select()
+        .from(contacts)
+        .where(and(
+          eq(contacts.companyId, companyId),
+          eq(contacts.email, email)
+        ));
+      
+      if (emailMatch) {
+        return emailMatch;
+      }
+    }
+    
+    // Check for duplicate by phone if phone is provided
+    if (phone && phone.trim()) {
+      const [phoneMatch] = await db
+        .select()
+        .from(contacts)
+        .where(and(
+          eq(contacts.companyId, companyId),
+          eq(contacts.phone, phone)
+        ));
+      
+      if (phoneMatch) {
+        return phoneMatch;
+      }
+    }
+    
+    return undefined;
   }
 
   async createContact(insertContact: InsertContact): Promise<Contact> {

@@ -477,6 +477,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contacts", async (req, res) => {
     try {
       const validated = insertContactSchema.parse(req.body);
+      
+      const duplicate = await storage.findDuplicateContact(
+        validated.companyId,
+        validated.name,
+        validated.email,
+        validated.phone
+      );
+      
+      if (duplicate) {
+        let errorMessage = "A contact already exists";
+        if (duplicate.name === validated.name) {
+          errorMessage = `A contact with the name "${validated.name}" already exists`;
+        } else if (validated.email && duplicate.email === validated.email) {
+          errorMessage = `A contact with the email "${validated.email}" already exists`;
+        } else if (validated.phone && duplicate.phone === validated.phone) {
+          errorMessage = `A contact with the phone number "${validated.phone}" already exists`;
+        }
+        
+        return res.status(409).json({ 
+          error: errorMessage,
+          existingContactId: duplicate.id
+        });
+      }
+      
       const contact = await storage.createContact(validated);
       broadcast({ type: "contact:created", companyId: contact.companyId });
       res.status(201).json(serializeContact(contact));
