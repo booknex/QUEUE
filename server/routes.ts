@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema } from "@shared/schema";
 import { z } from "zod";
 import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company } from "@shared/schema";
 import { broadcast } from "./websocket";
@@ -482,6 +482,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
       }
       res.status(500).json({ error: "Failed to create contact" });
+    }
+  });
+
+  app.patch("/api/contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid contact ID" });
+      }
+      const validated = updateContactSchema.parse(req.body);
+      const contact = await storage.updateContact(id, validated);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      broadcast({ type: "contact:updated", companyId: contact.companyId });
+      res.json(serializeContact(contact));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update contact" });
     }
   });
 

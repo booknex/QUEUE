@@ -138,6 +138,14 @@ export const insertContactSchema = createInsertSchema(contacts).omit({
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
 
+export const updateContactSchema = z.object({
+  name: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+});
+
+export type UpdateContact = z.infer<typeof updateContactSchema>;
+
 export const insertOpportunitySchema = createInsertSchema(opportunities).omit({
   id: true,
   createdAt: true,

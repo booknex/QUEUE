@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -35,6 +35,7 @@ export interface IStorage {
   getAllContacts(companyId?: number): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
   createContact(contact: InsertContact): Promise<Contact>;
+  updateContact(id: number, updates: UpdateContact): Promise<Contact | undefined>;
 
   getAllOpportunities(): Promise<OpportunityWithContact[]>;
   getOpportunity(id: number): Promise<Opportunity | undefined>;
@@ -234,6 +235,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertContact)
       .returning();
     return contact;
+  }
+
+  async updateContact(id: number, updates: UpdateContact): Promise<Contact | undefined> {
+    const [contact] = await db
+      .update(contacts)
+      .set(updates)
+      .where(eq(contacts.id, id))
+      .returning();
+    return contact || undefined;
   }
 
   async getAllKanbanColumns(pipelineId?: number | null): Promise<KanbanColumn[]> {
