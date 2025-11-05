@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { User, Phone, Mail, Plus } from "lucide-react";
+import { User, Phone, Mail, Plus, Upload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddContactModal } from "@/components/AddContactModal";
+import { UploadContactsModal } from "@/components/UploadContactsModal";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
@@ -13,6 +14,7 @@ interface ContactsProps {
 
 export default function Contacts({ selectedCompanyId }: ContactsProps) {
   const [showAddContact, setShowAddContact] = useState(false);
+  const [showUploadContacts, setShowUploadContacts] = useState(false);
   
   const { data: contacts, isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts", selectedCompanyId?.toString()],
@@ -44,14 +46,25 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
                 View and manage all your contacts
               </p>
             </div>
-            <Button
-              onClick={() => setShowAddContact(true)}
-              disabled={selectedCompanyId === null}
-              data-testid="button-add-contact"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Contact
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowUploadContacts(true)}
+                disabled={selectedCompanyId === null}
+                variant="outline"
+                data-testid="button-upload-contacts"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload CSV
+              </Button>
+              <Button
+                onClick={() => setShowAddContact(true)}
+                disabled={selectedCompanyId === null}
+                data-testid="button-add-contact"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Contact
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -134,6 +147,12 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
       <AddContactModal
         open={showAddContact}
         onClose={() => setShowAddContact(false)}
+        selectedCompanyId={selectedCompanyId}
+      />
+      
+      <UploadContactsModal
+        open={showUploadContacts}
+        onClose={() => setShowUploadContacts(false)}
         selectedCompanyId={selectedCompanyId}
       />
     </div>

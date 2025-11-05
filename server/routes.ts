@@ -512,6 +512,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/contacts/bulk-import", async (req, res) => {
+    try {
+      const schema = z.object({
+        contacts: z.array(z.object({
+          name: z.string().optional().transform(v => v?.trim() || undefined),
+          phone: z.string().optional().transform(v => v?.trim() || undefined),
+          email: z.string().optional().transform(v => v?.trim() || undefined),
+        })),
+        companyId: z.number(),
+      });
+      
+      const validated = schema.parse(req.body);
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as string[],
+      };
+      
+      for (const contactData of validated.contacts) {
+        try {
+          const { name, phone, email } = contactData;
+          
+          if (!name && !phone && !email) {
+            results.failed++;
+            results.errors.push("Contact must have at least a name, phone, or email");
+            continue;
+          }
+          
+          const duplicate = await storage.findDuplicateContact(
+            validated.companyId,
+            name,
+            email,
+            phone
+          );
+          
+          if (duplicate) {
+            results.failed++;
+            let identifier = name || phone || email;
+            results.errors.push(`Duplicate contact: ${identifier}`);
+            continue;
+          }
+          
+          await storage.createContact({
+            companyId: validated.companyId,
+            name,
+            phone,
+            email,
+          });
+          
+          results.success++;
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push(error.message || "Unknown error");
+        }
+      }
+      
+      if (results.success > 0) {
+        broadcast({ type: "contact:created", companyId: validated.companyId });
+      }
+      
+      res.json(results);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to import contacts" });
+    }
+  });
+
   app.patch("/api/contacts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
