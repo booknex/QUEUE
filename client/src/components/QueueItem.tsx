@@ -132,8 +132,8 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
         data-testid={`indicator-urgency-${file.id}`}
       />
       
-      <div className="flex flex-col gap-2 p-2.5 pl-4">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col p-2.5 pl-4 h-full">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-0.5 text-muted-foreground font-mono text-xs font-semibold" data-testid={`text-touch-count-${file.id}`}>
             <span>{file.touchCount || 0} touches</span>
           </div>
@@ -143,7 +143,7 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 mb-2">
           <div className="mb-1.5">
             <h3 className="text-sm font-medium text-foreground mb-0.5" data-testid={`text-client-name-${file.id}`}>
               {file.clientName}
@@ -174,60 +174,60 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
                 Last touched: {formatDistanceToNow(new Date(file.lastTouchedAt), { addSuffix: true })}
               </p>
             )}
+          </div>
+        </div>
 
-            <div className="flex flex-col gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-full justify-start h-7 text-xs"
-                    data-testid={`button-menu-${file.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreVertical className="w-3 h-3 mr-1" />
-                    Actions
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenuItem
-                    onSelect={() => setSessionHistoryOpen(true)}
-                    data-testid={`menu-history-${file.id}`}
-                  >
-                    <History className="w-4 h-4 mr-2" />
-                    History
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => onClose(file)}
-                    data-testid={`menu-close-${file.id}`}
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Close
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => onDelete(file.id)}
-                    data-testid={`menu-delete-${file.id}`}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+        <div className="flex flex-col gap-1 mt-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onTouch(file);
-                }}
+                variant="ghost"
                 className="w-full justify-start h-7 text-xs"
-                data-testid={`button-touch-${file.id}`}
+                data-testid={`button-menu-${file.id}`}
+                onClick={(e) => e.stopPropagation()}
               >
-                <Eye className="w-3 h-3 mr-1" />
-                Touch
+                <MoreVertical className="w-3 h-3 mr-1" />
+                Actions
               </Button>
-            </div>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem
+                onSelect={() => setSessionHistoryOpen(true)}
+                data-testid={`menu-history-${file.id}`}
+              >
+                <History className="w-4 h-4 mr-2" />
+                History
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => onClose(file)}
+                data-testid={`menu-close-${file.id}`}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Close
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => onDelete(file.id)}
+                data-testid={`menu-delete-${file.id}`}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTouch(file);
+            }}
+            className="w-full justify-start h-7 text-xs"
+            data-testid={`button-touch-${file.id}`}
+          >
+            <Eye className="w-3 h-3 mr-1" />
+            Touch
+          </Button>
         </div>
       </div>
     </Card>
