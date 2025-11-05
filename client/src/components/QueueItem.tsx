@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
@@ -203,14 +204,17 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
-                  {currentPipeline && (
-                    <DropdownMenuItem
-                      onSelect={() => onPipelineChange(file.id, null)}
-                      data-testid={`menu-pipeline-none-${file.id}`}
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Remove Pipeline
-                    </DropdownMenuItem>
+                  {file.pipelineId && (
+                    <>
+                      <DropdownMenuItem
+                        onSelect={() => onPipelineChange(file.id, null)}
+                        data-testid={`menu-pipeline-none-${file.id}`}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Remove Pipeline
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
                   )}
                   {pipelines.map((pipeline) => (
                     <DropdownMenuItem

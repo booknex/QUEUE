@@ -206,8 +206,8 @@ export default function Dashboard() {
     mutationFn: async ({ id, pipelineId }: { id: number; pipelineId: number | null }) => {
       return await apiRequest("PATCH", `/api/files/${id}`, { pipelineId });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
       toast({
         title: "Pipeline updated",
         description: "The client has been assigned to the pipeline.",

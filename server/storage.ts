@@ -80,6 +80,7 @@ export class DatabaseStorage implements IStorage {
         description: clientFiles.description,
         status: clientFiles.status,
         companyId: clientFiles.companyId,
+        pipelineId: clientFiles.pipelineId,
         createdAt: clientFiles.createdAt,
         lastTouchedAt: clientFiles.lastTouchedAt,
         closedAt: clientFiles.closedAt,
