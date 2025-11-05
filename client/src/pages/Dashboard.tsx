@@ -41,8 +41,14 @@ export default function Dashboard() {
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
+  const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
+    const saved = localStorage.getItem('selectedPipelineId');
+    return saved ? parseInt(saved) : null;
+  });
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(() => {
+    const saved = localStorage.getItem('selectedCompanyId');
+    return saved ? parseInt(saved) : null;
+  });
   const { toast } = useToast();
 
   const { data: companies = [] } = useQuery<Company[]>({
@@ -54,6 +60,20 @@ export default function Dashboard() {
       setSelectedCompanyId(companies[0].id);
     }
   }, [companies, selectedCompanyId]);
+
+  // Save selected company to localStorage
+  useEffect(() => {
+    if (selectedCompanyId !== null) {
+      localStorage.setItem('selectedCompanyId', selectedCompanyId.toString());
+    }
+  }, [selectedCompanyId]);
+
+  // Save selected pipeline to localStorage
+  useEffect(() => {
+    if (selectedPipelineId !== null) {
+      localStorage.setItem('selectedPipelineId', selectedPipelineId.toString());
+    }
+  }, [selectedPipelineId]);
 
   // Reset pipeline selection when company changes
   useEffect(() => {
@@ -85,6 +105,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (pipelines.length > 0 && selectedPipelineId === null) {
+      // Try to restore from localStorage first
+      const savedPipelineId = localStorage.getItem('selectedPipelineId');
+      if (savedPipelineId) {
+        const pipelineId = parseInt(savedPipelineId);
+        // Check if the saved pipeline still exists in current pipelines
+        const pipelineExists = pipelines.some(p => p.id === pipelineId);
+        if (pipelineExists) {
+          setSelectedPipelineId(pipelineId);
+          return;
+        }
+      }
+      // Otherwise default to first pipeline
       setSelectedPipelineId(pipelines[0].id);
     }
   }, [pipelines, selectedPipelineId]);
