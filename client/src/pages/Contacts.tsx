@@ -35,15 +35,23 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
     );
   }
 
+  const displayedContacts = contacts?.slice(0, 10) || [];
+  const totalContacts = contacts?.length || 0;
+
   return (
-    <div className="h-full overflow-auto p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="h-full flex flex-col p-6">
+      <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
         <div className="mb-6">
           <div className="flex items-start justify-between gap-4 mb-2">
             <div>
               <h1 className="text-2xl font-semibold">Contacts</h1>
               <p className="text-muted-foreground">
                 View and manage all your contacts
+                {totalContacts > 10 && (
+                  <span className="ml-1">
+                    (showing 10 of {totalContacts})
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -80,66 +88,68 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3" data-testid="contacts-list">
-            {contacts.map((contact) => (
-              <Card
-                key={contact.id}
-                className="hover-elevate"
-                data-testid={`contact-card-${contact.id}`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-primary/10 p-3 rounded-full">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <h3
-                          className="font-medium text-base"
-                          data-testid={`contact-name-${contact.id}`}
-                        >
-                          {contact.name}
-                        </h3>
-                        <Badge 
-                          variant="outline" 
-                          className="text-xs"
-                          data-testid={`contact-id-${contact.id}`}
-                        >
-                          ID: {contact.id}
-                        </Badge>
+          <div className="overflow-auto flex-1" data-testid="contacts-scroll-container">
+            <div className="space-y-3 pr-2" data-testid="contacts-list">
+              {displayedContacts.map((contact) => (
+                <Card
+                  key={contact.id}
+                  className="hover-elevate"
+                  data-testid={`contact-card-${contact.id}`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-primary/10 p-3 rounded-full">
+                        <User className="h-5 w-5 text-primary" />
                       </div>
                       
-                      <div className="space-y-1.5">
-                        {contact.phone && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Phone className="h-4 w-4" />
-                            <span data-testid={`contact-phone-${contact.id}`}>
-                              {contact.phone}
-                            </span>
-                          </div>
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3
+                            className="font-medium text-base"
+                            data-testid={`contact-name-${contact.id}`}
+                          >
+                            {contact.name}
+                          </h3>
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs"
+                            data-testid={`contact-id-${contact.id}`}
+                          >
+                            ID: {contact.id}
+                          </Badge>
+                        </div>
                         
-                        {contact.email && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-4 w-4" />
-                            <span data-testid={`contact-email-${contact.id}`}>
-                              {contact.email}
-                            </span>
-                          </div>
-                        )}
+                        <div className="space-y-1.5">
+                          {contact.phone && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Phone className="h-4 w-4" />
+                              <span data-testid={`contact-phone-${contact.id}`}>
+                                {contact.phone}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {contact.email && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="h-4 w-4" />
+                              <span data-testid={`contact-email-${contact.id}`}>
+                                {contact.email}
+                              </span>
+                            </div>
+                          )}
 
-                        {!contact.phone && !contact.email && (
-                          <p className="text-sm text-muted-foreground italic">
-                            No contact information provided
-                          </p>
-                        )}
+                          {!contact.phone && !contact.email && (
+                            <p className="text-sm text-muted-foreground italic">
+                              No contact information provided
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </div>
