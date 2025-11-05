@@ -19,7 +19,7 @@ export function SessionHistory({ file, open, onOpenChange }: SessionHistoryProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" data-testid="dialog-session-history">
+      <DialogContent className="max-w-2xl sm:top-[10%] sm:translate-y-0" data-testid="dialog-session-history">
         <DialogHeader>
           <DialogTitle>Work Session History - {file.clientName}</DialogTitle>
         </DialogHeader>
