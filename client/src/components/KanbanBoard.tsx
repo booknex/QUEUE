@@ -29,10 +29,6 @@ const statusConfig = {
     title: "In Progress",
     variant: "default" as const,
   },
-  completed: {
-    title: "Completed",
-    variant: "outline" as const,
-  },
 };
 
 function getWaitTime(file: ClientFile, now: number): string {
@@ -162,11 +158,10 @@ export function KanbanBoard({
   const filesByStatus = {
     waiting: files.filter(f => f.status === "waiting"),
     in_progress: files.filter(f => f.status === "in_progress"),
-    completed: files.filter(f => f.closedAt !== null),
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="kanban-board">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="kanban-board">
       {(Object.keys(statusConfig) as Array<keyof typeof statusConfig>).map((status) => (
         <div key={status} className="flex flex-col">
           <Card className="mb-3">

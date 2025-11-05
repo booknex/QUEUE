@@ -74,7 +74,7 @@ export type ClientFile = typeof clientFiles.$inferSelect & {
 export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(["waiting", "in_progress", "completed"]).optional(),
+  status: z.enum(["waiting", "in_progress"]).optional(),
   lastTouchedAt: z.date().optional(),
   closedAt: z.date().optional(),
 });

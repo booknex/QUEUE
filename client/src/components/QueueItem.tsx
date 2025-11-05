@@ -62,7 +62,7 @@ function getWaitTime(createdAt: Date, lastTouchedAt: Date | null): string {
 
 function getStatusConfig(status: string): {
   label: string;
-  variant: "default" | "secondary" | "outline";
+  variant: "default" | "secondary";
   icon: React.ReactNode;
 } {
   switch (status) {
@@ -71,12 +71,6 @@ function getStatusConfig(status: string): {
         label: "In Progress",
         variant: "default",
         icon: <Loader2 className="w-3 h-3" />,
-      };
-    case "completed":
-      return {
-        label: "Completed",
-        variant: "outline",
-        icon: <CheckCircle2 className="w-3 h-3" />,
       };
     default:
       return {

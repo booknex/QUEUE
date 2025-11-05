@@ -32,7 +32,7 @@ import type { ClientFile } from "@shared/schema";
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
-  status: z.enum(["waiting", "in_progress", "completed"]),
+  status: z.enum(["waiting", "in_progress"]),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -66,7 +66,7 @@ export function AddEditClientModal({
       form.reset({
         clientName: editingFile.clientName,
         description: editingFile.description || "",
-        status: editingFile.status as "waiting" | "in_progress" | "completed",
+        status: editingFile.status as "waiting" | "in_progress",
       });
     } else {
       form.reset({
@@ -157,7 +157,6 @@ export function AddEditClientModal({
                     <SelectContent>
                       <SelectItem value="waiting">Waiting</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
