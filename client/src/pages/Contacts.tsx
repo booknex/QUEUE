@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { User, Phone, Mail } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
@@ -63,12 +64,21 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h3
-                        className="font-medium text-base mb-2"
-                        data-testid={`contact-name-${contact.id}`}
-                      >
-                        {contact.name}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <h3
+                          className="font-medium text-base"
+                          data-testid={`contact-name-${contact.id}`}
+                        >
+                          {contact.name}
+                        </h3>
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs"
+                          data-testid={`contact-id-${contact.id}`}
+                        >
+                          ID: {contact.id}
+                        </Badge>
+                      </div>
                       
                       <div className="space-y-1.5">
                         {contact.phone && (
