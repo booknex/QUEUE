@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { User, Phone, Mail } from "lucide-react";
+import { useState } from "react";
+import { User, Phone, Mail, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AddContactModal } from "@/components/AddContactModal";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
@@ -9,6 +12,8 @@ interface ContactsProps {
 }
 
 export default function Contacts({ selectedCompanyId }: ContactsProps) {
+  const [showAddContact, setShowAddContact] = useState(false);
+  
   const { data: contacts, isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts", selectedCompanyId?.toString()],
     queryFn: async () => {
@@ -32,10 +37,22 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
     <div className="h-full overflow-auto p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold mb-2">Contacts</h1>
-          <p className="text-muted-foreground">
-            View all contacts from your opportunities
-          </p>
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <h1 className="text-2xl font-semibold">Contacts</h1>
+              <p className="text-muted-foreground">
+                View and manage all your contacts
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowAddContact(true)}
+              disabled={selectedCompanyId === null}
+              data-testid="button-add-contact"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Contact
+            </Button>
+          </div>
         </div>
 
         {!contacts || contacts.length === 0 ? (
@@ -113,6 +130,12 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
           </div>
         )}
       </div>
+
+      <AddContactModal
+        open={showAddContact}
+        onClose={() => setShowAddContact(false)}
+        selectedCompanyId={selectedCompanyId}
+      />
     </div>
   );
 }
