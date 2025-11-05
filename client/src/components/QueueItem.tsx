@@ -196,12 +196,9 @@ export function QueueItem({ file, onTouch, onEdit, onDelete, onClose, now = Date
                     Actions
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuContent align="start" className="w-48" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.stopPropagation();
-                      setSessionHistoryOpen(true);
-                    }}
+                    onSelect={() => setSessionHistoryOpen(true)}
                     data-testid={`menu-history-${file.id}`}
                   >
                     <History className="w-4 h-4 mr-2" />
