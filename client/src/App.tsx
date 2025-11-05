@@ -5,8 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/not-found";
+import { useWebSocket } from "@/hooks/use-websocket";
 
 function Router() {
+  useWebSocket();
+  
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
