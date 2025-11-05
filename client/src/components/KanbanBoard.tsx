@@ -84,8 +84,9 @@ function KanbanCard({
 
   return (
     <Card 
-      className={`mb-3 ${isRecent ? 'border-green-500' : needsAttention ? 'border-red-500' : ''}`}
+      className={`mb-3 cursor-pointer hover-elevate ${isRecent ? 'border-green-500' : needsAttention ? 'border-red-500' : ''}`}
       data-testid={`kanban-card-${file.id}`}
+      onClick={() => onEdit(file)}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -98,15 +99,12 @@ function KanbanCard({
                 size="icon" 
                 variant="ghost"
                 data-testid={`button-actions-${file.id}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(file)} data-testid={`menu-edit-${file.id}`}>
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onClose(file)} data-testid={`menu-close-${file.id}`}>
                 <XCircle className="w-4 h-4 mr-2" />
                 Close
@@ -137,7 +135,10 @@ function KanbanCard({
         </div>
 
         <Button
-          onClick={() => onTouch(file.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onTouch(file.id);
+          }}
           size="sm"
           variant="outline"
           className="w-full"
