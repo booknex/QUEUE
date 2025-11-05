@@ -120,7 +120,7 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="overflow-y-auto max-h-[600px] border rounded-md p-3" data-testid="contacts-scroll-container">
+          <div className="overflow-y-auto max-h-[1200px] border rounded-md p-3" data-testid="contacts-scroll-container">
             <div className="space-y-3" data-testid="contacts-list">
               {filteredContacts.map((contact) => (
                 <Card
