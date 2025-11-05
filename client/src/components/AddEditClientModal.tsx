@@ -27,12 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ClientFile } from "@shared/schema";
+import type { ClientFile, Pipeline } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
   status: z.enum(["waiting", "in_progress"]),
+  pipelineId: z.number().nullable().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -43,6 +44,7 @@ interface AddEditClientModalProps {
   onSubmit: (data: FormData) => void;
   editingFile: ClientFile | null;
   isPending: boolean;
+  pipelines: Pipeline[];
 }
 
 export function AddEditClientModal({
@@ -51,6 +53,7 @@ export function AddEditClientModal({
   onSubmit,
   editingFile,
   isPending,
+  pipelines,
 }: AddEditClientModalProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -58,6 +61,7 @@ export function AddEditClientModal({
       clientName: "",
       description: "",
       status: "waiting",
+      pipelineId: null,
     },
   });
 
@@ -67,12 +71,14 @@ export function AddEditClientModal({
         clientName: editingFile.clientName,
         description: editingFile.description || "",
         status: editingFile.status as "waiting" | "in_progress",
+        pipelineId: editingFile.pipelineId || null,
       });
     } else {
       form.reset({
         clientName: "",
         description: "",
         status: "waiting",
+        pipelineId: null,
       });
     }
   }, [editingFile, form]);
@@ -148,7 +154,7 @@ export function AddEditClientModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger data-testid="select-status">
                         <SelectValue placeholder="Select status" />
@@ -157,6 +163,35 @@ export function AddEditClientModal({
                     <SelectContent>
                       <SelectItem value="waiting">Waiting</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pipelineId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pipeline</FormLabel>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
+                    value={field.value ? String(field.value) : "none"}
+                  >
+                    <FormControl>
+                      <SelectTrigger data-testid="select-pipeline">
+                        <SelectValue placeholder="Select pipeline (optional)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No Pipeline</SelectItem>
+                      {pipelines.map((pipeline) => (
+                        <SelectItem key={pipeline.id} value={String(pipeline.id)}>
+                          {pipeline.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

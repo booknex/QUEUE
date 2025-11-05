@@ -412,6 +412,7 @@ export default function Dashboard() {
         onSubmit={handleSubmit}
         editingFile={editingFile}
         isPending={createMutation.isPending || updateMutation.isPending}
+        pipelines={pipelines}
       />
 
       <CloseFileModal
