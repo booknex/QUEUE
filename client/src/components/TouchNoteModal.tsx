@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,18 @@ interface TouchNoteModalProps {
 
 export function TouchNoteModal({ file, open, onOpenChange, onSubmit }: TouchNoteModalProps) {
   const [note, setNote] = useState("");
+
+  // Reset note state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setNote("");
+    }
+  }, [open]);
+
+  // Reset note state when file changes
+  useEffect(() => {
+    setNote("");
+  }, [file?.id]);
 
   const handleSubmit = () => {
     onSubmit(note);

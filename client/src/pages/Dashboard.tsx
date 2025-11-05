@@ -17,6 +17,7 @@ import { ClosedFilesModal } from "@/components/ClosedFilesModal";
 import { CompanyManager } from "@/components/CompanyManager";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
+import { TouchNoteModal } from "@/components/TouchNoteModal";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ClientFile, KanbanColumn, Pipeline, Company } from "@shared/schema";
@@ -37,6 +38,8 @@ export default function Dashboard() {
   const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
   const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
+  const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
+  const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
@@ -231,8 +234,17 @@ export default function Dashboard() {
     }
   };
 
-  const handleTouch = (id: number, note?: string) => {
-    touchMutation.mutate({ id, note });
+  const handleTouch = (file: ClientFile) => {
+    setTouchingFile(file);
+    setTouchNoteModalOpen(true);
+  };
+
+  const handleTouchSubmit = (note: string) => {
+    if (touchingFile) {
+      touchMutation.mutate({ id: touchingFile.id, note });
+      setTouchNoteModalOpen(false);
+      setTouchingFile(null);
+    }
   };
   
   const stats = {
@@ -406,6 +418,13 @@ export default function Dashboard() {
         open={closedFilesModalOpen}
         onOpenChange={setClosedFilesModalOpen}
         files={files}
+      />
+
+      <TouchNoteModal
+        file={touchingFile}
+        open={touchNoteModalOpen}
+        onOpenChange={setTouchNoteModalOpen}
+        onSubmit={handleTouchSubmit}
       />
 
       <CompanyManager

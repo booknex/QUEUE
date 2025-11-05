@@ -256,7 +256,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sessions", async (req, res) => {
     try {
-      const sessions = await storage.getAllWorkSessions();
+      const fileId = req.query.fileId ? parseInt(req.query.fileId as string) : undefined;
+      const sessions = fileId 
+        ? await storage.getWorkSessionsByFile(fileId)
+        : await storage.getAllWorkSessions();
       res.json(sessions.map(serializeSession));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch work sessions" });
