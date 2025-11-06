@@ -31,10 +31,8 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
   const referenceTime = lastTouchedAt || createdAt;
   const hoursSince = (now - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
 
-  if (hoursSince < 12) {
-    return { level: "low", color: "bg-green-500" };
-  } else if (hoursSince < 24) {
-    return { level: "medium", color: "bg-yellow-500" };
+  if (hoursSince < 24) {
+    return { level: "low", color: "bg-gray-400" };
   } else if (hoursSince < 48) {
     return { level: "high", color: "bg-yellow-500" };
   } else {
@@ -100,8 +98,6 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
-  const recentlyTouched = isRecentlyTouched(file.lastTouchedAt, now);
-  const attention = needsAttention(file.lastTouchedAt, now);
   
   const currentPipeline = file.pipelineId 
     ? pipelines.find(p => p.id === file.pipelineId) 
@@ -112,22 +108,21 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
   let cardBorderClass = "border-2";
   
   if (urgency.level === "critical") {
-    // > 48 hours - Red background
+    // >= 48 hours - Red background and border
     cardBgClass = "bg-red-500/10";
     cardBorderClass = "border-2 border-red-500";
   } else if (urgency.level === "high") {
-    // 24-48 hours - Yellow background
+    // 24-48 hours - Yellow background and border
     cardBgClass = "bg-yellow-500/10";
     cardBorderClass = "border-2 border-yellow-500";
-  } else if (recentlyTouched) {
-    cardBorderClass = "border-2 border-green-500";
   } else {
+    // < 24 hours - No special color
     cardBorderClass = "border-2 border-border";
   }
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${cardBgClass} ${cardBorderClass}`;
 
-  const edgeBarColor = recentlyTouched ? "bg-green-500" : urgency.color;
+  const edgeBarColor = urgency.color;
 
   return (
     <>
@@ -139,8 +134,7 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
     <Card
       className={cardClassName}
       data-testid={`card-queue-item-${file.id}`}
-      data-recently-touched={String(recentlyTouched)}
-      data-needs-attention={String(attention)}
+      data-urgency-level={urgency.level}
       onClick={() => onEdit(file)}
     >
       <div
