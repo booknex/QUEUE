@@ -29,11 +29,16 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
   color: string;
   isRecentlyTouched: boolean;
 } {
-  const referenceTime = lastTouchedAt || createdAt;
-  const hoursSince = (now - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
+  // If never touched, always show as critical (red)
+  if (lastTouchedAt === null) {
+    return { level: "critical", color: "bg-red-500", isRecentlyTouched: false };
+  }
   
-  // Check if touched within 24 hours (not just created)
-  const isRecentlyTouched = lastTouchedAt !== null && hoursSince < 24;
+  // For touched files, calculate time since last touch
+  const hoursSince = (now - new Date(lastTouchedAt).getTime()) / (1000 * 60 * 60);
+  
+  // Check if touched within 24 hours
+  const isRecentlyTouched = hoursSince < 24;
 
   if (hoursSince < 24) {
     return { level: "low", color: "bg-gray-400", isRecentlyTouched };

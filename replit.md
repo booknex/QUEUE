@@ -12,13 +12,13 @@ The Client Queue Manager is a productivity-focused web application designed to h
 ### System Architecture
 
 #### UI/UX Decisions
-The application utilizes a Linear + Material Design hybrid, focusing on clean, information-dense layouts, consistent typography, and purposeful color usage for status and urgency. Client cards in the queue feature prominent urgency indicators based on time since last touch:
+The application utilizes a Linear + Material Design hybrid, focusing on clean, information-dense layouts, consistent typography, and purposeful color usage for status and urgency. Client cards in the queue feature prominent urgency indicators:
+- **Red cards (Untouched)**: New clients that have never been touched (red border, background tint, and edge bar) - Critical urgency, requires immediate attention
 - **Green cards**: Touched within 24 hours (green border, background tint, and edge bar) - Recently attended
-- **Yellow cards**: Not touched in 24-48 hours (yellow border, background tint, and edge bar) - High urgency
-- **Red cards**: Not touched in 48+ hours (red border, background tint, and edge bar) - Critical urgency
-- **Neutral cards**: New/untouched, less than 24 hours old (default styling, subtle gray edge bar) - Normal state
+- **Yellow cards**: Touched but not in 24-48 hours (yellow border, background tint, and edge bar) - High urgency
+- **Red cards (Stale)**: Touched but not in 48+ hours (red border, background tint, and edge bar) - Critical urgency
 
-When a client is touched, the card turns green and remains green for 24 hours. After 24 hours without a touch, it transitions to yellow, then red at 48 hours. This provides a clear visual hierarchy showing which clients have been recently attended to (green) versus those requiring attention (yellow/red).
+When a new client is created, the card appears red to signal it needs immediate attention. Once touched, the card turns green and remains green for 24 hours. After 24 hours without a touch, it transitions to yellow, then red at 48 hours. This ensures that untouched clients are immediately visible and prioritized.
 
 The application ensures mobile responsiveness across all views.
 
