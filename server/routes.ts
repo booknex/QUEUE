@@ -899,11 +899,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice routing endpoint for outbound calls from browser
   app.post("/api/twilio/voice", async (req, res) => {
     try {
-      console.log("Voice endpoint called with params:", req.body);
+      console.log("Voice endpoint called");
+      console.log("Request body:", req.body);
+      console.log("Request query:", req.query);
+      
       const VoiceResponse = twilio.twiml.VoiceResponse;
       const response = new VoiceResponse();
 
-      const toNumber = req.body.To;
+      // Twilio sends parameters in req.body when using urlencoded
+      const toNumber = req.body.To || req.query.To;
       const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
       if (toNumber) {
@@ -912,14 +916,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           callerId: fromNumber 
         }, toNumber);
       } else {
+        console.log("No 'To' parameter found in request");
         response.say('Please provide a phone number to call.');
       }
 
+      const twiml = response.toString();
+      console.log("Returning TwiML:", twiml);
+      
       res.type('text/xml');
-      res.send(response.toString());
+      res.send(twiml);
     } catch (error: any) {
       console.error("Voice endpoint error:", error);
-      res.status(500).send('Error processing voice request');
+      const VoiceResponse = twilio.twiml.VoiceResponse;
+      const errorResponse = new VoiceResponse();
+      errorResponse.say('An error occurred. Please try again.');
+      res.type('text/xml');
+      res.send(errorResponse.toString());
     }
   });
 
