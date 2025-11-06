@@ -33,6 +33,7 @@ The application has two main sections:
 -   **Pipeline Assignment**: Client files can be assigned to pipelines through the edit modal. The modal includes a pipeline selector dropdown with "No Pipeline" and all available pipelines for the selected company. When a pipeline is assigned, a blue badge with the pipeline name displays on the client card in the queue view. This feature is stored in the `pipelineId` column of client_files table with foreign key relationship to pipelines (cascade set null on delete).
 -   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
+-   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS messaging. Green circular phone button in header opens modal with two tabs: "Live Call" for real-time two-way voice communication directly through browser, and "SMS" for text messaging. Live calling features include: Device initialization with access tokens, outbound calls to any phone number, incoming call support, mute/unmute controls, call duration timer, and visual call status. Backend generates JWT access tokens (GET /api/twilio/token) with VoiceGrant for secure device registration. Voice routing endpoint (POST /api/twilio/voice) handles TwiML generation for call flow. SMS endpoint (POST /api/twilio/sms) sends text messages. Required Twilio credentials: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_TWIML_APP_SID. Frontend uses @twilio/voice-sdk Device class with call event listeners for accept, disconnect, and error states. Browser microphone permissions required for live audio.
 
 ### System Design Choices
 -   **Frontend**: React 18 with TypeScript, TanStack Query v5 for data fetching, Wouter for routing, Shadcn UI with Tailwind CSS, date-fns, WebSocket client with auto-reconnect.
@@ -58,3 +59,4 @@ The application has two main sections:
 -   **date-fns**: For date and time formatting.
 -   **Zod**: For schema validation on both frontend and backend.
 -   **Vite**: Frontend development server and build tool.
+-   **Twilio**: Voice SDK (@twilio/voice-sdk) for browser-based calling, server SDK (twilio) for SMS and call management. Enables live two-way voice calls and SMS messaging directly from the application.
