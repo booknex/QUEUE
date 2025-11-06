@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -357,10 +357,19 @@ export default function Dashboard() {
                 </DropdownMenu>
               </div>
             </div>
-            <Button onClick={handleAddNew} data-testid="button-add-client">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Client
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="icon"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                data-testid="button-twilio-phone"
+              >
+                <Phone className="h-4 w-4" />
+              </Button>
+              <Button onClick={handleAddNew} data-testid="button-add-client">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Client
+              </Button>
+            </div>
           </div>
         </div>
       </header>
