@@ -28,10 +28,6 @@ export function TwilioPhoneModal({ open, onClose }: TwilioPhoneModalProps) {
   const callMutation = useMutation({
     mutationFn: async (to: string) => {
       const response = await apiRequest("POST", "/api/twilio/call", { to });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to place call");
-      }
       return await response.json();
     },
     onSuccess: () => {
@@ -54,10 +50,6 @@ export function TwilioPhoneModal({ open, onClose }: TwilioPhoneModalProps) {
   const smsMutation = useMutation({
     mutationFn: async ({ to, message }: { to: string; message: string }) => {
       const response = await apiRequest("POST", "/api/twilio/sms", { to, message });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to send SMS");
-      }
       return await response.json();
     },
     onSuccess: () => {
