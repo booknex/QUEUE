@@ -12,7 +12,13 @@ The Client Queue Manager is a productivity-focused web application designed to h
 ### System Architecture
 
 #### UI/UX Decisions
-The application utilizes a Linear + Material Design hybrid, focusing on clean, information-dense layouts, consistent typography, and purposeful color usage for status and urgency. It features real-time urgency color-coded bars (Green < 4h, Yellow 4-8h, Orange 8-24h, Red > 24h) and ensures mobile responsiveness.
+The application utilizes a Linear + Material Design hybrid, focusing on clean, information-dense layouts, consistent typography, and purposeful color usage for status and urgency. Client cards in the queue feature prominent urgency indicators:
+- **Red cards**: Not touched in 48+ hours (red border, background tint, and edge bar)
+- **Yellow cards**: Not touched in 24-48 hours (yellow border, background tint, and edge bar)
+- **Green border**: Recently touched (< 12 hours)
+- **Default**: Normal state (12-24 hours)
+
+The application ensures mobile responsiveness across all views.
 
 #### Technical Implementations
 The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines. Key features include:

@@ -36,7 +36,7 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
   } else if (hoursSince < 24) {
     return { level: "medium", color: "bg-yellow-500" };
   } else if (hoursSince < 48) {
-    return { level: "high", color: "bg-orange-500" };
+    return { level: "high", color: "bg-yellow-500" };
   } else {
     return { level: "critical", color: "bg-red-500" };
   }
@@ -107,11 +107,27 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
     ? pipelines.find(p => p.id === file.pipelineId) 
     : null;
   
-  const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${
-    attention ? "border-2 border-red-500" : recentlyTouched ? "border-2 border-green-500" : ""
-  }`;
+  // Determine card styling based on urgency
+  let cardBgClass = "";
+  let cardBorderClass = "border-2";
+  
+  if (urgency.level === "critical") {
+    // > 48 hours - Red background
+    cardBgClass = "bg-red-500/10";
+    cardBorderClass = "border-2 border-red-500";
+  } else if (urgency.level === "high") {
+    // 24-48 hours - Yellow background
+    cardBgClass = "bg-yellow-500/10";
+    cardBorderClass = "border-2 border-yellow-500";
+  } else if (recentlyTouched) {
+    cardBorderClass = "border-2 border-green-500";
+  } else {
+    cardBorderClass = "border-2 border-border";
+  }
+  
+  const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${cardBgClass} ${cardBorderClass}`;
 
-  const edgeBarColor = recentlyTouched ? "bg-green-500" : attention ? "bg-red-500" : urgency.color;
+  const edgeBarColor = recentlyTouched ? "bg-green-500" : urgency.color;
 
   return (
     <>
