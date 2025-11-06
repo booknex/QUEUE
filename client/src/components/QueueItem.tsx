@@ -27,16 +27,20 @@ interface QueueItemProps {
 function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: number = Date.now()): {
   level: "low" | "medium" | "high" | "critical";
   color: string;
+  isRecentlyTouched: boolean;
 } {
   const referenceTime = lastTouchedAt || createdAt;
   const hoursSince = (now - new Date(referenceTime).getTime()) / (1000 * 60 * 60);
+  
+  // Check if touched within 24 hours (not just created)
+  const isRecentlyTouched = lastTouchedAt !== null && hoursSince < 24;
 
   if (hoursSince < 24) {
-    return { level: "low", color: "bg-gray-400" };
+    return { level: "low", color: "bg-gray-400", isRecentlyTouched };
   } else if (hoursSince < 48) {
-    return { level: "high", color: "bg-yellow-500" };
+    return { level: "high", color: "bg-yellow-500", isRecentlyTouched: false };
   } else {
-    return { level: "critical", color: "bg-red-500" };
+    return { level: "critical", color: "bg-red-500", isRecentlyTouched: false };
   }
 }
 
@@ -107,7 +111,11 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
   let cardBgClass = "";
   let cardBorderClass = "border-2";
   
-  if (urgency.level === "critical") {
+  if (urgency.isRecentlyTouched) {
+    // Touched within 24 hours - Green background and border
+    cardBgClass = "bg-green-500/10";
+    cardBorderClass = "border-2 border-green-500";
+  } else if (urgency.level === "critical") {
     // >= 48 hours - Red background and border
     cardBgClass = "bg-red-500/10";
     cardBorderClass = "border-2 border-red-500";
@@ -116,13 +124,13 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
     cardBgClass = "bg-yellow-500/10";
     cardBorderClass = "border-2 border-yellow-500";
   } else {
-    // < 24 hours - No special color
+    // < 24 hours but never touched - No special color
     cardBorderClass = "border-2 border-border";
   }
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${cardBgClass} ${cardBorderClass}`;
 
-  const edgeBarColor = urgency.color;
+  const edgeBarColor = urgency.isRecentlyTouched ? "bg-green-500" : urgency.color;
 
   return (
     <>
