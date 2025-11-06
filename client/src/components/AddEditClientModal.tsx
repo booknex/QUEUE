@@ -32,7 +32,7 @@ import type { ClientFile, Pipeline } from "@shared/schema";
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
-  status: z.enum(["waiting", "in_progress"]),
+  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER"]),
   pipelineId: z.number().nullable().optional(),
 });
 
@@ -60,7 +60,7 @@ export function AddEditClientModal({
     defaultValues: {
       clientName: "",
       description: "",
-      status: "waiting",
+      status: "APP-INTAKE",
       pipelineId: null,
     },
   });
@@ -70,14 +70,14 @@ export function AddEditClientModal({
       form.reset({
         clientName: editingFile.clientName,
         description: editingFile.description || "",
-        status: editingFile.status as "waiting" | "in_progress",
+        status: editingFile.status as "APPROVED W/ CONDITIONS" | "PRE-APPROVED" | "APP-INTAKE" | "NEEDS LENDER",
         pipelineId: editingFile.pipelineId || null,
       });
     } else {
       form.reset({
         clientName: "",
         description: "",
-        status: "waiting",
+        status: "APP-INTAKE",
         pipelineId: null,
       });
     }
@@ -161,8 +161,10 @@ export function AddEditClientModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="waiting">Waiting</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="APPROVED W/ CONDITIONS">APPROVED W/ CONDITIONS</SelectItem>
+                      <SelectItem value="PRE-APPROVED">PRE-APPROVED</SelectItem>
+                      <SelectItem value="APP-INTAKE">APP-INTAKE</SelectItem>
+                      <SelectItem value="NEEDS LENDER">NEEDS LENDER</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

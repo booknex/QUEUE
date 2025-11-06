@@ -297,8 +297,10 @@ export default function Dashboard() {
 
   const stats = {
     total: files.length,
-    waiting: files.filter(f => f.status === "waiting").length,
-    inProgress: files.filter(f => f.status === "in_progress").length,
+    approvedWithConditions: files.filter(f => f.status === "APPROVED W/ CONDITIONS").length,
+    preApproved: files.filter(f => f.status === "PRE-APPROVED").length,
+    appIntake: files.filter(f => f.status === "APP-INTAKE").length,
+    needsLender: files.filter(f => f.status === "NEEDS LENDER").length,
     completed: files.filter(f => f.closedAt !== null).length,
   };
 
@@ -385,7 +387,7 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatsCard
             title="Total Clients"
             value={stats.total}
@@ -393,16 +395,22 @@ export default function Dashboard() {
             testId="stat-total"
           />
           <StatsCard
-            title="Waiting"
-            value={stats.waiting}
+            title="App Intake"
+            value={stats.appIntake}
             icon={Clock}
-            testId="stat-waiting"
+            testId="stat-app-intake"
           />
           <StatsCard
-            title="In Progress"
-            value={stats.inProgress}
+            title="Pre-Approved"
+            value={stats.preApproved}
             icon={AlertCircle}
-            testId="stat-in-progress"
+            testId="stat-pre-approved"
+          />
+          <StatsCard
+            title="Needs Lender"
+            value={stats.needsLender}
+            icon={AlertCircle}
+            testId="stat-needs-lender"
           />
           <StatsCard
             title="Completed"

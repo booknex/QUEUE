@@ -23,7 +23,15 @@ When a client is touched, the card turns green and remains green for 24 hours. A
 The application ensures mobile responsiveness across all views.
 
 #### Technical Implementations
-The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines. Key features include:
+The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines.
+
+**Client File Statuses**: The system uses four custom status values for client files:
+- **APPROVED W/ CONDITIONS**: Client approved with specific conditions to fulfill
+- **PRE-APPROVED**: Client has received pre-approval
+- **APP-INTAKE**: Application intake stage (default for new clients)
+- **NEEDS LENDER**: Client requires lender assignment
+
+Key features include:
 
 -   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector.
 -   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
