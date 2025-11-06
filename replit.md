@@ -27,7 +27,7 @@ The application is structured around a **Client Queue** for daily tasks and a **
 -   **Drag-and-Drop Opportunities**: Opportunity cards can be moved between kanban columns with visual feedback.
 -   **Opportunity Management**: Create, track, and edit opportunities, linked to contacts. Opportunity cards are clickable to edit details and support deletion with confirmation.
 -   **Contact Management**: Dedicated "Contacts" view with CRUD operations, CSV bulk import, duplicate prevention, and search functionality.
--   **Message Inbox**: Clickable contact names on opportunity cards open a modal displaying Twilio call and SMS history, including playable call recordings.
+-   **Message Inbox**: Clickable contact names (displayed in blue with hover underline) on opportunity cards and in the Contacts view open a modal displaying complete Twilio call and SMS history, including playable call recordings. The inbox shows inbound/outbound calls with duration and status, SMS conversations, and allows playing recordings directly in the modal.
 -   **Pipeline Assignment**: Client files can be assigned to pipelines, indicated by a badge on the client card.
 -   **Close File Functionality**: Mark files as "closed" with a timestamp.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.

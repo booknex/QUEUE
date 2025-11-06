@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { AddContactModal } from "@/components/AddContactModal";
 import { UploadContactsModal } from "@/components/UploadContactsModal";
 import { EditContactModal } from "@/components/EditContactModal";
+import MessageInboxModal from "@/components/MessageInboxModal";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
@@ -18,6 +19,7 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
   const [showAddContact, setShowAddContact] = useState(false);
   const [showUploadContacts, setShowUploadContacts] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [inboxContact, setInboxContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
   const { data: contacts, isLoading } = useQuery<Contact[]>({
@@ -138,7 +140,11 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <h3
-                            className="font-medium text-base"
+                            className="font-medium text-base text-primary cursor-pointer hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInboxContact(contact);
+                            }}
                             data-testid={`contact-name-${contact.id}`}
                           >
                             {contact.name}
@@ -204,6 +210,14 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
         onClose={() => setSelectedContact(null)}
         contact={selectedContact}
         selectedCompanyId={selectedCompanyId}
+      />
+
+      <MessageInboxModal
+        contact={inboxContact}
+        open={!!inboxContact}
+        onOpenChange={(open: boolean) => {
+          if (!open) setInboxContact(null);
+        }}
       />
     </div>
   );
