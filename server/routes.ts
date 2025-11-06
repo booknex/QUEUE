@@ -5,6 +5,7 @@ import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeF
 import { z } from "zod";
 import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company } from "@shared/schema";
 import { broadcast } from "./websocket";
+import twilio from "twilio";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -722,13 +723,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Twilio routes
   app.post("/api/twilio/sms", async (req, res) => {
     try {
-      const twilio = require('twilio');
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
       const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
+      console.log("SMS request received:", { to: req.body.to, hasMessage: !!req.body.message });
+      console.log("Twilio config:", { 
+        hasSid: !!accountSid, 
+        hasToken: !!authToken, 
+        hasPhone: !!fromNumber,
+        phone: fromNumber ? `${fromNumber.substring(0, 5)}...` : 'missing'
+      });
+
       if (!accountSid || !authToken || !fromNumber) {
-        return res.status(500).json({ error: "Twilio credentials not configured" });
+        const missing = [];
+        if (!accountSid) missing.push('TWILIO_ACCOUNT_SID');
+        if (!authToken) missing.push('TWILIO_AUTH_TOKEN');
+        if (!fromNumber) missing.push('TWILIO_PHONE_NUMBER');
+        console.error("Missing Twilio credentials:", missing.join(', '));
+        return res.status(500).json({ 
+          error: `Twilio credentials not configured. Missing: ${missing.join(', ')}` 
+        });
       }
 
       const { to, message } = req.body;
@@ -743,22 +758,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         to: to
       });
 
+      console.log("SMS sent successfully:", result.sid);
       res.json({ success: true, messageSid: result.sid });
     } catch (error: any) {
-      console.error("Twilio SMS error:", error);
+      console.error("Twilio SMS error:", error.message, error.code, error.status);
       res.status(500).json({ error: error.message || "Failed to send SMS" });
     }
   });
 
   app.post("/api/twilio/call", async (req, res) => {
     try {
-      const twilio = require('twilio');
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
       const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
+      console.log("Call request received:", { to: req.body.to });
+      console.log("Twilio config:", { 
+        hasSid: !!accountSid, 
+        hasToken: !!authToken, 
+        hasPhone: !!fromNumber,
+        phone: fromNumber ? `${fromNumber.substring(0, 5)}...` : 'missing'
+      });
+
       if (!accountSid || !authToken || !fromNumber) {
-        return res.status(500).json({ error: "Twilio credentials not configured" });
+        const missing = [];
+        if (!accountSid) missing.push('TWILIO_ACCOUNT_SID');
+        if (!authToken) missing.push('TWILIO_AUTH_TOKEN');
+        if (!fromNumber) missing.push('TWILIO_PHONE_NUMBER');
+        console.error("Missing Twilio credentials:", missing.join(', '));
+        return res.status(500).json({ 
+          error: `Twilio credentials not configured. Missing: ${missing.join(', ')}` 
+        });
       }
 
       const { to } = req.body;
@@ -768,8 +798,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const client = twilio(accountSid, authToken);
       
-      // Create TwiML URL for the call
-      const twimlUrl = `https://${req.get('host')}/api/twilio/twiml`;
+      // Create TwiML URL - use https and the correct host
+      const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
+      const host = req.get('host');
+      const twimlUrl = `${protocol}://${host}/api/twilio/twiml`;
+      
+      console.log("Initiating call with TwiML URL:", twimlUrl);
       
       const result = await client.calls.create({
         url: twimlUrl,
@@ -777,22 +811,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         from: fromNumber
       });
 
+      console.log("Call initiated successfully:", result.sid);
       res.json({ success: true, callSid: result.sid });
     } catch (error: any) {
-      console.error("Twilio call error:", error);
+      console.error("Twilio call error:", {
+        message: error.message,
+        code: error.code,
+        status: error.status,
+        moreInfo: error.moreInfo
+      });
       res.status(500).json({ error: error.message || "Failed to initiate call" });
     }
   });
 
   app.post("/api/twilio/twiml", async (req, res) => {
-    const twilio = require('twilio');
-    const VoiceResponse = twilio.twiml.VoiceResponse;
-    const response = new VoiceResponse();
-    
-    response.say('Hello! This is a call from your Client Queue Manager application.');
-    
-    res.type('text/xml');
-    res.send(response.toString());
+    try {
+      console.log("TwiML endpoint called");
+      const VoiceResponse = twilio.twiml.VoiceResponse;
+      const response = new VoiceResponse();
+      
+      response.say('Hello! This is a call from your Client Queue Manager application.');
+      
+      res.type('text/xml');
+      res.send(response.toString());
+    } catch (error: any) {
+      console.error("TwiML error:", error);
+      res.status(500).send('Error generating TwiML');
+    }
   });
 
   const httpServer = createServer(app);
