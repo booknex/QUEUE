@@ -358,16 +358,16 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button onClick={handleAddNew} data-testid="button-add-client">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Client
+              </Button>
               <Button 
                 size="icon"
                 className="bg-green-600 hover:bg-green-700 text-white h-12 w-12 rounded-full"
                 data-testid="button-twilio-phone"
               >
                 <Phone className="h-5 w-5" />
-              </Button>
-              <Button onClick={handleAddNew} data-testid="button-add-client">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Client
               </Button>
             </div>
           </div>
