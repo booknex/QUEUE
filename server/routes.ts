@@ -896,11 +896,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to verify webhook URL is reachable
+  app.get("/api/twilio/voice", (req, res) => {
+    console.log("GET request to voice endpoint - Twilio uses POST");
+    res.json({ 
+      message: "Voice webhook is active. Twilio should POST to this URL.",
+      expectedMethod: "POST"
+    });
+  });
+
   // Voice webhook endpoint - handles both incoming calls and outbound calls
   app.post("/api/twilio/voice", async (req, res) => {
     try {
-      console.log("Voice webhook called");
+      console.log("🔔 VOICE WEBHOOK CALLED!");
+      console.log("Method:", req.method);
+      console.log("Headers:", req.headers);
       console.log("Request body:", req.body);
+      console.log("Query params:", req.query);
       
       const VoiceResponse = twilio.twiml.VoiceResponse;
       const response = new VoiceResponse();
