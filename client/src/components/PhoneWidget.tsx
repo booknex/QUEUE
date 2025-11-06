@@ -1,0 +1,483 @@
+import { useState, useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Phone, MessageSquare, Mic, MicOff, PhoneOff, X, Minimize2, Maximize2, PhoneIncoming } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Device, Call } from "@twilio/voice-sdk";
+
+export function PhoneWidget() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [smsMessage, setSmsMessage] = useState("");
+  const [device, setDevice] = useState<Device | null>(null);
+  const [activeCall, setActiveCall] = useState<Call | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [callStatus, setCallStatus] = useState<string>("");
+  const [callDuration, setCallDuration] = useState(0);
+  const [incomingCall, setIncomingCall] = useState<Call | null>(null);
+  const [incomingCallFrom, setIncomingCallFrom] = useState<string>("");
+  const [showIncomingAlert, setShowIncomingAlert] = useState(false);
+  const { toast } = useToast();
+  const durationInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize Twilio Device on component mount (always active)
+  useEffect(() => {
+    setupDevice();
+    return () => {
+      if (device) {
+        device.destroy();
+      }
+      if (durationInterval.current) {
+        clearInterval(durationInterval.current);
+      }
+    };
+  }, []);
+
+  const refreshToken = async () => {
+    try {
+      const response = await fetch("/api/twilio/token");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to refresh token");
+      }
+      return data.token;
+    } catch (error: any) {
+      console.error("Token refresh error:", error);
+      toast({
+        title: "Token refresh failed",
+        description: "Reconnecting phone system...",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const setupDevice = async () => {
+    try {
+      const response = await fetch("/api/twilio/token");
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get access token");
+      }
+
+      const twilioDevice = new Device(data.token, {
+        logLevel: 1,
+        codecPreferences: [Call.Codec.Opus, Call.Codec.PCMU],
+      });
+
+      twilioDevice.on("registered", () => {
+        console.log("Twilio Device registered - ready for calls");
+        setCallStatus("Ready");
+      });
+
+      twilioDevice.on("error", (error) => {
+        console.error("Device error:", error);
+      });
+
+      twilioDevice.on("incoming", (call) => {
+        console.log("Incoming call from:", call.parameters.From);
+        
+        call.on("cancel", () => {
+          console.log("Incoming call cancelled by caller");
+          setIncomingCall(null);
+          setIncomingCallFrom("");
+          setShowIncomingAlert(false);
+          toast({
+            title: "Call missed",
+            description: `${call.parameters.From || "Unknown"} hung up`,
+          });
+        });
+
+        call.on("disconnect", () => {
+          console.log("Incoming call disconnected");
+          setIncomingCall((prev) => {
+            if (prev?.parameters.CallSid === call.parameters.CallSid) {
+              setIncomingCallFrom("");
+              setShowIncomingAlert(false);
+              return null;
+            }
+            return prev;
+          });
+        });
+
+        setIncomingCall(call);
+        setIncomingCallFrom(call.parameters.From || "Unknown");
+        setShowIncomingAlert(true);
+      });
+
+      twilioDevice.on("tokenWillExpire", async () => {
+        console.log("Token will expire, refreshing...");
+        try {
+          const newToken = await refreshToken();
+          twilioDevice.updateToken(newToken);
+        } catch (error) {
+          setCallStatus("Reconnecting...");
+          setTimeout(() => setupDevice(), 1000);
+        }
+      });
+
+      twilioDevice.on("tokenExpired", async () => {
+        console.log("Token expired, reconnecting...");
+        setCallStatus("Reconnecting...");
+        setTimeout(() => setupDevice(), 1000);
+      });
+
+      await twilioDevice.register();
+      setDevice(twilioDevice);
+    } catch (error: any) {
+      console.error("Setup error:", error);
+    }
+  };
+
+  const handleAcceptIncomingCall = () => {
+    if (incomingCall) {
+      incomingCall.accept();
+      setActiveCall(incomingCall);
+      setupCallListeners(incomingCall);
+      setCallStatus(`Connected to ${incomingCallFrom}`);
+      startCallTimer();
+      setIncomingCall(null);
+      setIncomingCallFrom("");
+      setShowIncomingAlert(false);
+      setIsExpanded(true); // Auto-expand widget for active call
+    }
+  };
+
+  const handleRejectIncomingCall = () => {
+    if (incomingCall) {
+      incomingCall.reject();
+      setIncomingCall(null);
+      setIncomingCallFrom("");
+      setShowIncomingAlert(false);
+    }
+  };
+
+  const cleanupCall = () => {
+    setActiveCall(null);
+    setCallDuration(0);
+    setIsMuted(false);
+    if (durationInterval.current) {
+      clearInterval(durationInterval.current);
+      durationInterval.current = null;
+    }
+  };
+
+  const setupCallListeners = (call: Call) => {
+    call.on("accept", () => {
+      setCallStatus("Connected");
+    });
+
+    call.on("disconnect", () => {
+      setCallStatus("Call ended");
+      cleanupCall();
+      toast({
+        title: "Call ended",
+        description: "The call has been disconnected",
+      });
+    });
+
+    call.on("error", (error) => {
+      console.error("Call error:", error);
+      setCallStatus("Call failed");
+      cleanupCall();
+      toast({
+        title: "Call error",
+        description: error.message,
+        variant: "destructive",
+      });
+    });
+  };
+
+  const startCallTimer = () => {
+    setCallDuration(0);
+    if (durationInterval.current) {
+      clearInterval(durationInterval.current);
+    }
+    durationInterval.current = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
+  };
+
+  const handleLiveCall = async () => {
+    if (!device) {
+      toast({
+        title: "Device not ready",
+        description: "Please wait for the phone to initialize",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!phoneNumber.trim()) {
+      toast({
+        title: "Phone number required",
+        description: "Please enter a phone number to call",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setCallStatus("Calling...");
+      const call = await device.connect({
+        params: { To: phoneNumber }
+      });
+
+      setActiveCall(call);
+      setupCallListeners(call);
+      startCallTimer();
+      toast({
+        title: "Calling",
+        description: `Calling ${phoneNumber}...`,
+      });
+    } catch (error: any) {
+      console.error("Call failed:", error);
+      setCallStatus("Call failed");
+      cleanupCall();
+      toast({
+        title: "Call failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleHangup = () => {
+    if (activeCall) {
+      activeCall.disconnect();
+    }
+  };
+
+  const handleMuteToggle = () => {
+    if (activeCall) {
+      activeCall.mute(!isMuted);
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const smsMutation = useMutation({
+    mutationFn: async ({ to, message }: { to: string; message: string }) => {
+      const response = await apiRequest("POST", "/api/twilio/sms", { to, message });
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "SMS sent",
+        description: "Your message has been sent successfully.",
+      });
+      setPhoneNumber("");
+      setSmsMessage("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "SMS failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendSMS = () => {
+    if (!phoneNumber.trim()) {
+      toast({
+        title: "Phone number required",
+        description: "Please enter a phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!smsMessage.trim()) {
+      toast({
+        title: "Message required",
+        description: "Please enter a message to send.",
+        variant: "destructive",
+      });
+      return;
+    }
+    smsMutation.mutate({ to: phoneNumber, message: smsMessage });
+  };
+
+  return (
+    <>
+      {/* Incoming Call Alert - Fixed at top of screen */}
+      {showIncomingAlert && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5">
+          <Card className="p-4 shadow-lg border-2 border-green-600 bg-card w-80">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-green-600 p-2 rounded-full animate-pulse">
+                <PhoneIncoming className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold">Incoming Call</div>
+                <div className="text-sm text-muted-foreground">{incomingCallFrom}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleRejectIncomingCall}
+                variant="outline"
+                className="flex-1"
+                data-testid="button-reject-call"
+              >
+                Decline
+              </Button>
+              <Button
+                onClick={handleAcceptIncomingCall}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                data-testid="button-accept-call"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                Accept
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Phone Widget - Fixed at bottom-right */}
+      <div className="fixed bottom-4 right-4 z-40">
+        {isExpanded ? (
+          <Card className="w-96 shadow-lg" data-testid="phone-widget-expanded">
+            <div className="p-4 border-b flex items-center justify-between bg-muted/50">
+              <div className="flex items-center gap-2">
+                <div className="bg-green-600 p-2 rounded-full">
+                  <Phone className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">Phone</div>
+                  {callStatus && (
+                    <div className="text-xs text-muted-foreground">{callStatus}</div>
+                  )}
+                </div>
+              </div>
+              <Button
+                onClick={() => setIsExpanded(false)}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                data-testid="button-minimize-phone"
+              >
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="p-4">
+              {activeCall ? (
+                <div className="space-y-4">
+                  {callDuration > 0 && (
+                    <div className="text-center text-2xl font-mono">
+                      {formatDuration(callDuration)}
+                    </div>
+                  )}
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={handleMuteToggle}
+                      variant={isMuted ? "destructive" : "outline"}
+                      size="lg"
+                      data-testid="button-mute"
+                    >
+                      {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                    </Button>
+                    <Button
+                      onClick={handleHangup}
+                      variant="destructive"
+                      size="lg"
+                      data-testid="button-hangup"
+                    >
+                      <PhoneOff className="h-5 w-5 mr-2" />
+                      Hang Up
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Tabs defaultValue="call" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="call" data-testid="tab-call">
+                      <Phone className="h-3 w-3 mr-2" />
+                      Call
+                    </TabsTrigger>
+                    <TabsTrigger value="sms" data-testid="tab-sms">
+                      <MessageSquare className="h-3 w-3 mr-2" />
+                      SMS
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="call" className="space-y-3">
+                    <Input
+                      placeholder="+1 (555) 123-4567"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      data-testid="input-call-phone"
+                      className="text-sm"
+                    />
+                    <Button
+                      onClick={handleLiveCall}
+                      disabled={!device || !!activeCall}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      data-testid="button-place-call"
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      {device ? "Call" : "Initializing..."}
+                    </Button>
+                  </TabsContent>
+
+                  <TabsContent value="sms" className="space-y-3">
+                    <Input
+                      placeholder="+1 (555) 123-4567"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      data-testid="input-sms-phone"
+                      className="text-sm"
+                    />
+                    <Textarea
+                      placeholder="Type your message..."
+                      value={smsMessage}
+                      onChange={(e) => setSmsMessage(e.target.value)}
+                      rows={3}
+                      data-testid="input-sms-message"
+                      className="text-sm"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {smsMessage.length} characters
+                      </span>
+                      <Button
+                        onClick={handleSendSMS}
+                        disabled={smsMutation.isPending}
+                        size="sm"
+                        data-testid="button-send-sms"
+                      >
+                        <MessageSquare className="h-3 w-3 mr-2" />
+                        {smsMutation.isPending ? "Sending..." : "Send"}
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              )}
+            </div>
+          </Card>
+        ) : (
+          <Button
+            onClick={() => setIsExpanded(true)}
+            size="lg"
+            className="rounded-full h-14 w-14 bg-green-600 hover:bg-green-700 shadow-lg"
+            data-testid="button-open-phone"
+          >
+            <Phone className="h-6 w-6" />
+          </Button>
+        )}
+      </div>
+    </>
+  );
+}
