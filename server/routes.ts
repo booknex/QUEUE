@@ -867,8 +867,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate unique identity for this user
-      const identity = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+      // Use consistent identity for browser client to receive incoming calls
+      const identity = 'browser_client';
 
       const AccessToken = twilio.jwt.AccessToken;
       const VoiceGrant = AccessToken.VoiceGrant;
@@ -896,28 +896,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Voice routing endpoint for outbound calls from browser
+  // Voice webhook endpoint - handles both incoming calls and outbound calls
   app.post("/api/twilio/voice", async (req, res) => {
     try {
-      console.log("Voice endpoint called");
+      console.log("Voice webhook called");
       console.log("Request body:", req.body);
-      console.log("Request query:", req.query);
       
       const VoiceResponse = twilio.twiml.VoiceResponse;
       const response = new VoiceResponse();
 
-      // Twilio sends parameters in req.body when using urlencoded
+      // Check if this is an outbound call from browser (has 'To' param)
+      // or incoming call to Twilio number (no 'To' param)
       const toNumber = req.body.To || req.query.To;
       const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
       if (toNumber) {
-        console.log(`Dialing ${toNumber} from ${fromNumber}`);
+        // Outbound call from browser to phone number
+        console.log(`Outbound call: Dialing ${toNumber} from ${fromNumber}`);
         response.dial({ 
           callerId: fromNumber 
         }, toNumber);
       } else {
-        console.log("No 'To' parameter found in request");
-        response.say('Please provide a phone number to call.');
+        // Incoming call to Twilio number - route to browser
+        console.log("Incoming call: Routing to browser client");
+        const dial = response.dial({
+          callerId: req.body.From || 'Unknown'
+        });
+        // Route to the browser using the most recent identity
+        // The Device will fire 'incoming' event when this happens
+        dial.client('browser_client');
       }
 
       const twiml = response.toString();
