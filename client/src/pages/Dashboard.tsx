@@ -280,6 +280,21 @@ export default function Dashboard() {
     }
   };
   
+  // Sort files: untouched first, then by lastTouchedAt (oldest first)
+  const sortedFiles = [...files].sort((a, b) => {
+    // Untouched files (null lastTouchedAt) come first
+    if (a.lastTouchedAt === null && b.lastTouchedAt !== null) return -1;
+    if (a.lastTouchedAt !== null && b.lastTouchedAt === null) return 1;
+    
+    // Both untouched - sort by createdAt (oldest first)
+    if (a.lastTouchedAt === null && b.lastTouchedAt === null) {
+      return a.createdAt.getTime() - b.createdAt.getTime();
+    }
+    
+    // Both touched - sort by lastTouchedAt (oldest first)
+    return a.lastTouchedAt!.getTime() - b.lastTouchedAt!.getTime();
+  });
+
   const stats = {
     total: files.length,
     waiting: files.filter(f => f.status === "waiting").length,
@@ -408,7 +423,7 @@ export default function Dashboard() {
               className="flex gap-4 min-w-max"
               data-testid="queue-list"
             >
-              {files.map((file) => (
+              {sortedFiles.map((file) => (
                 <QueueItem
                   key={file.id}
                   file={file}

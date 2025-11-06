@@ -26,7 +26,7 @@ The application is structured around a **Client Queue** for daily tasks and a **
 
 -   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector.
 -   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
--   **Automatic Ordering**: Client files are automatically sorted by `lastTouchedAt`, with untouched files prioritized.
+-   **Priority Queue Ordering**: Client files are automatically sorted with untouched clients first (never touched since creation), followed by touched clients ordered by time since last touch (oldest first). This ensures clients who have never been attended to get immediate priority and visibility.
 -   **Real-time Timer Tracking**: Wait times are calculated and displayed with second precision.
 -   **Touch with Notes**: A "Touch" functionality resets timers, moves cards to the queue's end, and allows adding notes to work sessions.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
