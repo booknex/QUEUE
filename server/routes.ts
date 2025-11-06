@@ -840,6 +840,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate access token for Voice SDK (browser calling)
+  app.get("/api/twilio/token", async (req, res) => {
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const apiKey = process.env.TWILIO_API_KEY;
+      const apiSecret = process.env.TWILIO_API_SECRET;
+      const twimlAppSid = process.env.TWILIO_TWIML_APP_SID;
+
+      console.log("Token request - Config check:", {
+        hasSid: !!accountSid,
+        hasApiKey: !!apiKey,
+        hasApiSecret: !!apiSecret,
+        hasTwimlApp: !!twimlAppSid
+      });
+
+      if (!accountSid || !apiKey || !apiSecret || !twimlAppSid) {
+        const missing = [];
+        if (!accountSid) missing.push('TWILIO_ACCOUNT_SID');
+        if (!apiKey) missing.push('TWILIO_API_KEY');
+        if (!apiSecret) missing.push('TWILIO_API_SECRET');
+        if (!twimlAppSid) missing.push('TWILIO_TWIML_APP_SID');
+        console.error("Missing credentials for token generation:", missing.join(', '));
+        return res.status(500).json({ 
+          error: `Missing credentials: ${missing.join(', ')}` 
+        });
+      }
+
+      // Generate unique identity for this user
+      const identity = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+
+      const AccessToken = twilio.jwt.AccessToken;
+      const VoiceGrant = AccessToken.VoiceGrant;
+
+      const token = new AccessToken(accountSid, apiKey, apiSecret, { 
+        identity,
+        ttl: 3600 // 1 hour
+      });
+
+      const voiceGrant = new VoiceGrant({
+        outgoingApplicationSid: twimlAppSid,
+        incomingAllow: true
+      });
+
+      token.addGrant(voiceGrant);
+
+      console.log("Access token generated for identity:", identity);
+      res.json({ 
+        token: token.toJwt(), 
+        identity 
+      });
+    } catch (error: any) {
+      console.error("Token generation error:", error.message);
+      res.status(500).json({ error: error.message || "Failed to generate token" });
+    }
+  });
+
+  // Voice routing endpoint for outbound calls from browser
+  app.post("/api/twilio/voice", async (req, res) => {
+    try {
+      console.log("Voice endpoint called with params:", req.body);
+      const VoiceResponse = twilio.twiml.VoiceResponse;
+      const response = new VoiceResponse();
+
+      const toNumber = req.body.To;
+      const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+      if (toNumber) {
+        console.log(`Dialing ${toNumber} from ${fromNumber}`);
+        response.dial({ 
+          callerId: fromNumber 
+        }, toNumber);
+      } else {
+        response.say('Please provide a phone number to call.');
+      }
+
+      res.type('text/xml');
+      res.send(response.toString());
+    } catch (error: any) {
+      console.error("Voice endpoint error:", error);
+      res.status(500).send('Error processing voice request');
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
