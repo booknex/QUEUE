@@ -18,6 +18,7 @@ import { CompanyManager } from "@/components/CompanyManager";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { TouchNoteModal } from "@/components/TouchNoteModal";
+import { TwilioPhoneModal } from "@/components/TwilioPhoneModal";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ClientFile, KanbanColumn, Pipeline, Company } from "@shared/schema";
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
+  const [twilioPhoneModalOpen, setTwilioPhoneModalOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedPipelineId');
@@ -363,6 +365,7 @@ export default function Dashboard() {
                 Add Client
               </Button>
               <Button 
+                onClick={() => setTwilioPhoneModalOpen(true)}
                 size="icon"
                 className="bg-green-600 hover:bg-green-700 text-white h-12 w-12 rounded-full"
                 data-testid="button-twilio-phone"
@@ -471,6 +474,11 @@ export default function Dashboard() {
       <CompanyManager
         open={companyManagerOpen}
         onClose={() => setCompanyManagerOpen(false)}
+      />
+
+      <TwilioPhoneModal
+        open={twilioPhoneModalOpen}
+        onClose={() => setTwilioPhoneModalOpen(false)}
       />
     </div>
   );
