@@ -63,6 +63,7 @@ type TimelineItem = {
 
 export default function MessageInboxModal({ contact, open, onOpenChange }: MessageInboxModalProps) {
   const [expandedCallSids, setExpandedCallSids] = useState<Set<string>>(new Set());
+  const [recordingsByCallSid, setRecordingsByCallSid] = useState<Map<string, Recording[]>>(new Map());
 
   const { data: calls = [], isLoading: callsLoading } = useQuery<Call[]>({
     queryKey: ["/api/twilio/calls", contact?.phone],
@@ -74,53 +75,39 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
     enabled: open && !!contact?.phone,
   });
 
-  const callSidsWithRecordings = useMemo(() => {
-    return calls.filter(call => call.status === 'completed' && parseInt(call.duration) > 0).map(c => c.sid);
-  }, [calls]);
-
-  const { data: recordingsData = [] } = useQuery<{ callSid: string; recordings: Recording[] }[]>({
-    queryKey: ["/api/twilio/recordings/batch", callSidsWithRecordings],
-    queryFn: async () => {
-      const results = await Promise.all(
-        callSidsWithRecordings.map(async (callSid) => {
-          const response = await fetch(`/api/twilio/recordings/${callSid}`);
-          if (!response.ok) return { callSid, recordings: [] };
-          const recordings = await response.json();
-          return { callSid, recordings };
-        })
-      );
-      return results;
-    },
-    enabled: callSidsWithRecordings.length > 0,
-  });
-
-  const recordingsByCallSid = useMemo(() => {
-    const map = new Map<string, Recording[]>();
-    recordingsData.forEach(({ callSid, recordings }) => {
-      map.set(callSid, recordings);
-    });
-    return map;
-  }, [recordingsData]);
+  const fetchRecordingsForCall = async (callSid: string) => {
+    if (recordingsByCallSid.has(callSid)) return;
+    
+    try {
+      const response = await fetch(`/api/twilio/recordings/${callSid}`);
+      if (response.ok) {
+        const recordings = await response.json();
+        setRecordingsByCallSid(prev => new Map(prev).set(callSid, recordings));
+      }
+    } catch (error) {
+      console.error('Error fetching recordings:', error);
+    }
+  };
 
   const timeline = useMemo(() => {
     const items: TimelineItem[] = [];
+    if (!contact) return items;
 
     calls.forEach((call) => {
       const timestamp = new Date(call.startTime);
-      const isIncoming = call.direction === "inbound" || call.from === contact?.phone;
+      const isIncoming = call.direction === "inbound" || call.from === contact.phone;
       items.push({
         id: call.sid,
         type: 'call',
         timestamp,
         isIncoming,
         data: call,
-        recordings: recordingsByCallSid.get(call.sid) || [],
       });
     });
 
     messages.forEach((message) => {
       const timestamp = new Date(message.dateSent || message.dateCreated);
-      const isIncoming = message.direction === "inbound" || message.from === contact?.phone;
+      const isIncoming = message.direction === "inbound" || message.from === contact.phone;
       items.push({
         id: message.sid,
         type: 'sms',
@@ -131,7 +118,24 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
     });
 
     return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  }, [calls, messages, contact?.phone, recordingsByCallSid]);
+  }, [calls, messages, contact]);
+
+  const groupedTimeline = useMemo(() => {
+    const grouped: { date: string; items: TimelineItem[] }[] = [];
+    
+    timeline.forEach(item => {
+      const dateStr = format(item.timestamp, 'MMMM d, yyyy');
+      const existingGroup = grouped.find(g => g.date === dateStr);
+      
+      if (existingGroup) {
+        existingGroup.items.push(item);
+      } else {
+        grouped.push({ date: dateStr, items: [item] });
+      }
+    });
+    
+    return grouped;
+  }, [timeline]);
 
   if (!contact) return null;
 
@@ -150,6 +154,7 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
         newSet.delete(callSid);
       } else {
         newSet.add(callSid);
+        fetchRecordingsForCall(callSid);
       }
       return newSet;
     });
@@ -161,7 +166,9 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
     const isAnswered = call.status === 'completed' && duration > 0;
     const isMissed = call.status !== 'completed' || duration === 0;
     const isExpanded = expandedCallSids.has(call.sid);
-    const hasRecordings = item.recordings && item.recordings.length > 0;
+    const recordings = recordingsByCallSid.get(call.sid) || [];
+    const hasRecordings = recordings.length > 0;
+    const canHaveRecordings = isAnswered;
 
     return (
       <div 
@@ -173,8 +180,8 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
             item.isIncoming 
               ? 'bg-muted' 
               : 'bg-primary text-primary-foreground'
-          } rounded-2xl px-4 py-2.5 shadow-sm ${hasRecordings ? 'cursor-pointer hover-elevate' : ''}`}
-          onClick={hasRecordings ? () => toggleCallExpansion(call.sid) : undefined}
+          } rounded-2xl px-4 py-2.5 shadow-sm ${canHaveRecordings ? 'cursor-pointer hover-elevate' : ''}`}
+          onClick={canHaveRecordings ? () => toggleCallExpansion(call.sid) : undefined}
         >
           <div className="flex items-center gap-2 mb-1">
             {isMissed ? (
@@ -193,7 +200,7 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
           </div>
           {hasRecordings && isExpanded && (
             <div className="mt-3 pt-3 border-t border-current/20 space-y-2">
-              {item.recordings!.map((recording) => (
+              {recordings.map((recording) => (
                 <div key={recording.sid} data-testid={`recording-${recording.sid}`}>
                   <audio 
                     controls 
@@ -207,9 +214,14 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
               ))}
             </div>
           )}
-          {hasRecordings && !isExpanded && (
+          {canHaveRecordings && !isExpanded && (
             <div className={`text-xs mt-1 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
-              Click to play recording
+              {hasRecordings ? 'Click to play recording' : 'Click to load recording'}
+            </div>
+          )}
+          {isExpanded && !hasRecordings && canHaveRecordings && (
+            <div className={`text-xs mt-2 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+              Loading recording...
             </div>
           )}
           <div className={`text-xs mt-1 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
@@ -243,23 +255,6 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
       </div>
     );
   };
-
-  const groupedTimeline = useMemo(() => {
-    const grouped: { date: string; items: TimelineItem[] }[] = [];
-    
-    timeline.forEach(item => {
-      const dateStr = format(item.timestamp, 'MMMM d, yyyy');
-      const existingGroup = grouped.find(g => g.date === dateStr);
-      
-      if (existingGroup) {
-        existingGroup.items.push(item);
-      } else {
-        grouped.push({ date: dateStr, items: [item] });
-      }
-    });
-    
-    return grouped;
-  }, [timeline]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
