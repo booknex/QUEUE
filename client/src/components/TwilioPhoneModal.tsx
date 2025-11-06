@@ -128,10 +128,14 @@ export function TwilioPhoneModal({ open, onClose }: TwilioPhoneModalProps) {
 
         call.on("disconnect", () => {
           console.log("Incoming call disconnected");
-          if (incomingCall) {
-            setIncomingCall(null);
-            setIncomingCallFrom("");
-          }
+          // Use functional setState to avoid stale closure
+          setIncomingCall((prev) => {
+            if (prev?.parameters.CallSid === call.parameters.CallSid) {
+              setIncomingCallFrom("");
+              return null;
+            }
+            return prev;
+          });
         });
 
         setIncomingCall(call);
