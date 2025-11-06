@@ -31,7 +31,7 @@ The application is structured around a **Client Queue** for daily tasks and a **
 -   **Pipeline Assignment**: Client files can be assigned to pipelines, indicated by a badge on the client card.
 -   **Close File Functionality**: Mark files as "closed" with a timestamp.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
--   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS. An always-active phone widget handles outbound calls, incoming call notifications, and messaging.
+-   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS. An always-active phone widget handles outbound calls, incoming call notifications, and messaging. The widget includes a "Contacts" tab with searchable contact list, allowing users to quickly find and open any contact's message inbox.
 
 #### System Design Choices
 -   **Frontend**: React 18, TypeScript, TanStack Query v5, Wouter, Shadcn UI, Tailwind CSS, date-fns, WebSocket client.

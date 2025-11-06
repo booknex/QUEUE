@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Phone, MessageSquare, Mic, MicOff, PhoneOff, PhoneIncoming, Send } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Phone, MessageSquare, Mic, MicOff, PhoneOff, PhoneIncoming, Send, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Popover,
   PopoverContent,
@@ -14,8 +15,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Device, Call } from "@twilio/voice-sdk";
+import MessageInboxModal from "@/components/MessageInboxModal";
+import type { Contact } from "@shared/schema";
 
-export function PhoneWidget() {
+interface PhoneWidgetProps {
+  selectedCompanyId: number | null;
+}
+
+export function PhoneWidget({ selectedCompanyId }: PhoneWidgetProps) {
   const [open, setOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
@@ -27,8 +34,31 @@ export function PhoneWidget() {
   const [incomingCall, setIncomingCall] = useState<Call | null>(null);
   const [incomingCallFrom, setIncomingCallFrom] = useState<string>("");
   const [showIncomingAlert, setShowIncomingAlert] = useState(false);
+  const [contactSearchQuery, setContactSearchQuery] = useState("");
+  const [inboxContact, setInboxContact] = useState<Contact | null>(null);
   const { toast } = useToast();
   const durationInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const { data: contacts = [] } = useQuery<Contact[]>({
+    queryKey: ["/api/contacts", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/contacts?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null && open,
+  });
+
+  const filteredContacts = useMemo(() => {
+    if (!contactSearchQuery.trim()) return contacts;
+    const query = contactSearchQuery.toLowerCase();
+    return contacts.filter(contact => 
+      contact.name?.toLowerCase().includes(query) ||
+      contact.email?.toLowerCase().includes(query) ||
+      contact.phone?.toLowerCase().includes(query)
+    );
+  }, [contacts, contactSearchQuery]);
 
   // Initialize Twilio Device on component mount (always active)
   useEffect(() => {
@@ -345,8 +375,12 @@ export function PhoneWidget() {
                 </div>
               </div>
             ) : (
-              <Tabs defaultValue="call" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+              <Tabs defaultValue="contacts" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="contacts" data-testid="tab-contacts">
+                    <User className="h-3 w-3 mr-2" />
+                    Contacts
+                  </TabsTrigger>
                   <TabsTrigger value="call" data-testid="tab-call">
                     <Phone className="h-3 w-3 mr-2" />
                     Call
@@ -356,6 +390,48 @@ export function PhoneWidget() {
                     SMS
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="contacts" className="space-y-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search contacts..."
+                      value={contactSearchQuery}
+                      onChange={(e) => setContactSearchQuery(e.target.value)}
+                      className="pl-9"
+                      data-testid="input-search-contacts-phone"
+                    />
+                  </div>
+                  <ScrollArea className="h-64">
+                    {filteredContacts.length === 0 ? (
+                      <div className="text-center text-sm text-muted-foreground py-8">
+                        {contactSearchQuery ? "No contacts found" : "No contacts available"}
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {filteredContacts.map((contact) => (
+                          <button
+                            key={contact.id}
+                            onClick={() => {
+                              setInboxContact(contact);
+                              setOpen(false);
+                            }}
+                            className="w-full text-left p-3 rounded-md hover-elevate active-elevate-2 transition-colors"
+                            data-testid={`contact-item-${contact.id}`}
+                          >
+                            <div className="font-medium text-sm">{contact.name}</div>
+                            {contact.phone && (
+                              <div className="text-xs text-muted-foreground">{contact.phone}</div>
+                            )}
+                            {contact.email && (
+                              <div className="text-xs text-muted-foreground">{contact.email}</div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
 
                 <TabsContent value="call" className="space-y-3">
                   <Input
@@ -409,6 +485,14 @@ export function PhoneWidget() {
           </div>
         </PopoverContent>
       </Popover>
+
+      <MessageInboxModal
+        contact={inboxContact}
+        open={!!inboxContact}
+        onOpenChange={(open) => {
+          if (!open) setInboxContact(null);
+        }}
+      />
     </>
   );
 }
