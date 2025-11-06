@@ -48,11 +48,6 @@ export function PhoneWidget() {
       return data.token;
     } catch (error: any) {
       console.error("Token refresh error:", error);
-      toast({
-        title: "Token refresh failed",
-        description: "Reconnecting phone system...",
-        variant: "destructive",
-      });
       throw error;
     }
   };
@@ -90,10 +85,6 @@ export function PhoneWidget() {
           setIncomingCall(null);
           setIncomingCallFrom("");
           setShowIncomingAlert(false);
-          toast({
-            title: "Call missed",
-            description: `${call.parameters.From || "Unknown"} hung up`,
-          });
         });
 
         call.on("disconnect", () => {
@@ -178,21 +169,12 @@ export function PhoneWidget() {
     call.on("disconnect", () => {
       setCallStatus("Call ended");
       cleanupCall();
-      toast({
-        title: "Call ended",
-        description: "The call has been disconnected",
-      });
     });
 
     call.on("error", (error) => {
       console.error("Call error:", error);
       setCallStatus("Call failed");
       cleanupCall();
-      toast({
-        title: "Call error",
-        description: error.message,
-        variant: "destructive",
-      });
     });
   };
 
@@ -208,20 +190,12 @@ export function PhoneWidget() {
 
   const handleLiveCall = async () => {
     if (!device) {
-      toast({
-        title: "Device not ready",
-        description: "Please wait for the phone to initialize",
-        variant: "destructive",
-      });
+      setCallStatus("Device not ready");
       return;
     }
 
     if (!phoneNumber.trim()) {
-      toast({
-        title: "Phone number required",
-        description: "Please enter a phone number to call",
-        variant: "destructive",
-      });
+      setCallStatus("Phone number required");
       return;
     }
 
@@ -234,19 +208,10 @@ export function PhoneWidget() {
       setActiveCall(call);
       setupCallListeners(call);
       startCallTimer();
-      toast({
-        title: "Calling",
-        description: `Calling ${phoneNumber}...`,
-      });
     } catch (error: any) {
       console.error("Call failed:", error);
       setCallStatus("Call failed");
       cleanupCall();
-      toast({
-        title: "Call failed",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
@@ -275,37 +240,19 @@ export function PhoneWidget() {
       return await response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "SMS sent",
-        description: "Your message has been sent successfully.",
-      });
       setPhoneNumber("");
       setSmsMessage("");
     },
     onError: (error: Error) => {
-      toast({
-        title: "SMS failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("SMS failed:", error);
     },
   });
 
   const handleSendSMS = () => {
     if (!phoneNumber.trim()) {
-      toast({
-        title: "Phone number required",
-        description: "Please enter a phone number.",
-        variant: "destructive",
-      });
       return;
     }
     if (!smsMessage.trim()) {
-      toast({
-        title: "Message required",
-        description: "Please enter a message to send.",
-        variant: "destructive",
-      });
       return;
     }
     smsMutation.mutate({ to: phoneNumber, message: smsMessage });
