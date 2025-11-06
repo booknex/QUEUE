@@ -1,17 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Phone, MessageSquare, Mic, MicOff, PhoneOff, X, Minimize2, Maximize2, PhoneIncoming } from "lucide-react";
+import { Phone, MessageSquare, Mic, MicOff, PhoneOff, PhoneIncoming, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Device, Call } from "@twilio/voice-sdk";
 
 export function PhoneWidget() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [open, setOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
   const [device, setDevice] = useState<Device | null>(null);
@@ -138,7 +143,7 @@ export function PhoneWidget() {
       setIncomingCall(null);
       setIncomingCallFrom("");
       setShowIncomingAlert(false);
-      setIsExpanded(true); // Auto-expand widget for active call
+      setOpen(true); // Auto-open popover for active call
     }
   };
 
@@ -295,139 +300,115 @@ export function PhoneWidget() {
         </div>
       )}
 
-      {/* Phone Widget - Fixed at bottom-right */}
-      <div className="fixed bottom-4 right-4 z-40">
-        {isExpanded ? (
-          <Card className="w-96 shadow-lg" data-testid="phone-widget-expanded">
-            <div className="p-4 border-b flex items-center justify-between bg-muted/50">
-              <div className="flex items-center gap-2">
-                <div className="bg-green-600 p-2 rounded-full">
-                  <Phone className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">Phone</div>
-                  {callStatus && (
-                    <div className="text-xs text-muted-foreground">{callStatus}</div>
-                  )}
+      {/* Phone Widget - Popover Button */}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" data-testid="button-open-phone">
+            <Phone className="w-4 h-4 mr-2" />
+            Phone
+            {callStatus && callStatus !== "Ready" && (
+              <span className="ml-2 text-xs text-muted-foreground">({callStatus})</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-96" align="end" data-testid="phone-widget-popover">
+          <div className="space-y-4">
+            {callStatus && (
+              <div className="text-sm text-muted-foreground text-center">
+                {callStatus}
+              </div>
+            )}
+            
+            {activeCall ? (
+              <div className="space-y-4">
+                {callDuration > 0 && (
+                  <div className="text-center text-2xl font-mono">
+                    {formatDuration(callDuration)}
+                  </div>
+                )}
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={handleMuteToggle}
+                    variant={isMuted ? "destructive" : "outline"}
+                    data-testid="button-mute"
+                  >
+                    {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    onClick={handleHangup}
+                    variant="destructive"
+                    data-testid="button-hangup"
+                  >
+                    <PhoneOff className="h-4 w-4 mr-2" />
+                    Hang Up
+                  </Button>
                 </div>
               </div>
-              <Button
-                onClick={() => setIsExpanded(false)}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                data-testid="button-minimize-phone"
-              >
-                <Minimize2 className="h-4 w-4" />
-              </Button>
-            </div>
+            ) : (
+              <Tabs defaultValue="call" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="call" data-testid="tab-call">
+                    <Phone className="h-3 w-3 mr-2" />
+                    Call
+                  </TabsTrigger>
+                  <TabsTrigger value="sms" data-testid="tab-sms">
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    SMS
+                  </TabsTrigger>
+                </TabsList>
 
-            <div className="p-4">
-              {activeCall ? (
-                <div className="space-y-4">
-                  {callDuration > 0 && (
-                    <div className="text-center text-2xl font-mono">
-                      {formatDuration(callDuration)}
-                    </div>
-                  )}
-                  <div className="flex gap-2 justify-center">
+                <TabsContent value="call" className="space-y-3">
+                  <Input
+                    placeholder="+1 (555) 123-4567"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    data-testid="input-call-phone"
+                  />
+                  <Button
+                    onClick={handleLiveCall}
+                    disabled={!device || !!activeCall}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    data-testid="button-place-call"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    {device ? "Call" : "Initializing..."}
+                  </Button>
+                </TabsContent>
+
+                <TabsContent value="sms" className="space-y-3">
+                  <Input
+                    placeholder="+1 (555) 123-4567"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    data-testid="input-sms-phone"
+                  />
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={smsMessage}
+                    onChange={(e) => setSmsMessage(e.target.value)}
+                    rows={3}
+                    data-testid="input-sms-message"
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {smsMessage.length} characters
+                    </span>
                     <Button
-                      onClick={handleMuteToggle}
-                      variant={isMuted ? "destructive" : "outline"}
-                      size="lg"
-                      data-testid="button-mute"
+                      onClick={handleSendSMS}
+                      disabled={smsMutation.isPending}
+                      size="sm"
+                      data-testid="button-send-sms"
                     >
-                      {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                    </Button>
-                    <Button
-                      onClick={handleHangup}
-                      variant="destructive"
-                      size="lg"
-                      data-testid="button-hangup"
-                    >
-                      <PhoneOff className="h-5 w-5 mr-2" />
-                      Hang Up
+                      <Send className="h-3 w-3 mr-2" />
+                      {smsMutation.isPending ? "Sending..." : "Send"}
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <Tabs defaultValue="call" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="call" data-testid="tab-call">
-                      <Phone className="h-3 w-3 mr-2" />
-                      Call
-                    </TabsTrigger>
-                    <TabsTrigger value="sms" data-testid="tab-sms">
-                      <MessageSquare className="h-3 w-3 mr-2" />
-                      SMS
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="call" className="space-y-3">
-                    <Input
-                      placeholder="+1 (555) 123-4567"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      data-testid="input-call-phone"
-                      className="text-sm"
-                    />
-                    <Button
-                      onClick={handleLiveCall}
-                      disabled={!device || !!activeCall}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      data-testid="button-place-call"
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      {device ? "Call" : "Initializing..."}
-                    </Button>
-                  </TabsContent>
-
-                  <TabsContent value="sms" className="space-y-3">
-                    <Input
-                      placeholder="+1 (555) 123-4567"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      data-testid="input-sms-phone"
-                      className="text-sm"
-                    />
-                    <Textarea
-                      placeholder="Type your message..."
-                      value={smsMessage}
-                      onChange={(e) => setSmsMessage(e.target.value)}
-                      rows={3}
-                      data-testid="input-sms-message"
-                      className="text-sm"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {smsMessage.length} characters
-                      </span>
-                      <Button
-                        onClick={handleSendSMS}
-                        disabled={smsMutation.isPending}
-                        size="sm"
-                        data-testid="button-send-sms"
-                      >
-                        <MessageSquare className="h-3 w-3 mr-2" />
-                        {smsMutation.isPending ? "Sending..." : "Send"}
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              )}
-            </div>
-          </Card>
-        ) : (
-          <Button
-            onClick={() => setIsExpanded(true)}
-            size="lg"
-            className="rounded-full h-14 w-14 bg-green-600 hover:bg-green-700 shadow-lg"
-            data-testid="button-open-phone"
-          >
-            <Phone className="h-6 w-6" />
-          </Button>
-        )}
-      </div>
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
     </>
   );
 }

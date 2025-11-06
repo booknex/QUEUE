@@ -359,6 +359,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <PhoneWidget />
               <Button onClick={handleAddNew} data-testid="button-add-client">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Client
@@ -466,8 +467,6 @@ export default function Dashboard() {
         open={companyManagerOpen}
         onClose={() => setCompanyManagerOpen(false)}
       />
-
-      <PhoneWidget />
     </div>
   );
 }
