@@ -80,7 +80,10 @@ export function PhoneWidget() {
       });
 
       twilioDevice.on("incoming", (call) => {
-        console.log("Incoming call from:", call.parameters.From);
+        console.log("🔔 INCOMING CALL RECEIVED!");
+        console.log("From:", call.parameters.From);
+        console.log("Call SID:", call.parameters.CallSid);
+        console.log("All parameters:", call.parameters);
         
         call.on("cancel", () => {
           console.log("Incoming call cancelled by caller");
@@ -310,9 +313,9 @@ export function PhoneWidget() {
 
   return (
     <>
-      {/* Incoming Call Alert - Fixed at top of screen */}
+      {/* Incoming Call Alert - Fixed at top-left of screen */}
       {showIncomingAlert && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5">
+        <div className="fixed top-4 left-4 z-50 animate-in slide-in-from-top-5">
           <Card className="p-4 shadow-lg border-2 border-green-600 bg-card w-80">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-green-600 p-2 rounded-full animate-pulse">
