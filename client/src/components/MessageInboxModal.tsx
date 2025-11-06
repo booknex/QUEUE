@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -7,12 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Phone, MessageSquare, Mic, PhoneIncoming, PhoneOutgoing, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Phone, MessageSquare, PhoneMissed, PhoneIncoming, PhoneOutgoing } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
 import type { Contact } from "@shared/schema";
 
 interface MessageInboxModalProps {
@@ -55,8 +52,17 @@ interface Recording {
   status: string;
 }
 
+type TimelineItem = {
+  id: string;
+  type: 'call' | 'sms';
+  timestamp: Date;
+  isIncoming: boolean;
+  data: Call | Message;
+  recordings?: Recording[];
+};
+
 export default function MessageInboxModal({ contact, open, onOpenChange }: MessageInboxModalProps) {
-  const [selectedCallSid, setSelectedCallSid] = useState<string | null>(null);
+  const [expandedCallSids, setExpandedCallSids] = useState<Set<string>>(new Set());
 
   const { data: calls = [], isLoading: callsLoading } = useQuery<Call[]>({
     queryKey: ["/api/twilio/calls", contact?.phone],
@@ -68,24 +74,192 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
     enabled: open && !!contact?.phone,
   });
 
-  const { data: recordings = [], isLoading: recordingsLoading } = useQuery<Recording[]>({
-    queryKey: ["/api/twilio/recordings", selectedCallSid],
-    enabled: !!selectedCallSid,
+  const callSidsWithRecordings = useMemo(() => {
+    return calls.filter(call => call.status === 'completed' && parseInt(call.duration) > 0).map(c => c.sid);
+  }, [calls]);
+
+  const { data: recordingsData = [] } = useQuery<{ callSid: string; recordings: Recording[] }[]>({
+    queryKey: ["/api/twilio/recordings/batch", callSidsWithRecordings],
+    queryFn: async () => {
+      const results = await Promise.all(
+        callSidsWithRecordings.map(async (callSid) => {
+          const response = await fetch(`/api/twilio/recordings/${callSid}`);
+          if (!response.ok) return { callSid, recordings: [] };
+          const recordings = await response.json();
+          return { callSid, recordings };
+        })
+      );
+      return results;
+    },
+    enabled: callSidsWithRecordings.length > 0,
   });
+
+  const recordingsByCallSid = useMemo(() => {
+    const map = new Map<string, Recording[]>();
+    recordingsData.forEach(({ callSid, recordings }) => {
+      map.set(callSid, recordings);
+    });
+    return map;
+  }, [recordingsData]);
+
+  const timeline = useMemo(() => {
+    const items: TimelineItem[] = [];
+
+    calls.forEach((call) => {
+      const timestamp = new Date(call.startTime);
+      const isIncoming = call.direction === "inbound" || call.from === contact?.phone;
+      items.push({
+        id: call.sid,
+        type: 'call',
+        timestamp,
+        isIncoming,
+        data: call,
+        recordings: recordingsByCallSid.get(call.sid) || [],
+      });
+    });
+
+    messages.forEach((message) => {
+      const timestamp = new Date(message.dateSent || message.dateCreated);
+      const isIncoming = message.direction === "inbound" || message.from === contact?.phone;
+      items.push({
+        id: message.sid,
+        type: 'sms',
+        timestamp,
+        isIncoming,
+        data: message,
+      });
+    });
+
+    return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  }, [calls, messages, contact?.phone, recordingsByCallSid]);
 
   if (!contact) return null;
 
   const formatDuration = (seconds: string | number) => {
     const total = typeof seconds === 'string' ? parseInt(seconds) : seconds;
-    if (!total || total === 0) return "No answer";
+    if (!total || total === 0) return "0s";
     const mins = Math.floor(total / 60);
     const secs = total % 60;
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
-  const isIncoming = (direction: string, from: string) => {
-    return direction === "inbound" || from === contact.phone;
+  const toggleCallExpansion = (callSid: string) => {
+    setExpandedCallSids(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(callSid)) {
+        newSet.delete(callSid);
+      } else {
+        newSet.add(callSid);
+      }
+      return newSet;
+    });
   };
+
+  const renderCallMessage = (item: TimelineItem) => {
+    const call = item.data as Call;
+    const duration = parseInt(call.duration);
+    const isAnswered = call.status === 'completed' && duration > 0;
+    const isMissed = call.status !== 'completed' || duration === 0;
+    const isExpanded = expandedCallSids.has(call.sid);
+    const hasRecordings = item.recordings && item.recordings.length > 0;
+
+    return (
+      <div 
+        className={`flex ${item.isIncoming ? 'justify-start' : 'justify-end'} mb-4`}
+        data-testid={`timeline-call-${call.sid}`}
+      >
+        <div 
+          className={`max-w-[70%] ${
+            item.isIncoming 
+              ? 'bg-muted' 
+              : 'bg-primary text-primary-foreground'
+          } rounded-2xl px-4 py-2.5 shadow-sm ${hasRecordings ? 'cursor-pointer hover-elevate' : ''}`}
+          onClick={hasRecordings ? () => toggleCallExpansion(call.sid) : undefined}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            {isMissed ? (
+              <PhoneMissed className="w-4 h-4" />
+            ) : item.isIncoming ? (
+              <PhoneIncoming className="w-4 h-4" />
+            ) : (
+              <PhoneOutgoing className="w-4 h-4" />
+            )}
+            <span className="font-medium text-sm">
+              {isMissed ? 'Missed call' : 'Answered call'}
+            </span>
+          </div>
+          <div className={`text-xs ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/80'}`}>
+            {isAnswered ? `Duration: ${formatDuration(duration)}` : 'No answer'}
+          </div>
+          {hasRecordings && isExpanded && (
+            <div className="mt-3 pt-3 border-t border-current/20 space-y-2">
+              {item.recordings!.map((recording) => (
+                <div key={recording.sid} data-testid={`recording-${recording.sid}`}>
+                  <audio 
+                    controls 
+                    className="w-full h-8"
+                    src={recording.url}
+                    data-testid={`audio-${recording.sid}`}
+                  >
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              ))}
+            </div>
+          )}
+          {hasRecordings && !isExpanded && (
+            <div className={`text-xs mt-1 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+              Click to play recording
+            </div>
+          )}
+          <div className={`text-xs mt-1 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+            {format(item.timestamp, 'h:mm a')}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSmsMessage = (item: TimelineItem) => {
+    const message = item.data as Message;
+
+    return (
+      <div 
+        className={`flex ${item.isIncoming ? 'justify-start' : 'justify-end'} mb-4`}
+        data-testid={`timeline-sms-${message.sid}`}
+      >
+        <div 
+          className={`max-w-[70%] ${
+            item.isIncoming 
+              ? 'bg-muted' 
+              : 'bg-primary text-primary-foreground'
+          } rounded-2xl px-4 py-2.5 shadow-sm`}
+        >
+          <p className="text-sm whitespace-pre-wrap break-words">{message.body}</p>
+          <div className={`text-xs mt-1 ${item.isIncoming ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+            {format(item.timestamp, 'h:mm a')}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const groupedTimeline = useMemo(() => {
+    const grouped: { date: string; items: TimelineItem[] }[] = [];
+    
+    timeline.forEach(item => {
+      const dateStr = format(item.timestamp, 'MMMM d, yyyy');
+      const existingGroup = grouped.find(g => g.date === dateStr);
+      
+      if (existingGroup) {
+        existingGroup.items.push(item);
+      } else {
+        grouped.push({ date: dateStr, items: [item] });
+      }
+    });
+    
+    return grouped;
+  }, [timeline]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,10 +267,10 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            Message Inbox - {contact.name}
+            {contact.name}
           </DialogTitle>
           <DialogDescription>
-            {contact.phone ? `View all calls and messages with ${contact.phone}` : "No phone number available"}
+            {contact.phone ? contact.phone : "No phone number available"}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,152 +279,39 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
             This contact doesn't have a phone number.
           </div>
         ) : (
-          <Tabs defaultValue="calls" className="flex-1 flex flex-col min-h-0">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="calls" className="flex items-center gap-2" data-testid="tab-calls">
-                <Phone className="w-4 h-4" />
-                Calls ({calls.length})
-              </TabsTrigger>
-              <TabsTrigger value="messages" className="flex items-center gap-2" data-testid="tab-messages">
-                <MessageSquare className="w-4 h-4" />
-                Messages ({messages.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="calls" className="flex-1 overflow-y-auto space-y-3 mt-4" data-testid="content-calls">
-              {callsLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <Skeleton key={i} className="h-24 w-full" />
-                  ))}
-                </div>
-              ) : calls.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Phone className="w-12 h-12 mb-3 opacity-50" />
-                  <p>No call history with this contact</p>
-                </div>
-              ) : (
-                calls.map((call) => (
-                  <Card 
-                    key={call.sid} 
-                    className="hover-elevate cursor-pointer"
-                    onClick={() => setSelectedCallSid(call.sid)}
-                    data-testid={`card-call-${call.sid}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          {isIncoming(call.direction, call.from) ? (
-                            <PhoneIncoming className="w-5 h-5 text-green-600 mt-0.5" />
-                          ) : (
-                            <PhoneOutgoing className="w-5 h-5 text-blue-600 mt-0.5" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-medium">
-                                {isIncoming(call.direction, call.from) ? "Incoming Call" : "Outgoing Call"}
-                              </span>
-                              <Badge variant="outline" className="capitalize">
-                                {call.status}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-3 h-3" />
-                                {formatDistanceToNow(new Date(call.startTime), { addSuffix: true })}
-                              </div>
-                              <div>Duration: {formatDuration(call.duration)}</div>
-                              {call.status === 'completed' && (
-                                <div className="flex items-center gap-1 text-xs text-blue-600 mt-2">
-                                  <Mic className="w-3 h-3" />
-                                  Click to view recordings
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+          <div className="flex-1 overflow-y-auto px-2" data-testid="message-timeline">
+            {callsLoading || messagesLoading ? (
+              <div className="space-y-4 py-4">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                    <Skeleton className={`h-20 ${i % 3 === 0 ? 'w-3/4' : 'w-1/2'} rounded-2xl`} />
+                  </div>
+                ))}
+              </div>
+            ) : timeline.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
+                <p>No conversation history with this contact</p>
+              </div>
+            ) : (
+              <div className="py-4">
+                {groupedTimeline.map(group => (
+                  <div key={group.date} className="mb-6">
+                    <div className="flex items-center justify-center mb-4">
+                      <div className="bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground">
+                        {group.date}
                       </div>
-
-                      {selectedCallSid === call.sid && (
-                        <div className="mt-4 pt-4 border-t">
-                          <div className="text-sm font-medium mb-2">Recordings:</div>
-                          {recordingsLoading ? (
-                            <Skeleton className="h-12 w-full" />
-                          ) : recordings.length === 0 ? (
-                            <div className="text-sm text-muted-foreground">No recordings available</div>
-                          ) : (
-                            <div className="space-y-2">
-                              {recordings.map((recording) => (
-                                <div 
-                                  key={recording.sid} 
-                                  className="flex items-center gap-3 p-2 rounded bg-muted/50"
-                                  data-testid={`recording-${recording.sid}`}
-                                >
-                                  <Mic className="w-4 h-4 text-muted-foreground" />
-                                  <div className="flex-1 min-w-0">
-                                    <audio 
-                                      controls 
-                                      className="w-full h-8"
-                                      src={recording.url}
-                                      data-testid={`audio-${recording.sid}`}
-                                    >
-                                      Your browser does not support the audio element.
-                                    </audio>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Duration: {formatDuration(recording.duration)} • {formatDistanceToNow(new Date(recording.dateCreated), { addSuffix: true })}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="messages" className="flex-1 overflow-y-auto space-y-3 mt-4" data-testid="content-messages">
-              {messagesLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <Skeleton key={i} className="h-20 w-full" />
-                  ))}
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
-                  <p>No message history with this contact</p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <Card key={message.sid} data-testid={`card-message-${message.sid}`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <MessageSquare className={`w-5 h-5 mt-0.5 ${isIncoming(message.direction, message.from) ? 'text-green-600' : 'text-blue-600'}`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-2">
-                            <span className="font-medium">
-                              {isIncoming(message.direction, message.from) ? "Incoming Message" : "Outgoing Message"}
-                            </span>
-                            <Badge variant="outline" className="capitalize">
-                              {message.status}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(message.dateSent || message.dateCreated), { addSuffix: true })}
-                            </span>
-                          </div>
-                          <p className="text-sm whitespace-pre-wrap">{message.body}</p>
-                        </div>
+                    </div>
+                    {group.items.map(item => (
+                      <div key={item.id}>
+                        {item.type === 'call' ? renderCallMessage(item) : renderSmsMessage(item)}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </DialogContent>
     </Dialog>
