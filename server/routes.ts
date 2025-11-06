@@ -957,6 +957,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get call logs for a specific contact
+  app.get("/api/twilio/calls/:phoneNumber", async (req, res) => {
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+      const phoneNumber = req.params.phoneNumber;
+
+      if (!accountSid || !authToken || !twilioNumber) {
+        return res.status(500).json({ error: "Missing Twilio credentials" });
+      }
+
+      const client = twilio(accountSid, authToken);
+
+      // Fetch both incoming and outgoing calls
+      const [incomingCalls, outgoingCalls] = await Promise.all([
+        client.calls.list({ from: phoneNumber, to: twilioNumber, limit: 50 }),
+        client.calls.list({ from: twilioNumber, to: phoneNumber, limit: 50 })
+      ]);
+
+      const allCalls = [...incomingCalls, ...outgoingCalls]
+        .map(call => ({
+          sid: call.sid,
+          from: call.from,
+          to: call.to,
+          status: call.status,
+          direction: call.direction,
+          duration: call.duration,
+          startTime: call.startTime,
+          endTime: call.endTime,
+          price: call.price,
+          priceUnit: call.priceUnit
+        }))
+        .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+
+      res.json(allCalls);
+    } catch (error: any) {
+      console.error("Error fetching calls:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch calls" });
+    }
+  });
+
+  // Get SMS messages for a specific contact
+  app.get("/api/twilio/messages/:phoneNumber", async (req, res) => {
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+      const phoneNumber = req.params.phoneNumber;
+
+      if (!accountSid || !authToken || !twilioNumber) {
+        return res.status(500).json({ error: "Missing Twilio credentials" });
+      }
+
+      const client = twilio(accountSid, authToken);
+
+      // Fetch both incoming and outgoing messages
+      const [incomingMessages, outgoingMessages] = await Promise.all([
+        client.messages.list({ from: phoneNumber, to: twilioNumber, limit: 50 }),
+        client.messages.list({ from: twilioNumber, to: phoneNumber, limit: 50 })
+      ]);
+
+      const allMessages = [...incomingMessages, ...outgoingMessages]
+        .map(message => ({
+          sid: message.sid,
+          from: message.from,
+          to: message.to,
+          body: message.body,
+          status: message.status,
+          direction: message.direction,
+          dateSent: message.dateSent,
+          dateCreated: message.dateCreated,
+          price: message.price,
+          priceUnit: message.priceUnit
+        }))
+        .sort((a, b) => new Date(b.dateSent || b.dateCreated).getTime() - new Date(a.dateSent || a.dateCreated).getTime());
+
+      res.json(allMessages);
+    } catch (error: any) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch messages" });
+    }
+  });
+
+  // Get recordings for a specific call
+  app.get("/api/twilio/recordings/:callSid", async (req, res) => {
+    try {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const callSid = req.params.callSid;
+
+      if (!accountSid || !authToken) {
+        return res.status(500).json({ error: "Missing Twilio credentials" });
+      }
+
+      const client = twilio(accountSid, authToken);
+
+      const recordings = await client.recordings.list({ callSid, limit: 20 });
+
+      const recordingData = recordings.map(recording => ({
+        sid: recording.sid,
+        duration: recording.duration,
+        dateCreated: recording.dateCreated,
+        url: `https://api.twilio.com${recording.uri.replace('.json', '.mp3')}`,
+        status: recording.status
+      }));
+
+      res.json(recordingData);
+    } catch (error: any) {
+      console.error("Error fetching recordings:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch recordings" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
