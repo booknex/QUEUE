@@ -917,26 +917,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const VoiceResponse = twilio.twiml.VoiceResponse;
       const response = new VoiceResponse();
 
-      // Check if this is an outbound call from browser (has 'To' param)
-      // or incoming call to Twilio number (no 'To' param)
+      const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
       const toNumber = req.body.To || req.query.To;
-      const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+      const fromNumber = req.body.From;
+      
+      // If the call is TO the Twilio number, it's incoming - route to browser
+      // If there's a custom 'To' parameter from browser, it's outbound
+      const isIncomingCall = toNumber === twilioNumber;
 
-      if (toNumber) {
-        // Outbound call from browser to phone number
-        console.log(`Outbound call: Dialing ${toNumber} from ${fromNumber}`);
-        response.dial({ 
-          callerId: fromNumber 
-        }, toNumber);
-      } else {
+      if (isIncomingCall) {
         // Incoming call to Twilio number - route to browser
-        console.log("Incoming call: Routing to browser client");
+        console.log(`Incoming call from ${fromNumber} - routing to browser client`);
         const dial = response.dial({
-          callerId: req.body.From || 'Unknown'
+          callerId: fromNumber
         });
-        // Route to the browser using the most recent identity
+        // Route to the browser using the identity 'browser_client'
         // The Device will fire 'incoming' event when this happens
         dial.client('browser_client');
+      } else {
+        // Outbound call from browser to phone number
+        console.log(`Outbound call: Dialing ${toNumber} from ${twilioNumber}`);
+        response.dial({ 
+          callerId: twilioNumber 
+        }, toNumber);
       }
 
       const twiml = response.toString();
