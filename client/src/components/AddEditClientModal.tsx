@@ -97,7 +97,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md" data-testid="modal-add-edit-client">
+      <DialogContent className="max-w-md sm:top-[10%] sm:translate-y-0" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
