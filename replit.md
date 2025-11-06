@@ -1,62 +1,53 @@
 # Client Queue Manager
 
-## Overview
-A productivity-focused web application for managing daily client work with priority ordering and automatic time tracking. It helps users organize client files and track wait times, automatically ordering files by touch status. The project aims to provide an efficient tool for professionals managing multiple client engagements across different companies/organizations. It features a fully functional MVP with database integration, work session history, multi-company support, and close functionality.
+### Overview
+The Client Queue Manager is a productivity-focused web application designed to help professionals manage daily client work efficiently. It provides tools for organizing client files, tracking wait times with automatic priority ordering, and managing client engagements across multiple companies. The application aims to streamline workflows, ensure no client is neglected, and offer a comprehensive solution for client interaction and project management.
 
-## User Preferences
+### User Preferences
 - User needs a simple, efficient way to manage daily client work
 - Visual indicators are important for quick scanning
 - Drag-and-drop is preferred for priority management
 - Timer tracking helps ensure no client is neglected
 
-## System Architecture
+### System Architecture
 
-### UI/UX Decisions
-The application follows a Linear + Material Design hybrid, emphasizing clean, information-dense layouts, consistent spacing and typography, purposeful color usage for status and urgency, smooth interactions, and mobile responsiveness. Key visual features include 12-hour visual indicators (green for recent, red for urgent) and real-time urgency color-coded bars (Green < 4h, Yellow 4-8h, Orange 8-24h, Red > 24h).
+#### UI/UX Decisions
+The application utilizes a Linear + Material Design hybrid, focusing on clean, information-dense layouts, consistent typography, and purposeful color usage for status and urgency. It features real-time urgency color-coded bars (Green < 4h, Yellow 4-8h, Orange 8-24h, Red > 24h) and ensures mobile responsiveness.
 
-### Technical Implementations
-The application has two main sections:
-1.  **Client Queue**: Horizontal scrolling cards for daily client work, priority-ordered (untouched first, then oldest touched). Automatic ordering by `lastTouchedAt` (untouched files first, then oldest touched ascending) has replaced manual drag-and-drop. "Touch" functionality resets timers and moves the card to the end of the queue.
-2.  **Kanban Board**: A separate system with header navigation for "Opportunities" and "Pipelines," independent from the client queue. It supports dynamic pipeline management, allowing users to create, edit, and delete pipelines via a modal, each with its dedicated kanban board. Both the "Opportunities" view and individual pipeline views support fully dynamic column management - users can create and delete columns as needed. Default columns for Opportunities are: New, In Progress, Closed.
+#### Technical Implementations
+The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines. Key features include:
 
-**Key Features:**
--   **Multi-Company Support**: Users can manage multiple companies/organizations from a single application. A company dropdown selector in the header allows switching between different companies. Each company has its own isolated data (client files, pipelines, contacts, opportunities).
--   **Real-Time Multi-User Collaboration**: WebSocket-based real-time synchronization ensures all connected clients see changes instantly. When any user creates, updates, or deletes data (companies, files, pipelines, columns, opportunities, contacts), all other users receive updates within 1-3 seconds without page refresh. Frontend uses `useWebSocket` hook with auto-reconnect and exponential backoff. Backend broadcasts events via WebSocket server at `/ws` path. React Query cache automatically invalidates on WebSocket events using hierarchical cache keys.
--   **Automatic Ordering**: Files are automatically sorted with untouched files appearing first, followed by touched files ordered by their `lastTouchedAt` timestamp (oldest first).
--   **Real-time Timer Tracking**: Wait times are calculated from `lastTouchedAt` or `createdAt`, displayed with seconds precision at the top left of each client card, and update every second client-side. Server syncs every 30 seconds.
--   **Touch with Notes**: The touch button (consistently positioned at the bottom of all client cards using flexbox mt-auto) opens a modal allowing users to optionally add a note about their work. The button displays "Touch" on the left with an eye icon, and the touch count on the right side in monospace font. Notes are saved to work session history along with timestamp. The modal properly resets state when switching between clients or closing. Single modal instance at Dashboard level prevents duplicate DOM elements. Card layout uses flex-column with h-full, content section with flex-1, and buttons section with mt-auto to ensure touch button appears at same vertical position regardless of card content (description, last touched text, etc.). Client cards feature a clean header with wait time on the left and an icon-only actions menu (three dots) on the right, providing quick access to History, Close, and Delete options.
--   **Dynamic Pipeline Management**: Full CRUD operations for pipelines stored in PostgreSQL, managed via a UI modal. Each pipeline gets a dedicated kanban board.
--   **Dynamic Column Management**: Users can create and delete kanban columns on both the Opportunities view and individual pipeline boards. Columns are stored in the `kanban_columns` table with position ordering. Deleting a column cascades to remove all opportunities in that column. New opportunities are automatically placed in the first column.
--   **Drag-and-Drop Opportunities**: Opportunity cards can be dragged between kanban columns using @hello-pangea/dnd library. When dropped, the opportunity's columnId is updated via PATCH /api/opportunities/:id endpoint. The UI automatically refetches and updates to show cards in their new columns. Visual feedback includes cursor changes (grab/grabbing), shadow effects while dragging, and column highlighting on hover.
--   **Opportunity Management**: Create and track opportunities through kanban workflow. When creating an opportunity, users must provide contact information (name required, phone and email optional). The system creates both the contact and opportunity together. **Opportunity cards are clickable to edit them** - clicking a card opens the edit modal with pre-populated data. The modal supports both create and edit modes. When editing, users can update contact name, phone, email, and opportunity description. All fields can be cleared by deleting content (empty values are explicitly sent to the server). **Delete button with confirmation** - In edit mode, a destructive-styled delete button appears in the modal footer. Clicking it opens a confirmation dialog to prevent accidental deletion. Successful deletion removes the opportunity, invalidates caches, and broadcasts real-time updates. AddOpportunityModal uses react-hook-form with zodResolver for form validation. All opportunity API endpoints serialize dates to ISO strings for type safety. **Opportunity cards display the contact name as the card title** instead of the opportunity title, with fallback to opportunity title if contact name is unavailable. A drag guard (isDraggingRef) prevents the edit modal from opening when dragging cards between columns.
--   **Contact Management**: All contacts are accessible via the Contacts view (switched via button in KanbanView sidebar). Contacts are displayed in a list format showing name, phone, email, and unique ID badge. The ID badge helps identify duplicate contacts and reference specific contacts. Each opportunity is linked to a contact via foreign key. **Add Contact Button**: Users can create contacts directly from the Contacts view using the "Add Contact" button in the header, which opens a modal with name (required), phone, and email fields. **CSV Bulk Import**: Users can upload CSV files to import multiple contacts at once via the "Upload CSV" button. The system parses CSV files with columns for Name (or First Name + Last Name), Phone, and Email. Empty fields are handled gracefully - contacts can have any combination of these fields as long as at least one is present. The import process validates each contact, checks for duplicates, and provides detailed results showing success count, failed count, and specific error messages. Duplicate prevention works during bulk import using the same logic as manual contact creation. The frontend parses CSV client-side, handles quoted values and special characters, and sends validated data to POST /api/contacts/bulk-import endpoint. **Duplicate Prevention**: The system prevents creating duplicate contacts by checking for matching name, email, or phone number within the same company. Error messages clearly indicate which field caused the conflict. **Search Functionality**: A search input filters contacts client-side by name, email, or phone (case-insensitive). The display shows "found X of Y" when filtering, and maintains the 10-contact display limit. **Edit/Delete Contacts**: Clicking any contact card opens an EditContactModal where users can update contact information or delete the contact. The edit modal supports clearing optional fields (phone/email) by sending explicit null values that properly set database columns to NULL. Delete functionality includes a confirmation dialog to prevent accidental deletions. Both actions trigger real-time WebSocket updates across all connected clients.
--   **Pipeline Assignment**: Client files can be assigned to pipelines through the edit modal. The modal includes a pipeline selector dropdown with "No Pipeline" and all available pipelines for the selected company. When a pipeline is assigned, a blue badge with the pipeline name displays on the client card in the queue view. This feature is stored in the `pipelineId` column of client_files table with foreign key relationship to pipelines (cascade set null on delete).
--   **Close File Functionality**: Files can be marked as "closed" with a `closedAt` date, viewable in a dedicated modal accessible by clicking the "Completed" stat card.
+-   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector.
+-   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
+-   **Automatic Ordering**: Client files are automatically sorted by `lastTouchedAt`, with untouched files prioritized.
+-   **Real-time Timer Tracking**: Wait times are calculated and displayed with second precision.
+-   **Touch with Notes**: A "Touch" functionality resets timers, moves cards to the queue's end, and allows adding notes to work sessions.
+-   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
+-   **Dynamic Column Management**: Users can create and delete kanban columns for both "Opportunities" and individual pipeline boards.
+-   **Drag-and-Drop Opportunities**: Opportunity cards can be moved between kanban columns with visual feedback.
+-   **Opportunity Management**: Create, track, and edit opportunities, linked to contacts. Opportunity cards are clickable to edit details and support deletion with confirmation.
+-   **Contact Management**: Dedicated "Contacts" view with CRUD operations, CSV bulk import, duplicate prevention, and search functionality.
+-   **Message Inbox**: Clickable contact names on opportunity cards open a modal displaying Twilio call and SMS history, including playable call recordings.
+-   **Pipeline Assignment**: Client files can be assigned to pipelines, indicated by a badge on the client card.
+-   **Close File Functionality**: Mark files as "closed" with a timestamp.
 -   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
--   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS messaging. **Always-active phone widget** in bottom-right corner (green circular button) with expandable interface. Device initializes on page load and stays active for incoming calls. Widget includes two tabs: "Call" for real-time two-way voice communication, and "SMS" for text messaging. **Incoming calls pop up as notification** at top-left of screen, even when widget is collapsed. Features: outbound calls, incoming call support, mute/unmute controls, call duration timer, visual call status. Backend generates JWT access tokens (GET /api/twilio/token) with VoiceGrant for secure device registration. Voice routing endpoint (POST /api/twilio/voice) handles TwiML generation for call flow. SMS endpoint (POST /api/twilio/sms) sends text messages. Required Twilio credentials: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_TWIML_APP_SID. Frontend uses @twilio/voice-sdk Device class with call event listeners. Browser microphone permissions required. **IMPORTANT SETUP FOR INCOMING CALLS**: In Twilio console, configure your phone number's webhook URL to: `https://[your-replit-url].replit.dev/api/twilio/voice` (or `.replit.app` for published version), Method: POST, under "Voice & Fax" → "A Call Comes In". The browser must be open on the same URL that Twilio is configured to call.
+-   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS. An always-active phone widget handles outbound calls, incoming call notifications, and messaging.
 
-### System Design Choices
--   **Frontend**: React 18 with TypeScript, TanStack Query v5 for data fetching, Wouter for routing, Shadcn UI with Tailwind CSS, date-fns, WebSocket client with auto-reconnect.
--   **Backend**: Express.js server, PostgreSQL database with Drizzle ORM, Zod validation, RESTful API design, WebSocket server for real-time events.
--   **Data Models**:
-    -   **Company**: `id`, `name`, `createdAt` - Root organization entity
-    -   **ClientFile**: `id`, `clientName`, `description`, `status` (waiting | in_progress), `companyId` (foreign key, cascade delete), `pipelineId` (nullable, foreign key to pipelines, cascade set null), `createdAt`, `lastTouchedAt` (nullable), `closedAt` (nullable)
-    -   **Pipeline**: `id`, `name`, `companyId` (foreign key, cascade delete), `createdAt`
-    -   **Contact**: `id`, `name`, `phone` (nullable), `email` (nullable), `companyId` (foreign key, cascade delete), `createdAt`
-    -   **KanbanColumn**: `id`, `name`, `position`, `pipelineId` (nullable, null for Opportunities view), `createdAt`
-    -   **Opportunity**: `id`, `title`, `description` (nullable), `columnId` (foreign key to kanban_columns, cascade delete), `contactId` (foreign key to contacts, cascade delete), `createdAt`
+#### System Design Choices
+-   **Frontend**: React 18, TypeScript, TanStack Query v5, Wouter, Shadcn UI, Tailwind CSS, date-fns, WebSocket client.
+-   **Backend**: Express.js, PostgreSQL with Drizzle ORM, Zod validation, RESTful API, WebSocket server.
+-   **Data Models**: Core entities include `Company`, `ClientFile`, `Pipeline`, `Contact`, `KanbanColumn`, and `Opportunity`, all designed with appropriate foreign key relationships for data integrity and company isolation.
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
--   **Company Isolation**: All client files, pipelines, and contacts are scoped to their parent company via foreign key relationships with cascade delete. API routes support optional `companyId` query parameter for filtering.
+-   **Company Isolation**: All data is scoped to its parent company using foreign keys.
 
-## External Dependencies
--   **PostgreSQL**: Primary database for persistent storage of client files, pipelines, and work sessions.
--   **Drizzle ORM**: Used for interacting with the PostgreSQL database.
--   **TanStack Query v5**: For client-side data fetching, caching, and synchronization with `staleTime: Infinity` configuration.
--   **@hello-pangea/dnd**: Drag-and-drop library (fork of react-beautiful-dnd) for opportunity card reordering between kanban columns.
--   **ws**: WebSocket library for real-time bidirectional communication between server and clients.
--   **Shadcn UI**: UI component library.
--   **Tailwind CSS**: For styling.
--   **date-fns**: For date and time formatting.
--   **Zod**: For schema validation on both frontend and backend.
--   **Vite**: Frontend development server and build tool.
--   **Twilio**: Voice SDK (@twilio/voice-sdk) for browser-based calling, server SDK (twilio) for SMS and call management. Enables live two-way voice calls and SMS messaging directly from the application.
+### External Dependencies
+-   **PostgreSQL**: Primary database for all persistent data.
+-   **Drizzle ORM**: Used for database interactions.
+-   **TanStack Query v5**: For client-side data fetching and caching.
+-   **@hello-pangea/dnd**: For drag-and-drop functionality in kanban boards.
+-   **ws**: WebSocket library for real-time communication.
+-   **Shadcn UI & Tailwind CSS**: For UI components and styling.
+-   **date-fns**: For date and time manipulation.
+-   **Zod**: For schema validation.
+-   **Vite**: Frontend build tool.
+-   **Twilio**: Voice SDK (`@twilio/voice-sdk`) for browser calls, Twilio Node.js SDK (`twilio`) for SMS and call management (requires specific environment variables and webhook configuration).
