@@ -166,6 +166,8 @@ export type Opportunity = typeof opportunities.$inferSelect;
 
 export type OpportunityWithContact = Opportunity & {
   contactName: string;
+  contactPhone: string | null;
+  contactEmail: string | null;
   columnName: string;
 };
 

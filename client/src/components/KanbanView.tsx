@@ -21,10 +21,11 @@ import {
 import { Plus, ChevronDown, Settings, Trash2, X } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
+import MessageInboxModal from "./MessageInboxModal";
 import Contacts from "@/pages/Contacts";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Pipeline, OpportunityWithContact, KanbanColumn } from "@shared/schema";
+import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
 
 interface KanbanViewProps {
   selectedPipelineId: number | null;
@@ -39,6 +40,8 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   const [addColumnOpen, setAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [editingOpportunity, setEditingOpportunity] = useState<OpportunityWithContact | null>(null);
+  const [inboxContact, setInboxContact] = useState<Contact | null>(null);
+  const [inboxOpen, setInboxOpen] = useState(false);
   const { toast } = useToast();
   
   // Local state for drag-and-drop (prevents React Query cache flicker)
@@ -285,6 +288,22 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
     setAddOpportunityOpen(false);
   };
 
+  const handleContactClick = (e: React.MouseEvent, opportunity: OpportunityWithContact) => {
+    e.stopPropagation();
+    if (opportunity.contactId) {
+      const contact: Contact = {
+        id: opportunity.contactId,
+        name: opportunity.contactName || "Unknown",
+        phone: opportunity.contactPhone || null,
+        email: opportunity.contactEmail || null,
+        companyId: selectedCompanyId!,
+        createdAt: new Date(),
+      };
+      setInboxContact(contact);
+      setInboxOpen(true);
+    }
+  };
+
   return (
     <div className="flex gap-4" data-testid="kanban-view">
       {/* Full-height Sidebar */}
@@ -424,7 +443,15 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                       }}
                                     >
                                       <CardHeader className="pb-2 pt-3 px-3">
-                                        <CardTitle className="text-sm">{opportunity.contactName || opportunity.title}</CardTitle>
+                                        <CardTitle className="text-sm">
+                                          <span 
+                                            className="cursor-pointer hover:underline text-primary"
+                                            onClick={(e) => handleContactClick(e, opportunity)}
+                                            data-testid={`contact-name-${opportunity.id}`}
+                                          >
+                                            {opportunity.contactName || opportunity.title}
+                                          </span>
+                                        </CardTitle>
                                       </CardHeader>
                                       {opportunity.description && (
                                         <CardContent className="pt-0 pb-3 px-3">
@@ -478,6 +505,11 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         selectedPipelineId={selectedPipelineId}
         selectedCompanyId={selectedCompanyId}
         opportunity={editingOpportunity}
+      />
+      <MessageInboxModal
+        contact={inboxContact}
+        open={inboxOpen}
+        onOpenChange={setInboxOpen}
       />
       
       {/* Add Column Dialog */}

@@ -357,6 +357,8 @@ export class DatabaseStorage implements IStorage {
         position: opportunities.position,
         createdAt: opportunities.createdAt,
         contactName: contacts.name,
+        contactPhone: contacts.phone,
+        contactEmail: contacts.email,
         columnName: kanbanColumns.name,
       })
       .from(opportunities)
@@ -373,6 +375,8 @@ export class DatabaseStorage implements IStorage {
       position: row.position,
       createdAt: row.createdAt,
       contactName: row.contactName || "Unknown Contact",
+      contactPhone: row.contactPhone || null,
+      contactEmail: row.contactEmail || null,
       columnName: row.columnName || "Unknown Column",
     }));
   }
