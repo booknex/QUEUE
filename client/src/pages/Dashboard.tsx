@@ -281,6 +281,34 @@ export default function Dashboard() {
     }
   };
   
+  // Helper function to calculate urgency state for a status
+  const getStatusUrgency = (statusFiles: ClientFile[]): "red" | "green" | "neutral" => {
+    if (statusFiles.length === 0) return "neutral";
+    
+    let hasRed = false;
+    let allGreen = true;
+    
+    for (const file of statusFiles) {
+      // Check if file is red (untouched or 48+ hours)
+      if (file.lastTouchedAt === null) {
+        hasRed = true;
+        allGreen = false;
+      } else {
+        const hoursSince = (now - new Date(file.lastTouchedAt).getTime()) / (1000 * 60 * 60);
+        if (hoursSince >= 48) {
+          hasRed = true;
+          allGreen = false;
+        } else if (hoursSince >= 24) {
+          allGreen = false;
+        }
+      }
+    }
+    
+    if (hasRed) return "red";
+    if (allGreen) return "green";
+    return "neutral";
+  };
+  
   // Filter out closed files from main queue
   const openFiles = files.filter(f => f.closedAt === null);
   
@@ -311,6 +339,15 @@ export default function Dashboard() {
     appIntake: openFiles.filter(f => f.status === "APP-INTAKE").length,
     needsLender: openFiles.filter(f => f.status === "NEEDS LENDER").length,
     completed: files.filter(f => f.closedAt !== null).length,
+  };
+  
+  // Calculate urgency for each status
+  const urgencies = {
+    all: getStatusUrgency(openFiles),
+    needsLender: getStatusUrgency(openFiles.filter(f => f.status === "NEEDS LENDER")),
+    appIntake: getStatusUrgency(openFiles.filter(f => f.status === "APP-INTAKE")),
+    preApproved: getStatusUrgency(openFiles.filter(f => f.status === "PRE-APPROVED")),
+    approvedWithConditions: getStatusUrgency(openFiles.filter(f => f.status === "APPROVED W/ CONDITIONS")),
   };
 
   useEffect(() => {
@@ -403,6 +440,7 @@ export default function Dashboard() {
             icon={Users}
             testId="stat-all-deals"
             onClick={() => setStatusFilter(null)}
+            urgencyState={urgencies.all}
           />
           <StatsCard
             title="NEEDS LENDER"
@@ -410,6 +448,7 @@ export default function Dashboard() {
             icon={AlertCircle}
             testId="stat-needs-lender"
             onClick={() => setStatusFilter(statusFilter === "NEEDS LENDER" ? null : "NEEDS LENDER")}
+            urgencyState={urgencies.needsLender}
           />
           <StatsCard
             title="APP-INTAKE"
@@ -417,6 +456,7 @@ export default function Dashboard() {
             icon={Clock}
             testId="stat-app-intake"
             onClick={() => setStatusFilter(statusFilter === "APP-INTAKE" ? null : "APP-INTAKE")}
+            urgencyState={urgencies.appIntake}
           />
           <StatsCard
             title="PRE-APPROVED"
@@ -424,6 +464,7 @@ export default function Dashboard() {
             icon={AlertCircle}
             testId="stat-pre-approved"
             onClick={() => setStatusFilter(statusFilter === "PRE-APPROVED" ? null : "PRE-APPROVED")}
+            urgencyState={urgencies.preApproved}
           />
           <StatsCard
             title="APPROVED W/ CONDITIONS"
@@ -431,6 +472,7 @@ export default function Dashboard() {
             icon={CheckCircle2}
             testId="stat-approved-conditions"
             onClick={() => setStatusFilter(statusFilter === "APPROVED W/ CONDITIONS" ? null : "APPROVED W/ CONDITIONS")}
+            urgencyState={urgencies.approvedWithConditions}
           />
           <StatsCard
             title="Completed"
