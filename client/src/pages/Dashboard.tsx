@@ -412,10 +412,11 @@ export default function Dashboard() {
             onClick={() => setStatusFilter(statusFilter === "APP-INTAKE" ? null : "APP-INTAKE")}
           />
           <StatsCard
-            title="Pre-Approved"
+            title="PRE-APPROVED"
             value={stats.preApproved}
             icon={AlertCircle}
             testId="stat-pre-approved"
+            onClick={() => setStatusFilter(statusFilter === "PRE-APPROVED" ? null : "PRE-APPROVED")}
           />
           <StatsCard
             title="Completed"
