@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
+  const [showNeedsLenderOnly, setShowNeedsLenderOnly] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedPipelineId');
@@ -283,8 +284,13 @@ export default function Dashboard() {
   // Filter out closed files from main queue
   const openFiles = files.filter(f => f.closedAt === null);
   
+  // Apply NEEDS LENDER filter if active
+  const filteredFiles = showNeedsLenderOnly 
+    ? openFiles.filter(f => f.status === "NEEDS LENDER")
+    : openFiles;
+  
   // Sort files: untouched first, then by lastTouchedAt (oldest first)
-  const sortedFiles = [...openFiles].sort((a, b) => {
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
     // Untouched files (null lastTouchedAt) come first
     if (a.lastTouchedAt === null && b.lastTouchedAt !== null) return -1;
     if (a.lastTouchedAt !== null && b.lastTouchedAt === null) return 1;
@@ -390,12 +396,13 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
-            title="Total Clients"
-            value={stats.total}
-            icon={Users}
-            testId="stat-total"
+            title="NEEDS LENDER"
+            value={stats.needsLender}
+            icon={AlertCircle}
+            testId="stat-needs-lender"
+            onClick={() => setShowNeedsLenderOnly(!showNeedsLenderOnly)}
           />
           <StatsCard
             title="App Intake"
@@ -408,12 +415,6 @@ export default function Dashboard() {
             value={stats.preApproved}
             icon={AlertCircle}
             testId="stat-pre-approved"
-          />
-          <StatsCard
-            title="Needs Lender"
-            value={stats.needsLender}
-            icon={AlertCircle}
-            testId="stat-needs-lender"
           />
           <StatsCard
             title="Completed"
