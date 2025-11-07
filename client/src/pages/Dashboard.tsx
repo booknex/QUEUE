@@ -315,19 +315,17 @@ export default function Dashboard() {
     ? openFiles.filter(f => f.status === statusFilter)
     : openFiles;
   
-  // Sort files: untouched first, then by lastTouchedAt (oldest first)
+  // Sort files by wait time (longest wait first)
   const sortedFiles = [...filteredFiles].sort((a, b) => {
-    // Untouched files (null lastTouchedAt) come first
-    if (a.lastTouchedAt === null && b.lastTouchedAt !== null) return -1;
-    if (a.lastTouchedAt !== null && b.lastTouchedAt === null) return 1;
+    // Calculate elapsed time for each file
+    const aReferenceTime = a.lastTouchedAt ? new Date(a.lastTouchedAt).getTime() : new Date(a.createdAt).getTime();
+    const bReferenceTime = b.lastTouchedAt ? new Date(b.lastTouchedAt).getTime() : new Date(b.createdAt).getTime();
     
-    // Both untouched - sort by createdAt (oldest first)
-    if (a.lastTouchedAt === null && b.lastTouchedAt === null) {
-      return a.createdAt.getTime() - b.createdAt.getTime();
-    }
+    const aElapsed = now - aReferenceTime;
+    const bElapsed = now - bReferenceTime;
     
-    // Both touched - sort by lastTouchedAt (oldest first)
-    return a.lastTouchedAt!.getTime() - b.lastTouchedAt!.getTime();
+    // Sort by elapsed time descending (longest wait first)
+    return bElapsed - aElapsed;
   });
 
   const stats = {
