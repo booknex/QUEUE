@@ -396,7 +396,7 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatsCard
             title="NEEDS LENDER"
             value={stats.needsLender}
@@ -417,6 +417,13 @@ export default function Dashboard() {
             icon={AlertCircle}
             testId="stat-pre-approved"
             onClick={() => setStatusFilter(statusFilter === "PRE-APPROVED" ? null : "PRE-APPROVED")}
+          />
+          <StatsCard
+            title="APPROVED W/ CONDITIONS"
+            value={stats.approvedWithConditions}
+            icon={CheckCircle2}
+            testId="stat-approved-conditions"
+            onClick={() => setStatusFilter(statusFilter === "APPROVED W/ CONDITIONS" ? null : "APPROVED W/ CONDITIONS")}
           />
           <StatsCard
             title="Completed"
