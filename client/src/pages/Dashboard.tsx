@@ -283,7 +283,7 @@ export default function Dashboard() {
   
   // Helper function to calculate urgency state for a status
   const getStatusUrgency = (statusFiles: ClientFile[]): "red" | "green" | "neutral" => {
-    if (statusFiles.length === 0) return "neutral";
+    if (statusFiles.length === 0) return "green";
     
     let hasRed = false;
     let allGreen = true;
