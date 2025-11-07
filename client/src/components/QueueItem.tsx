@@ -29,19 +29,16 @@ function getUrgencyLevel(createdAt: Date, lastTouchedAt: Date | null, now: numbe
   color: string;
   isRecentlyTouched: boolean;
 } {
-  // If never touched, always show as critical (red)
-  if (lastTouchedAt === null) {
-    return { level: "critical", color: "bg-red-500", isRecentlyTouched: false };
-  }
+  // Calculate time since last touch or creation (whichever is most recent)
+  const referenceTime = lastTouchedAt ? new Date(lastTouchedAt).getTime() : new Date(createdAt).getTime();
+  const hoursSince = (now - referenceTime) / (1000 * 60 * 60);
   
-  // For touched files, calculate time since last touch
-  const hoursSince = (now - new Date(lastTouchedAt).getTime()) / (1000 * 60 * 60);
-  
-  // Check if touched within 24 hours
-  const isRecentlyTouched = hoursSince < 24;
+  // Check if touched within 24 hours (only applies to touched files)
+  const isRecentlyTouched = lastTouchedAt !== null && hoursSince < 24;
 
+  // Apply color based on elapsed time
   if (hoursSince < 24) {
-    return { level: "low", color: "bg-gray-400", isRecentlyTouched };
+    return { level: "low", color: "bg-green-500", isRecentlyTouched };
   } else if (hoursSince < 48) {
     return { level: "high", color: "bg-yellow-500", isRecentlyTouched: false };
   } else {
@@ -130,30 +127,30 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
     ? pipelines.find(p => p.id === file.pipelineId) 
     : null;
   
-  // Determine card styling based on urgency
+  // Determine card styling based on urgency level
   let cardBgClass = "";
   let cardBorderClass = "border-2";
   
-  if (urgency.isRecentlyTouched) {
-    // Touched within 24 hours - Green background and border
+  if (urgency.level === "low") {
+    // 0-24 hours - Green background and border
     cardBgClass = "bg-green-500/10";
     cardBorderClass = "border-2 border-green-500";
-  } else if (urgency.level === "critical") {
-    // >= 48 hours - Red background and border
-    cardBgClass = "bg-red-500/10";
-    cardBorderClass = "border-2 border-red-500";
   } else if (urgency.level === "high") {
     // 24-48 hours - Yellow background and border
     cardBgClass = "bg-yellow-500/10";
     cardBorderClass = "border-2 border-yellow-500";
+  } else if (urgency.level === "critical") {
+    // 48+ hours - Red background and border
+    cardBgClass = "bg-red-500/10";
+    cardBorderClass = "border-2 border-red-500";
   } else {
-    // < 24 hours but never touched - No special color
+    // Default - No special color
     cardBorderClass = "border-2 border-border";
   }
   
   const cardClassName = `relative overflow-visible transition-all duration-200 w-[268px] flex-shrink-0 cursor-pointer hover-elevate ${cardBgClass} ${cardBorderClass}`;
 
-  const edgeBarColor = urgency.isRecentlyTouched ? "bg-green-500" : urgency.color;
+  const edgeBarColor = urgency.color;
 
   return (
     <>

@@ -289,18 +289,16 @@ export default function Dashboard() {
     let allGreen = true;
     
     for (const file of statusFiles) {
-      // Check if file is red (untouched or 48+ hours)
-      if (file.lastTouchedAt === null) {
+      // Calculate time since last touch or creation
+      const referenceTime = file.lastTouchedAt ? new Date(file.lastTouchedAt).getTime() : new Date(file.createdAt).getTime();
+      const hoursSince = (now - referenceTime) / (1000 * 60 * 60);
+      
+      // Check urgency based on elapsed time
+      if (hoursSince >= 48) {
         hasRed = true;
         allGreen = false;
-      } else {
-        const hoursSince = (now - new Date(file.lastTouchedAt).getTime()) / (1000 * 60 * 60);
-        if (hoursSince >= 48) {
-          hasRed = true;
-          allGreen = false;
-        } else if (hoursSince >= 24) {
-          allGreen = false;
-        }
+      } else if (hoursSince >= 24) {
+        allGreen = false;
       }
     }
     
