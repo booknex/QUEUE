@@ -396,7 +396,14 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <StatsCard
+            title="ALL DEALS"
+            value={stats.total}
+            icon={Users}
+            testId="stat-all-deals"
+            onClick={() => setStatusFilter(null)}
+          />
           <StatsCard
             title="NEEDS LENDER"
             value={stats.needsLender}
