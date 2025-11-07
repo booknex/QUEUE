@@ -405,7 +405,7 @@ export default function Dashboard() {
             onClick={() => setStatusFilter(statusFilter === "NEEDS LENDER" ? null : "NEEDS LENDER")}
           />
           <StatsCard
-            title="App Intake"
+            title="APP-INTAKE"
             value={stats.appIntake}
             icon={Clock}
             testId="stat-app-intake"
