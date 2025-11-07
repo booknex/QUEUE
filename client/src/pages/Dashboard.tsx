@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
-  const [showNeedsLenderOnly, setShowNeedsLenderOnly] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedPipelineId');
@@ -284,9 +284,9 @@ export default function Dashboard() {
   // Filter out closed files from main queue
   const openFiles = files.filter(f => f.closedAt === null);
   
-  // Apply NEEDS LENDER filter if active
-  const filteredFiles = showNeedsLenderOnly 
-    ? openFiles.filter(f => f.status === "NEEDS LENDER")
+  // Apply status filter if active
+  const filteredFiles = statusFilter 
+    ? openFiles.filter(f => f.status === statusFilter)
     : openFiles;
   
   // Sort files: untouched first, then by lastTouchedAt (oldest first)
@@ -402,13 +402,14 @@ export default function Dashboard() {
             value={stats.needsLender}
             icon={AlertCircle}
             testId="stat-needs-lender"
-            onClick={() => setShowNeedsLenderOnly(!showNeedsLenderOnly)}
+            onClick={() => setStatusFilter(statusFilter === "NEEDS LENDER" ? null : "NEEDS LENDER")}
           />
           <StatsCard
             title="App Intake"
             value={stats.appIntake}
             icon={Clock}
             testId="stat-app-intake"
+            onClick={() => setStatusFilter(statusFilter === "APP-INTAKE" ? null : "APP-INTAKE")}
           />
           <StatsCard
             title="Pre-Approved"
