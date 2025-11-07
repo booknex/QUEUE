@@ -41,6 +41,11 @@ export function StatsCard({ title, value, icon: Icon, description, testId, onCli
               <AlertCircle className="w-4 h-4 text-red-500" />
             )}
           </p>
+          {urgencyState === "red" && (
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400 mt-1" data-testid={`${testId}-warning`}>
+              CLIENT IDLE FOR 48HRS
+            </p>
+          )}
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
