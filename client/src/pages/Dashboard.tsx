@@ -280,8 +280,11 @@ export default function Dashboard() {
     }
   };
   
+  // Filter out closed files from main queue
+  const openFiles = files.filter(f => f.closedAt === null);
+  
   // Sort files: untouched first, then by lastTouchedAt (oldest first)
-  const sortedFiles = [...files].sort((a, b) => {
+  const sortedFiles = [...openFiles].sort((a, b) => {
     // Untouched files (null lastTouchedAt) come first
     if (a.lastTouchedAt === null && b.lastTouchedAt !== null) return -1;
     if (a.lastTouchedAt !== null && b.lastTouchedAt === null) return 1;
@@ -296,11 +299,11 @@ export default function Dashboard() {
   });
 
   const stats = {
-    total: files.length,
-    approvedWithConditions: files.filter(f => f.status === "APPROVED W/ CONDITIONS").length,
-    preApproved: files.filter(f => f.status === "PRE-APPROVED").length,
-    appIntake: files.filter(f => f.status === "APP-INTAKE").length,
-    needsLender: files.filter(f => f.status === "NEEDS LENDER").length,
+    total: openFiles.length,
+    approvedWithConditions: openFiles.filter(f => f.status === "APPROVED W/ CONDITIONS").length,
+    preApproved: openFiles.filter(f => f.status === "PRE-APPROVED").length,
+    appIntake: openFiles.filter(f => f.status === "APP-INTAKE").length,
+    needsLender: openFiles.filter(f => f.status === "NEEDS LENDER").length,
     completed: files.filter(f => f.closedAt !== null).length,
   };
 
@@ -421,7 +424,7 @@ export default function Dashboard() {
           />
         </div>
 
-        {files.length === 0 ? (
+        {sortedFiles.length === 0 ? (
           <div className="mb-8">
             <EmptyState onAddClient={handleAddNew} />
           </div>
@@ -477,6 +480,12 @@ export default function Dashboard() {
         open={closedFilesModalOpen}
         onOpenChange={setClosedFilesModalOpen}
         files={files}
+        pipelines={pipelines}
+        onTouch={handleTouch}
+        onEdit={handleEdit}
+        onDelete={deleteMutation.mutate}
+        onClose={handleClose}
+        now={now}
       />
 
       <TouchNoteModal
