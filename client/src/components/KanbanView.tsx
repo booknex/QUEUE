@@ -66,7 +66,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   });
   
   // Fetch columns for the selected pipeline
-  const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
+  const { data: pipelineColumns = [], isFetching: isColumnsFetching } = useQuery<KanbanColumn[]>({
     queryKey: ["/api/columns", selectedPipelineId?.toString()],
     queryFn: async () => {
       const response = await fetch(`/api/columns?pipelineId=${selectedPipelineId}`);
@@ -74,6 +74,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       return response.json();
     },
     enabled: selectedPipelineId !== null,
+    refetchOnMount: "always",
   });
 
   const { data: opportunities = [] } = useQuery<OpportunityWithContact[]>({
@@ -92,9 +93,12 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
     setLocalOpportunities(opportunities);
   }, [opportunities]);
 
+  // Update local columns when pipeline columns change and fetch is complete
   useEffect(() => {
-    setLocalColumns(pipelineColumns);
-  }, [pipelineColumns]);
+    if (!isColumnsFetching) {
+      setLocalColumns(pipelineColumns);
+    }
+  }, [pipelineColumns, isColumnsFetching]);
 
   const createColumnMutation = useMutation({
     mutationFn: async (name: string) => {
