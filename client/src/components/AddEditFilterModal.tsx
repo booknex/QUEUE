@@ -19,18 +19,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { StatusFilter } from "@shared/schema";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Filter name is required"),
-  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER", "LOAN SETUP"]),
+  name: z.string().min(1, "Filter name is required").transform(val => val.toUpperCase()),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -54,7 +46,6 @@ export function AddEditFilterModal({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      status: "APP-INTAKE",
     },
   });
 
@@ -62,12 +53,10 @@ export function AddEditFilterModal({
     if (editingFilter) {
       form.reset({
         name: editingFilter.name,
-        status: editingFilter.status as "APPROVED W/ CONDITIONS" | "PRE-APPROVED" | "APP-INTAKE" | "NEEDS LENDER" | "LOAN SETUP",
       });
     } else {
       form.reset({
         name: "",
-        status: "APP-INTAKE",
       });
     }
   }, [editingFilter, form]);
@@ -93,8 +82,8 @@ export function AddEditFilterModal({
           </DialogTitle>
           <DialogDescription data-testid="text-modal-description">
             {editingFilter
-              ? "Update the filter details below."
-              : "Create a new custom filter button."}
+              ? "Update the filter name. This will also update the status name for all clients using this status."
+              : "Create a new custom filter. The filter name will become a new status option for client cards."}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,39 +94,17 @@ export function AddEditFilterModal({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Filter Name</FormLabel>
+                  <FormLabel>Filter/Status Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter filter name (e.g., 'HIGH PRIORITY')"
+                      placeholder="Enter name (e.g., 'HIGH PRIORITY', 'FOLLOW UP')"
                       {...field}
                       data-testid="input-filter-name"
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status to Filter</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-filter-status">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="APPROVED W/ CONDITIONS">APPROVED W/ CONDITIONS</SelectItem>
-                      <SelectItem value="PRE-APPROVED">PRE-APPROVED</SelectItem>
-                      <SelectItem value="APP-INTAKE">APP-INTAKE</SelectItem>
-                      <SelectItem value="NEEDS LENDER">NEEDS LENDER</SelectItem>
-                      <SelectItem value="LOAN SETUP">LOAN SETUP</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    This name will be used as a status option in client cards
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

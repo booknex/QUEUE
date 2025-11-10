@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ClientFile, Pipeline } from "@shared/schema";
+import type { ClientFile, Pipeline, StatusFilter } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
-  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER", "LOAN SETUP"]),
+  status: z.string().min(1, "Status is required"),
   pipelineId: z.number().nullable().optional(),
 });
 
@@ -45,6 +46,7 @@ interface AddEditClientModalProps {
   editingFile: ClientFile | null;
   isPending: boolean;
   pipelines: Pipeline[];
+  companyId: number | null;
 }
 
 export function AddEditClientModal({
@@ -54,13 +56,28 @@ export function AddEditClientModal({
   editingFile,
   isPending,
   pipelines,
+  companyId,
 }: AddEditClientModalProps) {
+  const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
+    queryKey: ["/api/filters", companyId?.toString()],
+    queryFn: async () => {
+      if (companyId === null) return [];
+      const response = await fetch(`/api/filters?companyId=${companyId}`);
+      if (!response.ok) throw new Error("Failed to fetch filters");
+      return response.json();
+    },
+    enabled: companyId !== null,
+  });
+
+  const uniqueStatuses = Array.from(new Set(filters.map(f => f.name))).sort();
+  const defaultStatus = uniqueStatuses.length > 0 ? uniqueStatuses[0] : "";
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientName: "",
       description: "",
-      status: "APP-INTAKE",
+      status: defaultStatus,
       pipelineId: null,
     },
   });
@@ -70,18 +87,18 @@ export function AddEditClientModal({
       form.reset({
         clientName: editingFile.clientName,
         description: editingFile.description || "",
-        status: editingFile.status as "APPROVED W/ CONDITIONS" | "PRE-APPROVED" | "APP-INTAKE" | "NEEDS LENDER" | "LOAN SETUP",
+        status: editingFile.status,
         pipelineId: editingFile.pipelineId || null,
       });
     } else {
       form.reset({
         clientName: "",
         description: "",
-        status: "APP-INTAKE",
+        status: defaultStatus,
         pipelineId: null,
       });
     }
-  }, [editingFile, form]);
+  }, [editingFile, form, defaultStatus]);
 
   const handleSubmit = (data: FormData) => {
     onSubmit(data);
@@ -154,18 +171,28 @@ export function AddEditClientModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={isLoadingFilters}
+                  >
                     <FormControl>
                       <SelectTrigger data-testid="select-status">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="APPROVED W/ CONDITIONS">APPROVED W/ CONDITIONS</SelectItem>
-                      <SelectItem value="PRE-APPROVED">PRE-APPROVED</SelectItem>
-                      <SelectItem value="APP-INTAKE">APP-INTAKE</SelectItem>
-                      <SelectItem value="NEEDS LENDER">NEEDS LENDER</SelectItem>
-                      <SelectItem value="LOAN SETUP">LOAN SETUP</SelectItem>
+                      {uniqueStatuses.length > 0 ? (
+                        uniqueStatuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          No statuses available
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

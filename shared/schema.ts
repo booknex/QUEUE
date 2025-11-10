@@ -75,7 +75,7 @@ export type ClientFile = typeof clientFiles.$inferSelect & {
 export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER", "LOAN SETUP"]).optional(),
+  status: z.string().min(1).optional(),
   pipelineId: z.number().nullable().optional(),
   lastTouchedAt: z.date().optional(),
   closedAt: z.date().optional(),
@@ -199,15 +199,16 @@ export type UpdateCompany = z.infer<typeof updateCompanySchema>;
 export const statusFilters = pgTable("status_filters", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  status: text("status").notNull(),
   companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   position: integer("position").notNull().default(0),
+  isSystem: integer("is_system").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertStatusFilterSchema = createInsertSchema(statusFilters).omit({
   id: true,
   createdAt: true,
+  isSystem: true,
 });
 
 export type InsertStatusFilter = z.infer<typeof insertStatusFilterSchema>;
@@ -215,7 +216,6 @@ export type StatusFilter = typeof statusFilters.$inferSelect;
 
 export const updateStatusFilterSchema = z.object({
   name: z.string().min(1).optional(),
-  status: z.string().optional(),
   position: z.number().optional(),
 });
 

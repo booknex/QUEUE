@@ -151,6 +151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
       }
+      if (error instanceof Error && error.message === "Cannot update system filters") {
+        return res.status(403).json({ error: "Cannot update system filters" });
+      }
       res.status(500).json({ error: "Failed to update filter" });
     }
   });
@@ -169,7 +172,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       broadcast({ type: "filter:deleted", companyId: filter.companyId });
       res.status(204).send();
     } catch (error) {
+      if (error instanceof Error && error.message === "Cannot delete system filters") {
+        return res.status(403).json({ error: "Cannot delete system filters" });
+      }
       res.status(500).json({ error: "Failed to delete filter" });
+    }
+  });
+
+  app.post("/api/filters/reorder", async (req, res) => {
+    try {
+      const schema = z.object({
+        filterIds: z.array(z.number()),
+        companyId: z.number(),
+      });
+      const validated = schema.parse(req.body);
+      
+      await storage.reorderFilters(validated.filterIds);
+      broadcast({ type: "filter:updated", companyId: validated.companyId });
+      res.status(200).json({ success: true });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to reorder filters" });
     }
   });
 

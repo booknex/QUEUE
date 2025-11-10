@@ -50,6 +50,7 @@ export interface IStorage {
   createFilter(filter: InsertStatusFilter): Promise<StatusFilter>;
   updateFilter(id: number, updates: UpdateStatusFilter): Promise<StatusFilter | undefined>;
   deleteFilter(id: number): Promise<boolean>;
+  reorderFilters(filterIds: number[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -433,28 +434,89 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createFilter(insertFilter: InsertStatusFilter): Promise<StatusFilter> {
+    const maxPositionResult = await db
+      .select({ maxPosition: sql<number>`COALESCE(MAX(${statusFilters.position}), -1)` })
+      .from(statusFilters)
+      .where(eq(statusFilters.companyId, insertFilter.companyId));
+    
+    const nextPosition = (maxPositionResult[0]?.maxPosition ?? -1) + 1;
+    
     const [filter] = await db
       .insert(statusFilters)
-      .values(insertFilter)
+      .values({
+        ...insertFilter,
+        position: nextPosition,
+        isSystem: 0,
+      })
       .returning();
     return filter;
   }
 
   async updateFilter(id: number, updates: UpdateStatusFilter): Promise<StatusFilter | undefined> {
-    const [filter] = await db
-      .update(statusFilters)
-      .set(updates)
-      .where(eq(statusFilters.id, id))
-      .returning();
-    return filter || undefined;
+    return await db.transaction(async (tx) => {
+      const [existingFilter] = await tx
+        .select()
+        .from(statusFilters)
+        .where(eq(statusFilters.id, id));
+      
+      if (!existingFilter) {
+        return undefined;
+      }
+      
+      if (existingFilter.isSystem === 1) {
+        throw new Error("Cannot update system filters");
+      }
+      
+      const [filter] = await tx
+        .update(statusFilters)
+        .set(updates)
+        .where(eq(statusFilters.id, id))
+        .returning();
+      
+      if (updates.name && existingFilter.name !== updates.name) {
+        await tx
+          .update(clientFiles)
+          .set({ status: updates.name })
+          .where(and(
+            eq(clientFiles.companyId, existingFilter.companyId),
+            eq(clientFiles.status, existingFilter.name)
+          ));
+      }
+      
+      return filter || undefined;
+    });
   }
 
   async deleteFilter(id: number): Promise<boolean> {
+    const [filter] = await db
+      .select()
+      .from(statusFilters)
+      .where(eq(statusFilters.id, id));
+    
+    if (!filter) {
+      return false;
+    }
+    
+    if (filter.isSystem === 1) {
+      throw new Error("Cannot delete system filters");
+    }
+    
     const result = await db
       .delete(statusFilters)
       .where(eq(statusFilters.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  async reorderFilters(filterIds: number[]): Promise<void> {
+    await db.transaction(async (tx) => {
+      for (let i = 0; i < filterIds.length; i++) {
+        await tx
+          .update(statusFilters)
+          .set({ position: i })
+          .where(eq(statusFilters.id, filterIds[i]));
+      }
+    });
   }
 }
 
