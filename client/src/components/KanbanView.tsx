@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, ChevronDown, Settings, Trash2, X } from "lucide-react";
+import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2 } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
@@ -42,10 +42,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   const [editingOpportunity, setEditingOpportunity] = useState<OpportunityWithContact | null>(null);
   const [inboxContact, setInboxContact] = useState<Contact | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const [editColumnOpen, setEditColumnOpen] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<KanbanColumn | null>(null);
+  const [editColumnName, setEditColumnName] = useState("");
   const { toast } = useToast();
   
   // Local state for drag-and-drop (prevents React Query cache flicker)
   const [localOpportunities, setLocalOpportunities] = useState<OpportunityWithContact[]>([]);
+  const [localColumns, setLocalColumns] = useState<KanbanColumn[]>([]);
   
   // Track if user is dragging to prevent edit modal from opening
   const isDraggingRef = useRef(false);
@@ -88,6 +92,10 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
     setLocalOpportunities(opportunities);
   }, [opportunities]);
 
+  useEffect(() => {
+    setLocalColumns(pipelineColumns);
+  }, [pipelineColumns]);
+
   const createColumnMutation = useMutation({
     mutationFn: async (name: string) => {
       const maxPosition = pipelineColumns.length > 0 
@@ -114,6 +122,29 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       toast({
         title: "Error",
         description: "Failed to create column.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateColumnMutation = useMutation({
+    mutationFn: async ({ columnId, name, position, showToast = true }: { columnId: number; name?: string; position?: number; showToast?: boolean }) => {
+      await apiRequest("PATCH", `/api/columns/${columnId}`, { name, position });
+      return { showToast };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/columns", selectedPipelineId?.toString()] });
+      if (data.showToast) {
+        toast({
+          title: "Column updated",
+          description: "Column has been updated.",
+        });
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update column.",
         variant: "destructive",
       });
     },
@@ -163,6 +194,27 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
     }
   };
 
+  const handleEditColumn = (column: KanbanColumn) => {
+    setEditingColumn(column);
+    setEditColumnName(column.name);
+    setEditColumnOpen(true);
+  };
+
+  const handleUpdateColumn = () => {
+    if (editingColumn && editColumnName.trim()) {
+      updateColumnMutation.mutate(
+        { columnId: editingColumn.id, name: editColumnName.trim() },
+        {
+          onSuccess: () => {
+            setEditColumnOpen(false);
+            setEditingColumn(null);
+            setEditColumnName("");
+          }
+        }
+      );
+    }
+  };
+
   const handleDeleteColumn = (columnId: number) => {
     if (confirm("Are you sure you want to delete this column? All opportunities in this column will also be deleted.")) {
       deleteColumnMutation.mutate(columnId);
@@ -170,7 +222,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   };
 
   const handleDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId } = result;
+    const { destination, source, draggableId, type } = result;
     
     // Mark that a drag has occurred
     isDraggingRef.current = true;
@@ -192,6 +244,39 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       return;
     }
 
+    // Handle column reordering
+    if (type === "COLUMN") {
+      const newColumns = Array.from(localColumns);
+      const [movedColumn] = newColumns.splice(source.index, 1);
+      newColumns.splice(destination.index, 0, movedColumn);
+      
+      // Update positions
+      const updatedColumns = newColumns.map((col, idx) => ({
+        ...col,
+        position: idx
+      }));
+      
+      setLocalColumns(updatedColumns);
+      
+      // Update each column's position in the database (no toast for reordering)
+      updatedColumns.forEach((col) => {
+        if (col.position !== localColumns.find(c => c.id === col.id)?.position) {
+          updateColumnMutation.mutate(
+            { columnId: col.id, position: col.position, showToast: false },
+            {
+              onError: () => {
+                // Revert on error
+                setLocalColumns(localColumns);
+              }
+            }
+          );
+        }
+      });
+      
+      return;
+    }
+
+    // Handle opportunity dragging
     const opportunityId = parseInt(draggableId);
     const newColumnId = parseInt(destination.droppableId);
     const newPosition = destination.index;
@@ -388,23 +473,63 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         <div className="overflow-x-auto">
           {activeView === "opportunities" && (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="flex gap-4 min-w-max pb-4" data-testid="content-opportunities">
-                {pipelineColumns.map((column) => (
-                  <div key={column.id} className="space-y-3 w-[280px] flex-shrink-0">
-                    <Card className="bg-primary/5 border-primary/20">
-                      <CardHeader className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0">
-                        <CardTitle className="text-base text-primary">{column.name}</CardTitle>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteColumn(column.id)}
-                          data-testid={`button-delete-column-${column.id}`}
-                          className="h-6 w-6"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </CardHeader>
-                    </Card>
+              <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
+                {(provided) => (
+                  <div 
+                    className="flex gap-4 min-w-max pb-4" 
+                    data-testid="content-opportunities"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {localColumns
+                      .sort((a, b) => a.position - b.position)
+                      .map((column, index) => (
+                      <Draggable key={column.id} draggableId={`column-${column.id}`} index={index}>
+                        {(provided, snapshot) => (
+                          <div 
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className="space-y-3 w-[280px] flex-shrink-0"
+                          >
+                            <Card className={`bg-primary/5 border-primary/20 ${snapshot.isDragging ? 'opacity-70 shadow-lg' : ''}`}>
+                              <CardHeader 
+                                className="pb-3 flex flex-row items-center justify-between gap-2 space-y-0"
+                                {...provided.dragHandleProps}
+                              >
+                                <CardTitle className="text-base text-primary">{column.name}</CardTitle>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      data-testid={`button-column-menu-${column.id}`}
+                                      className="h-6 w-6"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreVertical className="w-3 h-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem
+                                      onSelect={() => handleEditColumn(column)}
+                                      data-testid={`menu-edit-column-${column.id}`}
+                                    >
+                                      <Edit2 className="w-4 h-4 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      onSelect={() => handleDeleteColumn(column.id)}
+                                      data-testid={`menu-delete-column-${column.id}`}
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </CardHeader>
+                            </Card>
                     <Droppable droppableId={column.id.toString()}>
                       {(provided, snapshot) => (
                         <div
@@ -467,26 +592,31 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                         </div>
                       )}
                     </Droppable>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    
+                    {/* Add Column Button */}
+                    <div className="space-y-3 w-[280px] flex-shrink-0">
+                      <Card className="border-dashed">
+                        <CardHeader className="pb-3">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => setAddColumnOpen(true)}
+                            data-testid="button-add-column"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Column
+                          </Button>
+                        </CardHeader>
+                      </Card>
+                    </div>
                   </div>
-                ))}
-              
-              {/* Add Column Button */}
-              <div className="space-y-3 w-[280px] flex-shrink-0">
-                <Card className="border-dashed">
-                  <CardHeader className="pb-3">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => setAddColumnOpen(true)}
-                      data-testid="button-add-column"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Column
-                    </Button>
-                  </CardHeader>
-                </Card>
-              </div>
-              </div>
+                )}
+              </Droppable>
             </DragDropContext>
           )}
 
@@ -547,6 +677,47 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                 data-testid="button-submit-column"
               >
                 {createColumnMutation.isPending ? "Creating..." : "Create Column"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Column Dialog */}
+      <Dialog open={editColumnOpen} onOpenChange={setEditColumnOpen}>
+        <DialogContent data-testid="dialog-edit-column">
+          <DialogHeader>
+            <DialogTitle>Edit Column</DialogTitle>
+            <DialogDescription>
+              Change the column name.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={editColumnName}
+              onChange={(e) => setEditColumnName(e.target.value)}
+              placeholder="Enter column name..."
+              data-testid="input-edit-column-name"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleUpdateColumn();
+                }
+              }}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditColumnOpen(false)}
+                data-testid="button-cancel-edit-column"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateColumn}
+                disabled={!editColumnName.trim() || updateColumnMutation.isPending}
+                data-testid="button-submit-edit-column"
+              >
+                {updateColumnMutation.isPending ? "Updating..." : "Update Column"}
               </Button>
             </div>
           </div>
