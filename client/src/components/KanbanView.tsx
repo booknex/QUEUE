@@ -18,6 +18,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2 } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
@@ -45,6 +55,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   const [editColumnOpen, setEditColumnOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<KanbanColumn | null>(null);
   const [editColumnName, setEditColumnName] = useState("");
+  const [deleteColumnId, setDeleteColumnId] = useState<number | null>(null);
   const { toast } = useToast();
   
   // Local state for drag-and-drop (prevents React Query cache flicker)
@@ -220,8 +231,13 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   };
 
   const handleDeleteColumn = (columnId: number) => {
-    if (confirm("Are you sure you want to delete this column? All opportunities in this column will also be deleted.")) {
-      deleteColumnMutation.mutate(columnId);
+    setDeleteColumnId(columnId);
+  };
+
+  const confirmDeleteColumn = () => {
+    if (deleteColumnId !== null) {
+      deleteColumnMutation.mutate(deleteColumnId);
+      setDeleteColumnId(null);
     }
   };
 
@@ -727,6 +743,28 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Column Confirmation */}
+      <AlertDialog open={deleteColumnId !== null} onOpenChange={() => setDeleteColumnId(null)}>
+        <AlertDialogContent data-testid="dialog-delete-column-confirm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this column and all opportunities within it. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-column">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteColumn}
+              className="bg-destructive text-destructive-foreground hover-elevate"
+              data-testid="button-confirm-delete-column"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
