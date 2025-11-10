@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company } from "@shared/schema";
+import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
 import twilio from "twilio";
 
@@ -106,6 +106,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete company" });
+    }
+  });
+
+  // Status filter routes
+  app.get("/api/filters", async (req, res) => {
+    try {
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      const filters = await storage.getAllFilters(companyId);
+      res.json(filters);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch filters" });
+    }
+  });
+
+  app.post("/api/filters", async (req, res) => {
+    try {
+      const validated = insertStatusFilterSchema.parse(req.body);
+      const filter = await storage.createFilter(validated);
+      broadcast({ type: "filter:created", companyId: filter.companyId });
+      res.status(201).json(filter);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create filter" });
+    }
+  });
+
+  app.patch("/api/filters/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid filter ID" });
+      }
+      const validated = updateStatusFilterSchema.parse(req.body);
+      const filter = await storage.updateFilter(id, validated);
+      if (!filter) {
+        return res.status(404).json({ error: "Filter not found" });
+      }
+      broadcast({ type: "filter:updated", companyId: filter.companyId });
+      res.json(filter);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update filter" });
+    }
+  });
+
+  app.delete("/api/filters/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid filter ID" });
+      }
+      const filter = await storage.getFilter(id);
+      if (!filter) {
+        return res.status(404).json({ error: "Filter not found" });
+      }
+      await storage.deleteFilter(id);
+      broadcast({ type: "filter:deleted", companyId: filter.companyId });
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete filter" });
     }
   });
 

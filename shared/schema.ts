@@ -195,3 +195,28 @@ export const updateCompanySchema = z.object({
 });
 
 export type UpdateCompany = z.infer<typeof updateCompanySchema>;
+
+export const statusFilters = pgTable("status_filters", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  status: text("status").notNull(),
+  companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertStatusFilterSchema = createInsertSchema(statusFilters).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertStatusFilter = z.infer<typeof insertStatusFilterSchema>;
+export type StatusFilter = typeof statusFilters.$inferSelect;
+
+export const updateStatusFilterSchema = z.object({
+  name: z.string().min(1).optional(),
+  status: z.string().optional(),
+  position: z.number().optional(),
+});
+
+export type UpdateStatusFilter = z.infer<typeof updateStatusFilterSchema>;

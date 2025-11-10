@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -44,6 +44,12 @@ export interface IStorage {
   createOpportunity(opportunity: InsertOpportunity): Promise<Opportunity>;
   updateOpportunity(id: number, updates: UpdateOpportunity): Promise<Opportunity | undefined>;
   deleteOpportunity(id: number): Promise<boolean>;
+
+  getAllFilters(companyId?: number): Promise<StatusFilter[]>;
+  getFilter(id: number): Promise<StatusFilter | undefined>;
+  createFilter(filter: InsertStatusFilter): Promise<StatusFilter>;
+  updateFilter(id: number, updates: UpdateStatusFilter): Promise<StatusFilter | undefined>;
+  deleteFilter(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -407,6 +413,46 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(opportunities)
       .where(eq(opportunities.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getAllFilters(companyId?: number): Promise<StatusFilter[]> {
+    const query = db.select().from(statusFilters).orderBy(asc(statusFilters.position));
+    
+    if (companyId !== undefined) {
+      query.where(eq(statusFilters.companyId, companyId));
+    }
+    
+    return await query;
+  }
+
+  async getFilter(id: number): Promise<StatusFilter | undefined> {
+    const [filter] = await db.select().from(statusFilters).where(eq(statusFilters.id, id));
+    return filter || undefined;
+  }
+
+  async createFilter(insertFilter: InsertStatusFilter): Promise<StatusFilter> {
+    const [filter] = await db
+      .insert(statusFilters)
+      .values(insertFilter)
+      .returning();
+    return filter;
+  }
+
+  async updateFilter(id: number, updates: UpdateStatusFilter): Promise<StatusFilter | undefined> {
+    const [filter] = await db
+      .update(statusFilters)
+      .set(updates)
+      .where(eq(statusFilters.id, id))
+      .returning();
+    return filter || undefined;
+  }
+
+  async deleteFilter(id: number): Promise<boolean> {
+    const result = await db
+      .delete(statusFilters)
+      .where(eq(statusFilters.id, id))
       .returning();
     return result.length > 0;
   }

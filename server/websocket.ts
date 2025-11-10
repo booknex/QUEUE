@@ -27,7 +27,8 @@ export type BroadcastEvent =
   | { type: "pipeline:created" | "pipeline:updated" | "pipeline:deleted"; companyId: number }
   | { type: "column:created" | "column:updated" | "column:deleted"; pipelineId: number }
   | { type: "opportunity:created" | "opportunity:updated" | "opportunity:deleted"; companyId: number }
-  | { type: "contact:created"; companyId: number };
+  | { type: "contact:created" | "contact:updated" | "contact:deleted"; companyId: number }
+  | { type: "filter:created" | "filter:updated" | "filter:deleted"; companyId: number };
 
 export function broadcast(event: BroadcastEvent) {
   if (!wss) {

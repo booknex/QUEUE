@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,9 +9,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { QueueItem } from "@/components/QueueItem";
 import { KanbanView } from "@/components/KanbanView";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
+import { AddEditFilterModal } from "@/components/AddEditFilterModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
 import { CompanyManager } from "@/components/CompanyManager";
@@ -21,7 +32,7 @@ import { TouchNoteModal } from "@/components/TouchNoteModal";
 import { PhoneWidget } from "@/components/PhoneWidget";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { ClientFile, KanbanColumn, Pipeline, Company } from "@shared/schema";
+import type { ClientFile, KanbanColumn, Pipeline, Company, StatusFilter } from "@shared/schema";
 
 function parseClientFileDates(file: any): ClientFile {
   return {
@@ -43,6 +54,9 @@ export default function Dashboard() {
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [editingFilter, setEditingFilter] = useState<StatusFilter | null>(null);
+  const [deleteFilterId, setDeleteFilterId] = useState<number | null>(null);
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedPipelineId');
     return saved ? parseInt(saved) : null;
