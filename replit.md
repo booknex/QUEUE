@@ -25,11 +25,12 @@ The application ensures mobile responsiveness across all views.
 #### Technical Implementations
 The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines.
 
-**Client File Statuses**: The system uses four custom status values for client files:
+**Client File Statuses**: The system uses five custom status values for client files:
 - **APPROVED W/ CONDITIONS**: Client approved with specific conditions to fulfill
 - **PRE-APPROVED**: Client has received pre-approval
 - **APP-INTAKE**: Application intake stage (default for new clients)
 - **NEEDS LENDER**: Client requires lender assignment
+- **LOAN SETUP**: Client in loan setup phase
 
 Key features include:
 
@@ -39,14 +40,14 @@ Key features include:
 -   **Real-time Timer Tracking**: Wait times are calculated and displayed with second precision.
 -   **Touch with Notes**: A "Touch" functionality resets timers, moves cards to the queue's end, and allows adding notes to work sessions.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
--   **Dynamic Column Management**: Users can create and delete kanban columns for both "Opportunities" and individual pipeline boards.
+-   **Dynamic Column Management**: Users can create, edit (rename), delete, and reorder kanban columns via drag-and-drop for both "Opportunities" and individual pipeline boards. Column headers feature a 3-dot menu with Edit and Delete options.
 -   **Drag-and-Drop Opportunities**: Opportunity cards can be moved between kanban columns with visual feedback.
 -   **Opportunity Management**: Create, track, and edit opportunities, linked to contacts. Opportunity cards are clickable to edit details and support deletion with confirmation.
 -   **Contact Management**: Dedicated "Contacts" view with CRUD operations, CSV bulk import, duplicate prevention, and search functionality.
 -   **Unified Message Inbox**: Clickable contact names (displayed in blue with hover underline) on opportunity cards and in the Contacts view open a modal with a unified instant messenger-style interface. The inbox combines calls and SMS into a single chronological timeline (no tabs), displaying incoming messages on the left and outgoing on the right as chat bubbles. Call messages show status (missed/answered) with duration and are clickable to load and play recordings inline. The design eliminates tab switching for streamlined conversation viewing.
 -   **Pipeline Assignment**: Client files can be assigned to pipelines, indicated by a badge on the client card.
 -   **Close File Functionality**: Mark files as "closed" with a timestamp.
--   **Dashboard Statistics**: Real-time counters for Total Clients, Waiting, In Progress, and Completed.
+-   **Dashboard Statistics**: Real-time counters with clickable filter buttons for all statuses (ALL DEALS, NEEDS LENDER, APP-INTAKE, PRE-APPROVED, APPROVED W/ CONDITIONS, LOAN SETUP, Completed). Each stat card displays urgency indicators (green, yellow, red) based on wait times and shows "CLIENT IDLE FOR 48HRS" warnings for critical cases.
 -   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS. An always-active phone widget handles outbound calls, incoming call notifications, and messaging. The widget includes a "Contacts" tab with searchable contact list, allowing users to quickly find and open any contact's message inbox.
 
 #### System Design Choices
