@@ -253,6 +253,81 @@ export default function Dashboard() {
     },
   });
 
+  const { data: filters = [] } = useQuery<StatusFilter[]>({
+    queryKey: ["/api/filters", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/filters?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch filters");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null,
+  });
+
+  const createFilterMutation = useMutation({
+    mutationFn: async (data: { name: string; status: string }) => {
+      return await apiRequest("POST", "/api/filters", { ...data, companyId: selectedCompanyId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/filters", selectedCompanyId?.toString()] });
+      setFilterModalOpen(false);
+      toast({
+        title: "Filter added",
+        description: "The custom filter has been added.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add filter. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateFilterMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: { name: string; status: string } }) => {
+      return await apiRequest("PATCH", `/api/filters/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/filters", selectedCompanyId?.toString()] });
+      setFilterModalOpen(false);
+      setEditingFilter(null);
+      toast({
+        title: "Filter updated",
+        description: "The custom filter has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update filter. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteFilterMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/filters/${id}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/filters", selectedCompanyId?.toString()] });
+      setDeleteFilterId(null);
+      toast({
+        title: "Filter deleted",
+        description: "The custom filter has been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete filter. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: any) => {
     if (editingFile) {
       updateMutation.mutate({ id: editingFile.id, data });
@@ -292,6 +367,30 @@ export default function Dashboard() {
       touchMutation.mutate({ id: touchingFile.id, note });
       setTouchNoteModalOpen(false);
       setTouchingFile(null);
+    }
+  };
+
+  const handleAddFilter = () => {
+    setEditingFilter(null);
+    setFilterModalOpen(true);
+  };
+
+  const handleEditFilter = (filter: StatusFilter) => {
+    setEditingFilter(filter);
+    setFilterModalOpen(true);
+  };
+
+  const handleFilterSubmit = (data: { name: string; status: string }) => {
+    if (editingFilter) {
+      updateFilterMutation.mutate({ id: editingFilter.id, data });
+    } else {
+      createFilterMutation.mutate(data);
+    }
+  };
+
+  const handleFilterDelete = () => {
+    if (deleteFilterId !== null) {
+      deleteFilterMutation.mutate(deleteFilterId);
     }
   };
   
@@ -501,6 +600,35 @@ export default function Dashboard() {
             testId="stat-completed"
             onClick={() => setClosedFilesModalOpen(true)}
           />
+          {[...filters].sort((a, b) => a.position - b.position).map((filter) => {
+            const filterFiles = openFiles.filter(f => f.status === filter.status);
+            return (
+              <StatsCard
+                key={filter.id}
+                title={filter.name.toUpperCase()}
+                value={filterFiles.length}
+                icon={Filter}
+                testId={`stat-custom-filter-${filter.id}`}
+                onClick={() => setStatusFilter(filter.status)}
+                urgencyState={getStatusUrgency(filterFiles)}
+                menu={{
+                  onEdit: () => handleEditFilter(filter),
+                  onDelete: () => setDeleteFilterId(filter.id),
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={handleAddFilter}
+            data-testid="button-add-filter"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Filter
+          </Button>
         </div>
 
         {sortedFiles.length === 0 ? (
@@ -578,6 +706,36 @@ export default function Dashboard() {
         open={companyManagerOpen}
         onClose={() => setCompanyManagerOpen(false)}
       />
+
+      <AddEditFilterModal
+        open={filterModalOpen}
+        onOpenChange={setFilterModalOpen}
+        onSubmit={handleFilterSubmit}
+        editingFilter={editingFilter}
+        isPending={createFilterMutation.isPending || updateFilterMutation.isPending}
+      />
+
+      <AlertDialog open={deleteFilterId !== null} onOpenChange={(open) => !open && setDeleteFilterId(null)}>
+        <AlertDialogContent data-testid="dialog-delete-filter">
+          <AlertDialogHeader>
+            <AlertDialogTitle data-testid="text-delete-filter-title">Delete Filter</AlertDialogTitle>
+            <AlertDialogDescription data-testid="text-delete-filter-description">
+              Are you sure you want to delete this custom filter? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteFilterId(null)} data-testid="button-cancel-delete-filter">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleFilterDelete}
+              data-testid="button-confirm-delete-filter"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

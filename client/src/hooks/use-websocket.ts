@@ -7,7 +7,8 @@ type WebSocketEvent =
   | { type: "pipeline:created" | "pipeline:updated" | "pipeline:deleted"; companyId: number }
   | { type: "column:created" | "column:updated" | "column:deleted"; pipelineId: number }
   | { type: "opportunity:created" | "opportunity:updated" | "opportunity:deleted"; companyId: number }
-  | { type: "contact:created"; companyId: number };
+  | { type: "contact:created"; companyId: number }
+  | { type: "filter:created" | "filter:updated" | "filter:deleted"; companyId: number };
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
@@ -108,6 +109,12 @@ function handleWebSocketEvent(event: WebSocketEvent) {
 
     case "contact:created":
       queryClient.invalidateQueries({ queryKey: ["/api/contacts", event.companyId.toString()] });
+      break;
+
+    case "filter:created":
+    case "filter:updated":
+    case "filter:deleted":
+      queryClient.invalidateQueries({ queryKey: ["/api/filters", event.companyId.toString()] });
       break;
 
     default:
