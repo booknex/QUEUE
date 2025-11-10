@@ -334,6 +334,7 @@ export default function Dashboard() {
     preApproved: openFiles.filter(f => f.status === "PRE-APPROVED").length,
     appIntake: openFiles.filter(f => f.status === "APP-INTAKE").length,
     needsLender: openFiles.filter(f => f.status === "NEEDS LENDER").length,
+    loanSetup: openFiles.filter(f => f.status === "LOAN SETUP").length,
     completed: files.filter(f => f.closedAt !== null).length,
   };
   
@@ -344,6 +345,7 @@ export default function Dashboard() {
     appIntake: getStatusUrgency(openFiles.filter(f => f.status === "APP-INTAKE")),
     preApproved: getStatusUrgency(openFiles.filter(f => f.status === "PRE-APPROVED")),
     approvedWithConditions: getStatusUrgency(openFiles.filter(f => f.status === "APPROVED W/ CONDITIONS")),
+    loanSetup: getStatusUrgency(openFiles.filter(f => f.status === "LOAN SETUP")),
   };
 
   useEffect(() => {
@@ -429,7 +431,7 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
           <StatsCard
             title="ALL DEALS"
             value={stats.total}
@@ -469,6 +471,14 @@ export default function Dashboard() {
             testId="stat-approved-conditions"
             onClick={() => setStatusFilter(statusFilter === "APPROVED W/ CONDITIONS" ? null : "APPROVED W/ CONDITIONS")}
             urgencyState={urgencies.approvedWithConditions}
+          />
+          <StatsCard
+            title="LOAN SETUP"
+            value={stats.loanSetup}
+            icon={Clock}
+            testId="stat-loan-setup"
+            onClick={() => setStatusFilter(statusFilter === "LOAN SETUP" ? null : "LOAN SETUP")}
+            urgencyState={urgencies.loanSetup}
           />
           <StatsCard
             title="Completed"

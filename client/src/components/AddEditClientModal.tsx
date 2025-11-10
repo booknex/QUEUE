@@ -32,7 +32,7 @@ import type { ClientFile, Pipeline } from "@shared/schema";
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
-  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER"]),
+  status: z.enum(["APPROVED W/ CONDITIONS", "PRE-APPROVED", "APP-INTAKE", "NEEDS LENDER", "LOAN SETUP"]),
   pipelineId: z.number().nullable().optional(),
 });
 
@@ -70,7 +70,7 @@ export function AddEditClientModal({
       form.reset({
         clientName: editingFile.clientName,
         description: editingFile.description || "",
-        status: editingFile.status as "APPROVED W/ CONDITIONS" | "PRE-APPROVED" | "APP-INTAKE" | "NEEDS LENDER",
+        status: editingFile.status as "APPROVED W/ CONDITIONS" | "PRE-APPROVED" | "APP-INTAKE" | "NEEDS LENDER" | "LOAN SETUP",
         pipelineId: editingFile.pipelineId || null,
       });
     } else {
@@ -165,6 +165,7 @@ export function AddEditClientModal({
                       <SelectItem value="PRE-APPROVED">PRE-APPROVED</SelectItem>
                       <SelectItem value="APP-INTAKE">APP-INTAKE</SelectItem>
                       <SelectItem value="NEEDS LENDER">NEEDS LENDER</SelectItem>
+                      <SelectItem value="LOAN SETUP">LOAN SETUP</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
