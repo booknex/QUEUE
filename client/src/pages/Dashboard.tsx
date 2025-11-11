@@ -582,7 +582,7 @@ export default function Dashboard() {
                 {allFilters.map((filter, index) => {
                   const isVirtual = filter.id === 'all' || filter.id === 'completed';
                   const isSystemFilter = filter.isSystem === 1;
-                  const isDraggable = !isVirtual && !isSystemFilter;
+                  const isDraggable = !isVirtual;
                   
                   let filterFiles: ClientFile[];
                   let value: number;
