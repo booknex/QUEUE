@@ -53,17 +53,19 @@ export function StatsCard({ title, value, icon: Icon, description, testId, onCli
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-muted-foreground mb-0.5">{title}</p>
-          <p className="text-xl font-bold text-foreground flex items-center gap-1.5" data-testid={`${testId}-value`}>
-            {value}
-            {urgencyState === "red" && (
-              <AlertCircle className="w-4 h-4 text-red-500" />
-            )}
-          </p>
-          {urgencyState === "red" && (
-            <p className="text-[10px] leading-none font-semibold text-red-600 dark:text-red-400 mt-0.5" data-testid={`${testId}-warning`}>
-              CLIENT IDLE FOR 48HRS
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="text-xl font-bold text-foreground flex items-center gap-1.5" data-testid={`${testId}-value`}>
+              {value}
+              {urgencyState === "red" && (
+                <AlertCircle className="w-4 h-4 text-red-500" />
+              )}
             </p>
-          )}
+            {urgencyState === "red" && (
+              <p className="text-[9px] leading-none font-semibold text-red-600 dark:text-red-400 whitespace-nowrap" data-testid={`${testId}-warning`}>
+                CLIENT IDLE FOR 48HRS
+              </p>
+            )}
+          </div>
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
