@@ -25,12 +25,12 @@ The application ensures mobile responsiveness across all views.
 #### Technical Implementations
 The application is structured around a **Client Queue** for daily tasks and a **Kanban Board** for opportunities and pipelines.
 
-**Client File Statuses**: The system uses five custom status values for client files:
-- **APPROVED W/ CONDITIONS**: Client approved with specific conditions to fulfill
-- **PRE-APPROVED**: Client has received pre-approval
-- **APP-INTAKE**: Application intake stage (default for new clients)
-- **NEEDS LENDER**: Client requires lender assignment
-- **LOAN SETUP**: Client in loan setup phase
+**Dynamic Status System**: The system uses a flexible, user-configurable status system where filter names define the available statuses:
+- **System Filters** (non-editable, non-deletable): Five default statuses are provided - APPROVED W/ CONDITIONS, PRE-APPROVED, APP-INTAKE, NEEDS LENDER, and LOAN SETUP
+- **Custom Filters**: Users can create unlimited custom status filters with any name (e.g., "HIGH PRIORITY", "WAITING DOCUMENTS")
+- **Filter = Status**: Each filter's name becomes a valid status option for client files
+- When a new filter is created, it automatically appears as a status option in the client file creation/edit form
+- Custom filters can be edited (renamed), deleted, and reordered via drag-and-drop
 
 Key features include:
 
@@ -47,13 +47,13 @@ Key features include:
 -   **Unified Message Inbox**: Clickable contact names (displayed in blue with hover underline) on opportunity cards and in the Contacts view open a modal with a unified instant messenger-style interface. The inbox combines calls and SMS into a single chronological timeline (no tabs), displaying incoming messages on the left and outgoing on the right as chat bubbles. Call messages show status (missed/answered) with duration and are clickable to load and play recordings inline. The design eliminates tab switching for streamlined conversation viewing.
 -   **Pipeline Assignment**: Client files can be assigned to pipelines, indicated by a badge on the client card.
 -   **Close File Functionality**: Mark files as "closed" with a timestamp.
--   **Dashboard Statistics**: Real-time counters with clickable filter buttons for all statuses (ALL DEALS, NEEDS LENDER, APP-INTAKE, PRE-APPROVED, APPROVED W/ CONDITIONS, LOAN SETUP, Completed). Each stat card displays urgency indicators (green, yellow, red) based on wait times and shows "CLIENT IDLE FOR 48HRS" warnings for critical cases.
+-   **Dynamic Dashboard Filters**: Real-time counters with clickable, drag-and-droppable filter cards that dynamically reflect all system and custom statuses. Virtual filters "ALL DEALS" (first) and "Completed" (last) are always visible. System filters (NEEDS LENDER, APP-INTAKE, PRE-APPROVED, APPROVED W/ CONDITIONS, LOAN SETUP) cannot be edited or deleted but can be reordered. Custom filters show a 3-dot menu for edit/delete operations. Each stat card displays urgency indicators (green, yellow, red) based on wait times and shows "CLIENT IDLE FOR 48HRS" warnings for critical cases.
 -   **Twilio Live Calling & SMS**: Integrated Twilio Voice SDK for browser-based live calling and SMS. An always-active phone widget handles outbound calls, incoming call notifications, and messaging. The widget includes a "Contacts" tab with searchable contact list, allowing users to quickly find and open any contact's message inbox.
 
 #### System Design Choices
 -   **Frontend**: React 18, TypeScript, TanStack Query v5, Wouter, Shadcn UI, Tailwind CSS, date-fns, WebSocket client.
 -   **Backend**: Express.js, PostgreSQL with Drizzle ORM, Zod validation, RESTful API, WebSocket server.
--   **Data Models**: Core entities include `Company`, `ClientFile`, `Pipeline`, `Contact`, `KanbanColumn`, and `Opportunity`, all designed with appropriate foreign key relationships for data integrity and company isolation.
+-   **Data Models**: Core entities include `Company`, `ClientFile`, `Pipeline`, `Contact`, `KanbanColumn`, `Opportunity`, and `StatusFilter`, all designed with appropriate foreign key relationships for data integrity and company isolation. The `StatusFilter` model includes an `isSystem` flag to distinguish between system (non-editable) and custom (user-created) filters.
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
 -   **Company Isolation**: All data is scoped to its parent company using foreign keys.
 

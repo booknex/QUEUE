@@ -69,7 +69,9 @@ export function AddEditClientModal({
     enabled: companyId !== null,
   });
 
-  const uniqueStatuses = Array.from(new Set(filters.map(f => f.name))).sort();
+  // Preserve the order from the API (sorted by position) instead of alphabetically sorting
+  const sortedFilters = [...filters].sort((a, b) => a.position - b.position);
+  const uniqueStatuses = Array.from(new Set(sortedFilters.map(f => f.name)));
   const defaultStatus = uniqueStatuses.length > 0 ? uniqueStatuses[0] : "";
 
   const form = useForm<FormData>({
