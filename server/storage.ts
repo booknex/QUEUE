@@ -419,13 +419,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllFilters(companyId?: number): Promise<StatusFilter[]> {
-    const query = db.select().from(statusFilters).orderBy(asc(statusFilters.position));
-    
     if (companyId !== undefined) {
-      query.where(eq(statusFilters.companyId, companyId));
+      return await db
+        .select()
+        .from(statusFilters)
+        .where(eq(statusFilters.companyId, companyId))
+        .orderBy(asc(statusFilters.position));
     }
     
-    return await query;
+    return await db.select().from(statusFilters).orderBy(asc(statusFilters.position));
   }
 
   async getFilter(id: number): Promise<StatusFilter | undefined> {

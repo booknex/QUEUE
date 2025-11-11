@@ -266,8 +266,11 @@ export default function Dashboard() {
   });
 
   const createFilterMutation = useMutation({
-    mutationFn: async (data: { name: string; status: string }) => {
-      return await apiRequest("POST", "/api/filters", { ...data, companyId: selectedCompanyId });
+    mutationFn: async (data: { name: string }) => {
+      const maxPosition = filters.length > 0 
+        ? Math.max(...filters.map(f => f.position))
+        : -1;
+      return await apiRequest("POST", "/api/filters", { ...data, companyId: selectedCompanyId, position: maxPosition + 1 });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/filters", selectedCompanyId?.toString()] });
@@ -287,7 +290,7 @@ export default function Dashboard() {
   });
 
   const updateFilterMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: { name: string; status: string } }) => {
+    mutationFn: async ({ id, data }: { id: number; data: { name: string } }) => {
       return await apiRequest("PATCH", `/api/filters/${id}`, data);
     },
     onSuccess: () => {
@@ -324,6 +327,26 @@ export default function Dashboard() {
       toast({
         title: "Error",
         description: "Failed to delete filter. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const reorderFilterMutation = useMutation({
+    mutationFn: async (filterIds: number[]) => {
+      return await apiRequest("POST", "/api/filters/reorder", { filterIds, companyId: selectedCompanyId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/filters", selectedCompanyId?.toString()] });
+      toast({
+        title: "Filters reordered",
+        description: "Filter order has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reorder filters. Please try again.",
         variant: "destructive",
       });
     },
@@ -381,7 +404,7 @@ export default function Dashboard() {
     setFilterModalOpen(true);
   };
 
-  const handleFilterSubmit = (data: { name: string; status: string }) => {
+  const handleFilterSubmit = (data: { name: string }) => {
     if (editingFilter) {
       updateFilterMutation.mutate({ id: editingFilter.id, data });
     } else {
@@ -393,6 +416,21 @@ export default function Dashboard() {
     if (deleteFilterId !== null) {
       deleteFilterMutation.mutate(deleteFilterId);
     }
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { destination, source } = result;
+
+    if (!destination) return;
+    if (destination.index === source.index) return;
+
+    const sortedFilters = [...filters].sort((a, b) => a.position - b.position);
+    const reorderedFilters = Array.from(sortedFilters);
+    const [removed] = reorderedFilters.splice(source.index, 1);
+    reorderedFilters.splice(destination.index, 0, removed);
+
+    const filterIds = reorderedFilters.map(f => f.id);
+    reorderFilterMutation.mutate(filterIds);
   };
   
   // Helper function to calculate urgency state for a status
@@ -442,25 +480,13 @@ export default function Dashboard() {
     return bElapsed - aElapsed;
   });
 
-  const stats = {
-    total: openFiles.length,
-    approvedWithConditions: openFiles.filter(f => f.status === "APPROVED W/ CONDITIONS").length,
-    preApproved: openFiles.filter(f => f.status === "PRE-APPROVED").length,
-    appIntake: openFiles.filter(f => f.status === "APP-INTAKE").length,
-    needsLender: openFiles.filter(f => f.status === "NEEDS LENDER").length,
-    loanSetup: openFiles.filter(f => f.status === "LOAN SETUP").length,
-    completed: files.filter(f => f.closedAt !== null).length,
-  };
-  
-  // Calculate urgency for each status
-  const urgencies = {
-    all: getStatusUrgency(openFiles),
-    needsLender: getStatusUrgency(openFiles.filter(f => f.status === "NEEDS LENDER")),
-    appIntake: getStatusUrgency(openFiles.filter(f => f.status === "APP-INTAKE")),
-    preApproved: getStatusUrgency(openFiles.filter(f => f.status === "PRE-APPROVED")),
-    approvedWithConditions: getStatusUrgency(openFiles.filter(f => f.status === "APPROVED W/ CONDITIONS")),
-    loanSetup: getStatusUrgency(openFiles.filter(f => f.status === "LOAN SETUP")),
-  };
+  // Create virtual filters for ALL DEALS and Completed
+  type VirtualFilter = Omit<StatusFilter, 'id'> & { id: number | string };
+  const allFilters: VirtualFilter[] = [
+    { id: 'all', name: 'ALL DEALS', isSystem: 1, position: -2, companyId: selectedCompanyId || 0, createdAt: new Date() },
+    ...[...filters].sort((a, b) => a.position - b.position),
+    { id: 'completed', name: 'Completed', isSystem: 1, position: 999999, companyId: selectedCompanyId || 0, createdAt: new Date() },
+  ];
 
   useEffect(() => {
     const timerInterval = setInterval(() => {
@@ -545,81 +571,82 @@ export default function Dashboard() {
       </header>
 
       <main className="px-6 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
-          <StatsCard
-            title="ALL DEALS"
-            value={stats.total}
-            icon={Users}
-            testId="stat-all-deals"
-            onClick={() => setStatusFilter(null)}
-            urgencyState={urgencies.all}
-          />
-          <StatsCard
-            title="NEEDS LENDER"
-            value={stats.needsLender}
-            icon={AlertCircle}
-            testId="stat-needs-lender"
-            onClick={() => setStatusFilter(statusFilter === "NEEDS LENDER" ? null : "NEEDS LENDER")}
-            urgencyState={urgencies.needsLender}
-          />
-          <StatsCard
-            title="APP-INTAKE"
-            value={stats.appIntake}
-            icon={Clock}
-            testId="stat-app-intake"
-            onClick={() => setStatusFilter(statusFilter === "APP-INTAKE" ? null : "APP-INTAKE")}
-            urgencyState={urgencies.appIntake}
-          />
-          <StatsCard
-            title="PRE-APPROVED"
-            value={stats.preApproved}
-            icon={AlertCircle}
-            testId="stat-pre-approved"
-            onClick={() => setStatusFilter(statusFilter === "PRE-APPROVED" ? null : "PRE-APPROVED")}
-            urgencyState={urgencies.preApproved}
-          />
-          <StatsCard
-            title="APPROVED W/ CONDITIONS"
-            value={stats.approvedWithConditions}
-            icon={CheckCircle2}
-            testId="stat-approved-conditions"
-            onClick={() => setStatusFilter(statusFilter === "APPROVED W/ CONDITIONS" ? null : "APPROVED W/ CONDITIONS")}
-            urgencyState={urgencies.approvedWithConditions}
-          />
-          <StatsCard
-            title="LOAN SETUP"
-            value={stats.loanSetup}
-            icon={Clock}
-            testId="stat-loan-setup"
-            onClick={() => setStatusFilter(statusFilter === "LOAN SETUP" ? null : "LOAN SETUP")}
-            urgencyState={urgencies.loanSetup}
-          />
-          <StatsCard
-            title="Completed"
-            value={stats.completed}
-            icon={CheckCircle2}
-            testId="stat-completed"
-            onClick={() => setClosedFilesModalOpen(true)}
-          />
-          {[...filters].sort((a, b) => a.position - b.position).map((filter) => {
-            const filterFiles = openFiles.filter(f => f.status === filter.status);
-            return (
-              <StatsCard
-                key={filter.id}
-                title={filter.name.toUpperCase()}
-                value={filterFiles.length}
-                icon={Filter}
-                testId={`stat-custom-filter-${filter.id}`}
-                onClick={() => setStatusFilter(filter.status)}
-                urgencyState={getStatusUrgency(filterFiles)}
-                menu={{
-                  onEdit: () => handleEditFilter(filter),
-                  onDelete: () => setDeleteFilterId(filter.id),
-                }}
-              />
-            );
-          })}
-        </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="filter-stats" direction="horizontal">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8"
+              >
+                {allFilters.map((filter, index) => {
+                  const isVirtual = filter.id === 'all' || filter.id === 'completed';
+                  const isSystemFilter = filter.isSystem === 1;
+                  const isDraggable = !isVirtual && !isSystemFilter;
+                  
+                  let filterFiles: ClientFile[];
+                  let value: number;
+                  let onClick: (() => void) | undefined;
+                  
+                  if (filter.name === 'ALL DEALS') {
+                    filterFiles = openFiles;
+                    value = openFiles.length;
+                    onClick = () => setStatusFilter(null);
+                  } else if (filter.name === 'Completed') {
+                    filterFiles = files.filter(f => f.closedAt !== null);
+                    value = filterFiles.length;
+                    onClick = () => setClosedFilesModalOpen(true);
+                  } else {
+                    filterFiles = openFiles.filter(f => f.status === filter.name);
+                    value = filterFiles.length;
+                    onClick = () => setStatusFilter(statusFilter === filter.name ? null : filter.name);
+                  }
+                  
+                  const urgencyState = filter.name === 'Completed' ? undefined : getStatusUrgency(filterFiles);
+                  
+                  const content = (
+                    <StatsCard
+                      title={filter.name.toUpperCase()}
+                      value={value}
+                      icon={isVirtual ? (filter.name === 'ALL DEALS' ? Users : CheckCircle2) : Filter}
+                      testId={isVirtual ? (filter.name === 'ALL DEALS' ? 'stat-all-deals' : 'stat-completed') : `stat-custom-filter-${filter.id}`}
+                      onClick={onClick}
+                      urgencyState={urgencyState}
+                      menu={!isVirtual && !isSystemFilter ? {
+                        onEdit: () => handleEditFilter(filter as StatusFilter),
+                        onDelete: () => setDeleteFilterId(filter.id as number),
+                      } : undefined}
+                    />
+                  );
+                  
+                  if (isVirtual) {
+                    return <div key={filter.id}>{content}</div>;
+                  }
+                  
+                  return (
+                    <Draggable
+                      key={filter.id}
+                      draggableId={`filter-${filter.id}`}
+                      index={index - 1}
+                      isDragDisabled={!isDraggable}
+                    >
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          {content}
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
 
         <div className="mb-6">
           <Button
@@ -674,6 +701,7 @@ export default function Dashboard() {
         editingFile={editingFile}
         isPending={createMutation.isPending || updateMutation.isPending}
         pipelines={pipelines}
+        companyId={selectedCompanyId}
       />
 
       <CloseFileModal

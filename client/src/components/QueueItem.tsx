@@ -71,38 +71,15 @@ function getStatusConfig(status: string): {
   variant: "default" | "secondary";
   icon: React.ReactNode;
 } {
-  switch (status) {
-    case "APPROVED W/ CONDITIONS":
-      return {
-        label: "APPROVED W/ CONDITIONS",
-        variant: "default",
-        icon: <Circle className="w-3 h-3" />,
-      };
-    case "PRE-APPROVED":
-      return {
-        label: "PRE-APPROVED",
-        variant: "default",
-        icon: <Circle className="w-3 h-3" />,
-      };
-    case "APP-INTAKE":
-      return {
-        label: "APP-INTAKE",
-        variant: "secondary",
-        icon: <Circle className="w-3 h-3" />,
-      };
-    case "NEEDS LENDER":
-      return {
-        label: "NEEDS LENDER",
-        variant: "secondary",
-        icon: <Circle className="w-3 h-3" />,
-      };
-    default:
-      return {
-        label: status,
-        variant: "secondary",
-        icon: <Circle className="w-3 h-3" />,
-      };
-  }
+  // System statuses use default variant, custom statuses use secondary
+  const systemStatuses = ["APPROVED W/ CONDITIONS", "PRE-APPROVED", "LOAN SETUP"];
+  const variant = systemStatuses.includes(status) ? "default" : "secondary";
+  
+  return {
+    label: status,
+    variant,
+    icon: <Circle className="w-3 h-3" />,
+  };
 }
 
 function isRecentlyTouched(lastTouchedAt: Date | null, now: number = Date.now()): boolean {
