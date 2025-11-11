@@ -46,12 +46,12 @@ export function StatsCard({ title, value, icon: Icon, description, testId, onCli
 
   return (
     <Card 
-      className={`p-3 ${isClickable ? 'cursor-pointer hover-elevate active-elevate-2' : ''} ${getBackgroundClass()}`}
+      className={`p-3 h-24 ${isClickable ? 'cursor-pointer hover-elevate active-elevate-2' : ''} ${getBackgroundClass()}`}
       data-testid={testId}
       onClick={handleCardClick}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
+      <div className="flex items-start justify-between gap-2 h-full">
+        <div className="flex-1 min-w-0 flex flex-col">
           <p className="text-xs font-medium text-muted-foreground mb-0.5">{title}</p>
           <p className="text-xl font-bold text-foreground flex items-center gap-1.5" data-testid={`${testId}-value`}>
             {value}
@@ -59,6 +59,11 @@ export function StatsCard({ title, value, icon: Icon, description, testId, onCli
               <AlertCircle className="w-4 h-4 text-red-500" />
             )}
           </p>
+          {urgencyState === "red" && (
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400 mt-auto" data-testid={`${testId}-warning`}>
+              CLIENT IDLE FOR 48HRS
+            </p>
+          )}
           {description && (
             <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
