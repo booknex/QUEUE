@@ -612,7 +612,7 @@ export default function Dashboard() {
                       testId={isVirtual ? (filter.name === 'ALL DEALS' ? 'stat-all-deals' : 'stat-completed') : `stat-custom-filter-${filter.id}`}
                       onClick={onClick}
                       urgencyState={urgencyState}
-                      menu={!isVirtual && !isSystemFilter ? {
+                      menu={!isVirtual ? {
                         onEdit: () => handleEditFilter(filter as StatusFilter),
                         onDelete: () => setDeleteFilterId(filter.id as number),
                       } : undefined}

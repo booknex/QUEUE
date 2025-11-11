@@ -465,10 +465,6 @@ export class DatabaseStorage implements IStorage {
         return undefined;
       }
       
-      if (existingFilter.isSystem === 1) {
-        throw new Error("Cannot update system filters");
-      }
-      
       const [filter] = await tx
         .update(statusFilters)
         .set(updates)
@@ -497,10 +493,6 @@ export class DatabaseStorage implements IStorage {
     
     if (!filter) {
       return false;
-    }
-    
-    if (filter.isSystem === 1) {
-      throw new Error("Cannot delete system filters");
     }
     
     const result = await db
