@@ -191,7 +191,7 @@ export function AddEditClientModal({
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="no-status" disabled>
                           No statuses available
                         </SelectItem>
                       )}
