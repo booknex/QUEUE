@@ -61,7 +61,7 @@ export function StatsCard({ title, value, icon: Icon, description, testId, onCli
               )}
             </p>
             {urgencyState === "red" && (
-              <p className="text-[9px] leading-none font-semibold text-red-600 dark:text-red-400 whitespace-nowrap" data-testid={`${testId}-warning`}>
+              <p className="text-xs leading-none font-bold text-red-600 dark:text-red-400 whitespace-nowrap flash-warning" data-testid={`${testId}-warning`}>
                 CLIENT IDLE FOR 48HRS
               </p>
             )}

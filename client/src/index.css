@@ -352,4 +352,18 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Flashing animation for urgent warnings */
+  @keyframes flash {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  .flash-warning {
+    animation: flash 1.5s ease-in-out infinite;
+  }
 }
