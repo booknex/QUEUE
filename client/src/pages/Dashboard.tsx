@@ -523,7 +523,7 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground mt-1">
                 Manage and prioritize your daily client work
               </p>
-              <div className="mt-3">
+              <div className="mt-3 flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -557,6 +557,15 @@ export default function Dashboard() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddFilter}
+                  data-testid="button-add-filter"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Filter
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -647,17 +656,6 @@ export default function Dashboard() {
             )}
           </Droppable>
         </DragDropContext>
-
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={handleAddFilter}
-            data-testid="button-add-filter"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Filter
-          </Button>
-        </div>
 
         {sortedFiles.length === 0 ? (
           <div className="mb-8">
