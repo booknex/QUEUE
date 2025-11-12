@@ -218,8 +218,9 @@ export default function Dashboard() {
     mutationFn: async ({ id, note }: { id: number; note?: string }) => {
       return await apiRequest("POST", `/api/files/${id}/touch`, { notes: note || "" });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", variables.id, "sessions"] });
       toast({
         title: "File touched",
         description: "The timer has been reset for this client.",
