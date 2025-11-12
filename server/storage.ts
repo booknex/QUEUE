@@ -106,6 +106,45 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async ensureUserHasDefaultCompany(userId: string, firstName?: string, lastName?: string): Promise<Company> {
+    const existingCompanies = await this.getUserCompanies(userId);
+    
+    if (existingCompanies.length > 0) {
+      const [company] = await db.select().from(companies).where(eq(companies.id, existingCompanies[0]));
+      return company;
+    }
+
+    const displayName = firstName || "My";
+    let companyName = `${displayName}'s Company`;
+    let attempt = 0;
+    let company: Company | undefined;
+
+    while (!company && attempt < 10) {
+      const tryName = attempt === 0 ? companyName : `${companyName} ${attempt}`;
+      try {
+        const [newCompany] = await db.insert(companies).values({
+          name: tryName,
+        }).returning();
+        
+        await db.insert(userCompanies).values({
+          userId,
+          companyId: newCompany.id,
+          role: "owner",
+        });
+        
+        company = newCompany;
+      } catch (error) {
+        attempt++;
+      }
+    }
+
+    if (!company) {
+      throw new Error("Failed to create default company after multiple attempts");
+    }
+
+    return company;
+  }
+
   async getUsersByCompany(companyId: number): Promise<UserWithRole[]> {
     const results = await db
       .select({

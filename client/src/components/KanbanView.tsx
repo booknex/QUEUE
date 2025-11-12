@@ -33,6 +33,7 @@ import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
 import Contacts from "@/pages/Contacts";
+import UsersView from "@/pages/UsersView";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
@@ -44,7 +45,7 @@ interface KanbanViewProps {
 }
 
 export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
-  const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
+  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -430,6 +431,14 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           >
             Contacts
           </Button>
+          <Button
+            variant={activeView === "users" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveView("users")}
+            data-testid="button-sidebar-users"
+          >
+            Users
+          </Button>
         </div>
       </div>
 
@@ -643,6 +652,12 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           {activeView === "contacts" && (
             <div data-testid="content-contacts">
               <Contacts selectedCompanyId={selectedCompanyId} />
+            </div>
+          )}
+
+          {activeView === "users" && (
+            <div data-testid="content-users">
+              <UsersView selectedCompanyId={selectedCompanyId} />
             </div>
           )}
         </div>

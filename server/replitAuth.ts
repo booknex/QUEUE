@@ -60,6 +60,12 @@ async function upsertUser(
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
   });
+  
+  await storage.ensureUserHasDefaultCompany(
+    claims["sub"],
+    claims["first_name"],
+    claims["last_name"]
+  );
 }
 
 export async function setupAuth(app: Express) {

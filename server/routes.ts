@@ -107,6 +107,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Cannot change your own role" });
       }
       
+      // Check if demoting the last owner
+      if (role !== 'owner') {
+        const targetUserCurrentRole = await storage.getUserRole(targetUserId, companyId);
+        if (targetUserCurrentRole === 'owner') {
+          const allUsers = await storage.getUsersByCompany(companyId);
+          const ownerCount = allUsers.filter(u => u.role === 'owner').length;
+          if (ownerCount <= 1) {
+            return res.status(400).json({ error: "Cannot demote the last owner. Promote another user to owner first." });
+          }
+        }
+      }
+      
       await storage.updateUserRole(targetUserId, companyId, role);
       res.json({ success: true });
     } catch (error) {
@@ -140,6 +152,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Cannot remove yourself
       if (currentUserId === targetUserId) {
         return res.status(400).json({ error: "Cannot remove yourself from the company" });
+      }
+      
+      // Check if removing the last owner
+      const targetUserRole = await storage.getUserRole(targetUserId, companyId);
+      if (targetUserRole === 'owner') {
+        const allUsers = await storage.getUsersByCompany(companyId);
+        const ownerCount = allUsers.filter(u => u.role === 'owner').length;
+        if (ownerCount <= 1) {
+          return res.status(400).json({ error: "Cannot remove the last owner. Promote another user to owner first." });
+        }
       }
       
       await storage.removeUserFromCompany(targetUserId, companyId);
