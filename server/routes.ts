@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema } from "@shared/schema";
@@ -6,7 +6,15 @@ import { z } from "zod";
 import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
 import twilio from "twilio";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth } from "./auth";
+
+// Middleware to check if user is authenticated
+const isAuthenticated: RequestHandler = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+};
 
 function serializeFile(file: ClientFile) {
   return {
@@ -39,28 +47,13 @@ function serializeCompany(company: Company) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth middleware (sets up /api/register, /api/login, /api/logout, /api/user)
+  setupAuth(app);
 
   // Company user management routes
   app.get("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       
       if (!companyId) {
@@ -82,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       
       const schema = z.object({
         companyId: z.number(),
@@ -125,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
       if (!targetUserId) {
@@ -174,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.claims.sub;
+      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       
@@ -217,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Company routes
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const companies = await storage.getAllCompanies(userId);
       res.json(companies.map(serializeCompany));
     } catch (error) {
@@ -243,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validated = insertCompanySchema.parse(req.body);
       const company = await storage.createCompany(validated, userId);
       broadcast({ type: "company:created", companyId: company.id });
