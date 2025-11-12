@@ -44,7 +44,8 @@ Key features include:
     - **Historical Tracking**: The `meetingNotes` table automatically tracks a complete history of all description changes over time with timestamps.
     - **Smart Deduplication**: Meeting notes are only saved when the description field actually changes (comparison check prevents duplicate entries).
     - **Three-Tab Modal**: Client file modal includes separate tabs for "Details" (edit form), "Meeting Notes" (historical timeline), and "Touch Comments" (work session notes).
-    - **Cache Management**: Frontend query cache properly invalidates meeting notes and touch comments on file updates to ensure fresh data.
+    - **Delete Capability**: Users can delete individual meeting notes and touch comments with confirmation dialogs. Delete buttons appear as trash icons next to each entry.
+    - **Cache Management**: Frontend query cache properly invalidates meeting notes and touch comments on file updates and deletions to ensure fresh data.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
 -   **Dynamic Column Management**: Users can create, edit (rename), delete, and reorder kanban columns via drag-and-drop for both "Opportunities" and individual pipeline boards. Column headers feature a 3-dot menu with Edit and Delete options.
 -   **Drag-and-Drop Opportunities**: Opportunity cards can be moved between kanban columns with visual feedback.
