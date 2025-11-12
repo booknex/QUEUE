@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ClientFile, Pipeline, StatusFilter } from "@shared/schema";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { ClientFile, Pipeline, StatusFilter, WorkSession } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
@@ -67,6 +75,17 @@ export function AddEditClientModal({
       return response.json();
     },
     enabled: companyId !== null,
+  });
+
+  const { data: workSessions = [], isLoading: isLoadingSessions } = useQuery<WorkSession[]>({
+    queryKey: ["/api/files", editingFile?.id, "sessions"],
+    queryFn: async () => {
+      if (!editingFile?.id) return [];
+      const response = await fetch(`/api/files/${editingFile.id}/sessions`);
+      if (!response.ok) throw new Error("Failed to fetch work sessions");
+      return response.json();
+    },
+    enabled: !!editingFile?.id && open,
   });
 
   // Preserve the order from the API (sorted by position) instead of alphabetically sorting
@@ -116,7 +135,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md sm:top-[10%] sm:translate-y-0" data-testid="modal-add-edit-client">
+      <DialogContent className="max-w-2xl sm:top-[10%] sm:translate-y-0 max-h-[85vh]" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -128,8 +147,17 @@ export function AddEditClientModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details" data-testid="tab-details">Details</TabsTrigger>
+            <TabsTrigger value="notes" disabled={!editingFile} data-testid="tab-notes">
+              Notes History {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="mt-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="clientName"
@@ -153,10 +181,10 @@ export function AddEditClientModal({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Meeting notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Brief description of the work needed"
+                      placeholder="Add notes from your meeting or work session"
                       className="min-h-24 resize-none"
                       {...field}
                       data-testid="input-description"
@@ -231,22 +259,64 @@ export function AddEditClientModal({
               )}
             />
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={isPending}
-                data-testid="button-cancel"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending} data-testid="button-submit">
-                {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                    disabled={isPending}
+                    data-testid="button-cancel"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isPending} data-testid="button-submit">
+                    {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-4">
+            <ScrollArea className="h-[400px] pr-4">
+              {isLoadingSessions ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Loading notes history...
+                </div>
+              ) : workSessions.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No meeting notes yet. Touch this client to add notes.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {workSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="border rounded-md p-4 bg-card"
+                      data-testid={`note-${session.id}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-muted-foreground" data-testid={`note-time-${session.id}`}>
+                          {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(session.startedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      {session.notes ? (
+                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`note-content-${session.id}`}>
+                          {session.notes}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No notes added</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
