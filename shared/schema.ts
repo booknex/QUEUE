@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  isSuperAdmin: text("is_super_admin").notNull().default("false"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -57,7 +58,7 @@ export const insertUserCompanySchema = createInsertSchema(userCompanies).omit({
 });
 
 export const updateUserCompanySchema = z.object({
-  role: z.enum(["owner", "member"]),
+  role: z.enum(["owner", "admin", "member"]),
 });
 
 export type InsertUserCompany = z.infer<typeof insertUserCompanySchema>;
