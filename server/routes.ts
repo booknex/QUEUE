@@ -80,6 +80,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/company-users", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      
+      const schema = z.object({
+        companyId: z.number(),
+        email: z.string().email("Invalid email address"),
+        role: z.enum(["owner", "member"]).default("member"),
+      });
+      
+      const validated = schema.parse(req.body);
+      const { companyId, email, role } = validated;
+      
+      // Verify current user is an owner of this company
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner') {
+        return res.status(403).json({ error: "Only owners can add users to the company" });
+      }
+      
+      // Find user by email
+      const targetUser = await storage.getUserByEmail(email);
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found. They must log in to the application first." });
+      }
+      
+      // Check if user is already a member
+      const existingRole = await storage.getUserRole(targetUser.id, companyId);
+      if (existingRole) {
+        return res.status(400).json({ error: "User is already a member of this company" });
+      }
+      
+      // Add user to company
+      await storage.addUserToCompany(targetUser.id, companyId, role);
+      
+      res.status(201).json({ success: true, userId: targetUser.id });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to add user to company" });
+    }
+  });
+
   app.patch("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
     try {
       const currentUserId = req.user.claims.sub;

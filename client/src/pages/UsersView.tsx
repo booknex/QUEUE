@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { User, Shield, ShieldCheck, Trash2 } from "lucide-react";
+import { User, Shield, ShieldCheck, Trash2, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { AddUserModal } from "@/components/AddUserModal";
 import type { UserWithRole } from "@shared/schema";
 
 interface UsersViewProps {
@@ -39,6 +40,7 @@ interface UsersViewProps {
 export default function UsersView({ selectedCompanyId }: UsersViewProps) {
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
+  const [showAddUser, setShowAddUser] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"owner" | "member">("member");
   const { toast } = useToast();
 
@@ -175,6 +177,16 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
                 </p>
               )}
             </div>
+            {isOwner && (
+              <Button
+                onClick={() => setShowAddUser(true)}
+                disabled={selectedCompanyId === null}
+                data-testid="button-add-user"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add User
+              </Button>
+            )}
           </div>
         </div>
 
@@ -346,6 +358,15 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add User Modal */}
+      {selectedCompanyId !== null && (
+        <AddUserModal
+          open={showAddUser}
+          onClose={() => setShowAddUser(false)}
+          companyId={selectedCompanyId}
+        />
+      )}
     </div>
   );
 }
