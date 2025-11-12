@@ -35,7 +35,7 @@ The application is structured around a **Client Queue** for daily tasks and a **
 Key features include:
 
 -   **Multi-User Authentication**: Integrated Replit Auth (OIDC) supporting Google, GitHub, and email login. New users automatically receive a default company on first login with owner role. Users can belong to multiple companies with role-based access (owner/member).
--   **User Management**: Owner-only interface for viewing all company users, editing roles, and removing users. Protection against demoting or removing the last owner. Users view accessible via dedicated "Users" tab in the kanban sidebar.
+-   **User Management**: Owner-only interface for viewing all company users, editing roles, and removing users. Protection against demoting or removing the last owner. Users view accessible via three-dot menu in Dashboard header alongside Opportunities and Contacts navigation.
 -   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector. Automatic company provisioning for new users with naming pattern "{FirstName}'s Company".
 -   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
 -   **Priority Queue Ordering**: Client files are automatically sorted with untouched clients first (never touched since creation), followed by touched clients ordered by time since last touch (oldest first). This ensures clients who have never been attended to get immediate priority and visibility.
