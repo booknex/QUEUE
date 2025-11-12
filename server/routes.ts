@@ -120,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/companies/:id", async (req, res) => {
+  app.delete("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Status filter routes
-  app.get("/api/filters", async (req, res) => {
+  app.get("/api/filters", isAuthenticated, async (req, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       const filters = await storage.getAllFilters(companyId);
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/filters", async (req, res) => {
+  app.post("/api/filters", isAuthenticated, async (req, res) => {
     try {
       const validated = insertStatusFilterSchema.parse(req.body);
       const filter = await storage.createFilter(validated);
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/filters/:id", async (req, res) => {
+  app.patch("/api/filters/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/filters/:id", async (req, res) => {
+  app.delete("/api/filters/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -207,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/filters/reorder", async (req, res) => {
+  app.post("/api/filters/reorder", isAuthenticated, async (req, res) => {
     try {
       const schema = z.object({
         filterIds: z.array(z.number()),
@@ -227,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File routes
-  app.get("/api/files", async (req, res) => {
+  app.get("/api/files", isAuthenticated, async (req, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       const files = await storage.getAllFiles(companyId);
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id", async (req, res) => {
+  app.get("/api/files/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files", async (req, res) => {
+  app.post("/api/files", isAuthenticated, async (req, res) => {
     try {
       const validated = insertClientFileSchema.parse(req.body);
       const file = await storage.createFile(validated);
@@ -267,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/files/:id", async (req, res) => {
+  app.patch("/api/files/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/files/:id", async (req, res) => {
+  app.delete("/api/files/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -326,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files/:id/touch", async (req, res) => {
+  app.post("/api/files/:id/touch", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -350,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files/:id/close", async (req, res) => {
+  app.post("/api/files/:id/close", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id/sessions", async (req, res) => {
+  app.get("/api/files/:id/sessions", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -390,7 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/sessions/:id", async (req, res) => {
+  app.delete("/api/sessions/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -406,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id/meeting-notes", async (req, res) => {
+  app.get("/api/files/:id/meeting-notes", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -419,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/meeting-notes/:id", async (req, res) => {
+  app.delete("/api/meeting-notes/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/sessions", async (req, res) => {
+  app.get("/api/sessions", isAuthenticated, async (req, res) => {
     try {
       const fileId = req.query.fileId ? parseInt(req.query.fileId as string) : undefined;
       const sessions = fileId 
@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/pipelines", async (req, res) => {
+  app.get("/api/pipelines", isAuthenticated, async (req, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       const pipelines = await storage.getAllPipelines(companyId);
@@ -457,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/pipelines/:id", async (req, res) => {
+  app.get("/api/pipelines/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -473,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/pipelines", async (req, res) => {
+  app.post("/api/pipelines", isAuthenticated, async (req, res) => {
     try {
       const validated = insertPipelineSchema.parse(req.body);
       const pipeline = await storage.createPipeline(validated);
@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/pipelines/:id", async (req, res) => {
+  app.patch("/api/pipelines/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -508,7 +508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/pipelines/:id", async (req, res) => {
+  app.delete("/api/pipelines/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -535,7 +535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/columns", async (req, res) => {
+  app.get("/api/columns", isAuthenticated, async (req, res) => {
     try {
       const pipelineIdParam = req.query.pipelineId as string | undefined;
       const pipelineId = pipelineIdParam === "null" ? null : pipelineIdParam ? parseInt(pipelineIdParam) : undefined;
@@ -547,7 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/columns/:id", async (req, res) => {
+  app.get("/api/columns/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -563,7 +563,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/columns", async (req, res) => {
+  app.post("/api/columns", isAuthenticated, async (req, res) => {
     try {
       const validated = insertKanbanColumnSchema.parse(req.body);
       const column = await storage.createKanbanColumn(validated);
@@ -579,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/columns/:id", async (req, res) => {
+  app.patch("/api/columns/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -602,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/columns/:id", async (req, res) => {
+  app.delete("/api/columns/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -629,7 +629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/contacts", async (req, res) => {
+  app.get("/api/contacts", isAuthenticated, async (req, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       const contacts = await storage.getAllContacts(companyId);
@@ -639,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/contacts/:id", async (req, res) => {
+  app.get("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -655,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contacts", async (req, res) => {
+  app.post("/api/contacts", isAuthenticated, async (req, res) => {
     try {
       const validated = insertContactSchema.parse(req.body);
       
@@ -693,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contacts/bulk-import", async (req, res) => {
+  app.post("/api/contacts/bulk-import", isAuthenticated, async (req, res) => {
     try {
       const schema = z.object({
         contacts: z.array(z.object({
@@ -762,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/contacts/:id", async (req, res) => {
+  app.patch("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -783,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/contacts/:id", async (req, res) => {
+  app.delete("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -811,7 +811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/opportunities", async (req, res) => {
+  app.get("/api/opportunities", isAuthenticated, async (req, res) => {
     try {
       const opportunities = await storage.getAllOpportunities();
       res.json(opportunities.map(serializeOpportunity));
@@ -820,7 +820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/opportunities/:id", async (req, res) => {
+  app.get("/api/opportunities/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -836,7 +836,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/opportunities", async (req, res) => {
+  app.post("/api/opportunities", isAuthenticated, async (req, res) => {
     try {
       const validated = insertOpportunitySchema.parse(req.body);
       const opportunity = await storage.createOpportunity(validated);
@@ -853,7 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/opportunities/:id", async (req, res) => {
+  app.patch("/api/opportunities/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -877,7 +877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/opportunities/:id", async (req, res) => {
+  app.delete("/api/opportunities/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -901,7 +901,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Twilio routes
-  app.post("/api/twilio/sms", async (req, res) => {
+  app.post("/api/twilio/sms", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -946,7 +946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/twilio/call", async (req, res) => {
+  app.post("/api/twilio/call", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -1021,7 +1021,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate access token for Voice SDK (browser calling)
-  app.get("/api/twilio/token", async (req, res) => {
+  app.get("/api/twilio/token", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const apiKey = process.env.TWILIO_API_KEY;
@@ -1138,7 +1138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get call logs for a specific contact
-  app.get("/api/twilio/calls/:phoneNumber", async (req, res) => {
+  app.get("/api/twilio/calls/:phoneNumber", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -1180,7 +1180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get SMS messages for a specific contact
-  app.get("/api/twilio/messages/:phoneNumber", async (req, res) => {
+  app.get("/api/twilio/messages/:phoneNumber", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -1222,7 +1222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get recordings for a specific call
-  app.get("/api/twilio/recordings/:callSid", async (req, res) => {
+  app.get("/api/twilio/recordings/:callSid", isAuthenticated, async (req, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
