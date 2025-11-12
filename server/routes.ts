@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema } from "@shared/schema";
 import { z } from "zod";
 import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
@@ -54,6 +54,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Company user management routes
+  app.get("/api/company-users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      if (!companyId) {
+        return res.status(400).json({ error: "companyId is required" });
+      }
+      
+      // Verify user has access to this company
+      const userCompanies = await storage.getUserCompanies(userId);
+      if (!userCompanies.includes(companyId)) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
+      const users = await storage.getUsersByCompany(companyId);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch company users" });
+    }
+  });
+
+  app.patch("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const targetUserId = req.params.userId;
+      
+      if (!targetUserId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      
+      // Validate request body with schema
+      const schema = updateUserCompanySchema.extend({
+        companyId: z.number(),
+      });
+      const validated = schema.parse(req.body);
+      const { role, companyId } = validated;
+      
+      // Verify current user is an owner of this company
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner') {
+        return res.status(403).json({ error: "Only owners can update user roles" });
+      }
+      
+      // Cannot change your own role
+      if (currentUserId === targetUserId) {
+        return res.status(400).json({ error: "Cannot change your own role" });
+      }
+      
+      await storage.updateUserRole(targetUserId, companyId, role);
+      res.json({ success: true });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid request data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update user role" });
+    }
+  });
+
+  app.delete("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.claims.sub;
+      const targetUserId = req.params.userId;
+      const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      if (!targetUserId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      
+      if (!companyId) {
+        return res.status(400).json({ error: "companyId is required" });
+      }
+      
+      // Verify current user is an owner of this company
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner') {
+        return res.status(403).json({ error: "Only owners can remove users from company" });
+      }
+      
+      // Cannot remove yourself
+      if (currentUserId === targetUserId) {
+        return res.status(400).json({ error: "Cannot remove yourself from the company" });
+      }
+      
+      await storage.removeUserFromCompany(targetUserId, companyId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove user from company" });
     }
   });
 

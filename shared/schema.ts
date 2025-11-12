@@ -47,8 +47,19 @@ export const insertUserCompanySchema = createInsertSchema(userCompanies).omit({
   createdAt: true,
 });
 
+export const updateUserCompanySchema = z.object({
+  role: z.enum(["owner", "member"]),
+});
+
 export type InsertUserCompany = z.infer<typeof insertUserCompanySchema>;
 export type UserCompany = typeof userCompanies.$inferSelect;
+export type UpdateUserCompany = z.infer<typeof updateUserCompanySchema>;
+
+// Enriched type for user with company membership info
+export type UserWithRole = User & {
+  role: string;
+  memberSince: Date;
+};
 
 export const clientFiles = pgTable("client_files", {
   id: serial("id").primaryKey(),

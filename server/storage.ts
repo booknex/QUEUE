@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type InsertUserCompany, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type UserWithRole, type InsertUserCompany, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -8,6 +8,10 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   getUserCompanies(userId: string): Promise<number[]>;
   addUserToCompany(userId: string, companyId: number, role: string): Promise<void>;
+  getUsersByCompany(companyId: number): Promise<UserWithRole[]>;
+  updateUserRole(userId: string, companyId: number, role: string): Promise<void>;
+  removeUserFromCompany(userId: string, companyId: number): Promise<void>;
+  getUserRole(userId: string, companyId: number): Promise<string | undefined>;
 
   getAllCompanies(userId?: string): Promise<Company[]>;
   getCompany(id: number): Promise<Company | undefined>;
@@ -100,6 +104,56 @@ export class DatabaseStorage implements IStorage {
       companyId,
       role,
     });
+  }
+
+  async getUsersByCompany(companyId: number): Promise<UserWithRole[]> {
+    const results = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        role: userCompanies.role,
+        memberSince: userCompanies.createdAt,
+      })
+      .from(users)
+      .innerJoin(userCompanies, eq(users.id, userCompanies.userId))
+      .where(eq(userCompanies.companyId, companyId));
+    
+    return results;
+  }
+
+  async getUserRole(userId: string, companyId: number): Promise<string | undefined> {
+    const [result] = await db
+      .select({ role: userCompanies.role })
+      .from(userCompanies)
+      .where(and(
+        eq(userCompanies.userId, userId),
+        eq(userCompanies.companyId, companyId)
+      ));
+    return result?.role;
+  }
+
+  async updateUserRole(userId: string, companyId: number, role: string): Promise<void> {
+    await db
+      .update(userCompanies)
+      .set({ role })
+      .where(and(
+        eq(userCompanies.userId, userId),
+        eq(userCompanies.companyId, companyId)
+      ));
+  }
+
+  async removeUserFromCompany(userId: string, companyId: number): Promise<void> {
+    await db
+      .delete(userCompanies)
+      .where(and(
+        eq(userCompanies.userId, userId),
+        eq(userCompanies.companyId, companyId)
+      ));
   }
 
   async getAllCompanies(userId?: string): Promise<Company[]> {
