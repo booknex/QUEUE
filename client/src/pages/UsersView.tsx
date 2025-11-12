@@ -56,7 +56,7 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
   });
 
   const { data: currentUser } = useQuery<{ id: string }>({
-    queryKey: ["/api/auth/user"],
+    queryKey: ["/api/user"],
   });
 
   const currentUserRole = users?.find(u => u.id === currentUser?.id)?.role;
