@@ -38,7 +38,13 @@ Key features include:
 -   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
 -   **Priority Queue Ordering**: Client files are automatically sorted with untouched clients first (never touched since creation), followed by touched clients ordered by time since last touch (oldest first). This ensures clients who have never been attended to get immediate priority and visibility.
 -   **Real-time Timer Tracking**: Wait times are calculated and displayed with second precision.
--   **Touch with Notes**: A "Touch" functionality resets timers, moves cards to the queue's end, and allows adding notes to work sessions.
+-   **Touch with Notes**: A "Touch" functionality resets timers, moves cards to the queue's end, and allows adding notes to work sessions stored in the `workSessions` table.
+-   **Meeting Notes System**: Client files feature a comprehensive meeting notes system with:
+    - **Current Meeting Note**: The `description` field on each client file stores the current/latest meeting note, displayed on client cards for quick reference.
+    - **Historical Tracking**: The `meetingNotes` table automatically tracks a complete history of all description changes over time with timestamps.
+    - **Smart Deduplication**: Meeting notes are only saved when the description field actually changes (comparison check prevents duplicate entries).
+    - **Three-Tab Modal**: Client file modal includes separate tabs for "Details" (edit form), "Meeting Notes" (historical timeline), and "Touch Comments" (work session notes).
+    - **Cache Management**: Frontend query cache properly invalidates meeting notes and touch comments on file updates to ensure fresh data.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
 -   **Dynamic Column Management**: Users can create, edit (rename), delete, and reorder kanban columns via drag-and-drop for both "Opportunities" and individual pipeline boards. Column headers feature a 3-dot menu with Edit and Delete options.
 -   **Drag-and-Drop Opportunities**: Opportunity cards can be moved between kanban columns with visual feedback.
