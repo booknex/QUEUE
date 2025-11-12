@@ -369,6 +369,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/sessions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid session ID" });
+      }
+      const success = await storage.deleteWorkSession(id);
+      if (!success) {
+        return res.status(404).json({ error: "Work session not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete work session" });
+    }
+  });
+
   app.get("/api/files/:id/meeting-notes", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -379,6 +395,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(notes.map(serializeMeetingNote));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch meeting notes" });
+    }
+  });
+
+  app.delete("/api/meeting-notes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid meeting note ID" });
+      }
+      const success = await storage.deleteMeetingNote(id);
+      if (!success) {
+        return res.status(404).json({ error: "Meeting note not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete meeting note" });
     }
   });
 

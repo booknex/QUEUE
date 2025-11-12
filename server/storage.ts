@@ -19,9 +19,11 @@ export interface IStorage {
   createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
   getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
+  deleteWorkSession(id: number): Promise<boolean>;
 
   createMeetingNote(note: InsertMeetingNote): Promise<MeetingNote>;
   getMeetingNotesByFile(fileId: number): Promise<MeetingNote[]>;
+  deleteMeetingNote(id: number): Promise<boolean>;
   
   getAllPipelines(companyId?: number): Promise<Pipeline[]>;
   getPipeline(id: number): Promise<Pipeline | undefined>;
@@ -186,6 +188,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(workSessions.startedAt));
   }
 
+  async deleteWorkSession(id: number): Promise<boolean> {
+    const result = await db
+      .delete(workSessions)
+      .where(eq(workSessions.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
   async createMeetingNote(insertNote: InsertMeetingNote): Promise<MeetingNote> {
     const [note] = await db
       .insert(meetingNotes)
@@ -200,6 +210,14 @@ export class DatabaseStorage implements IStorage {
       .from(meetingNotes)
       .where(eq(meetingNotes.fileId, fileId))
       .orderBy(desc(meetingNotes.createdAt));
+  }
+
+  async deleteMeetingNote(id: number): Promise<boolean> {
+    const result = await db
+      .delete(meetingNotes)
+      .where(eq(meetingNotes.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async getAllPipelines(companyId?: number): Promise<Pipeline[]> {
