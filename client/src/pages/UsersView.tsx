@@ -41,7 +41,7 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserWithRole | null>(null);
   const [showAddUser, setShowAddUser] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"owner" | "member">("member");
+  const [selectedRole, setSelectedRole] = useState<"owner" | "admin" | "member">("member");
   const { toast } = useToast();
 
   const { data: users, isLoading } = useQuery<UserWithRole[]>({
@@ -61,6 +61,8 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
 
   const currentUserRole = users?.find(u => u.id === currentUser?.id)?.role;
   const isOwner = currentUserRole === "owner";
+  const isAdmin = currentUserRole === "admin";
+  const canManageUsers = isOwner || isAdmin;
 
   const updateUserRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
@@ -108,23 +110,23 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
   });
 
   const handleEditUser = (user: UserWithRole) => {
-    if (!isOwner) {
+    if (!canManageUsers) {
       toast({
         title: "Access Denied",
-        description: "Only owners can change user roles",
+        description: "Only owners and admins can change user roles",
         variant: "destructive",
       });
       return;
     }
-    setSelectedRole(user.role as "owner" | "member");
+    setSelectedRole(user.role as "owner" | "admin" | "member");
     setEditingUser(user);
   };
 
   const handleDeleteUser = (user: UserWithRole) => {
-    if (!isOwner) {
+    if (!canManageUsers) {
       toast({
         title: "Access Denied",
-        description: "Only owners can remove users",
+        description: "Only owners and admins can remove users",
         variant: "destructive",
       });
       return;
@@ -300,17 +302,18 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
               <label htmlFor="role" className="text-sm font-medium">
                 Role
               </label>
-              <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as "owner" | "member")}>
+              <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as "owner" | "admin" | "member")}>
                 <SelectTrigger data-testid="select-user-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="owner">Owner</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Owners can manage users and have full access. Members have standard access.
+                Owners and Admins can manage users and have full access. Members have standard access.
               </p>
             </div>
           </div>

@@ -28,7 +28,7 @@ interface AddUserModalProps {
 
 export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"member" | "owner">("member");
+  const [role, setRole] = useState<"member" | "admin" | "owner">("member");
   const { toast } = useToast();
 
   const addUserMutation = useMutation({
@@ -105,17 +105,18 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={(value) => setRole(value as "member" | "owner")}>
+            <Select value={role} onValueChange={(value) => setRole(value as "member" | "admin" | "owner")}>
               <SelectTrigger data-testid="select-new-user-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="owner">Owner</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Owners can manage users and have full access. Members have standard access.
+              Owners and Admins can manage users and have full access. Members have standard access.
             </p>
           </div>
 
