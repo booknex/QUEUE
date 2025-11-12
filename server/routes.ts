@@ -92,10 +92,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { companyId, email, role } = validated;
       
-      // Verify current user is an owner or admin of this company
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can add users to the company" });
+      // Check if user is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
+      
+      // Verify current user is an owner, admin, or super admin
+      if (!isSuperAdmin) {
+        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+          return res.status(403).json({ error: "Only owners and admins can add users to the company" });
+        }
       }
       
       // Find user by email
@@ -138,10 +144,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { role, companyId } = validated;
       
-      // Verify current user is an owner or admin of this company
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can update user roles" });
+      // Check if user is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
+      
+      // Verify current user is an owner, admin, or super admin
+      if (!isSuperAdmin) {
+        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+          return res.status(403).json({ error: "Only owners and admins can update user roles" });
+        }
       }
       
       // Cannot change your own role
@@ -185,10 +197,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Verify current user is an owner or admin of this company
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can remove users from company" });
+      // Check if user is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
+      
+      // Verify current user is an owner, admin, or super admin
+      if (!isSuperAdmin) {
+        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+          return res.status(403).json({ error: "Only owners and admins can remove users from company" });
+        }
       }
       
       // Cannot remove yourself

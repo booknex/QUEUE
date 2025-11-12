@@ -55,14 +55,15 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
     enabled: selectedCompanyId !== null,
   });
 
-  const { data: currentUser } = useQuery<{ id: string }>({
+  const { data: currentUser } = useQuery<{ id: string; isSuperAdmin?: boolean }>({
     queryKey: ["/api/user"],
   });
 
   const currentUserRole = users?.find(u => u.id === currentUser?.id)?.role;
   const isOwner = currentUserRole === "owner";
   const isAdmin = currentUserRole === "admin";
-  const canManageUsers = isOwner || isAdmin;
+  const isSuperAdmin = currentUser?.isSuperAdmin === true;
+  const canManageUsers = isOwner || isAdmin || isSuperAdmin;
 
   const updateUserRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
