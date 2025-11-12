@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, clientFiles, workSessions, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -19,6 +19,9 @@ export interface IStorage {
   createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
   getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
+
+  createMeetingNote(note: InsertMeetingNote): Promise<MeetingNote>;
+  getMeetingNotesByFile(fileId: number): Promise<MeetingNote[]>;
   
   getAllPipelines(companyId?: number): Promise<Pipeline[]>;
   getPipeline(id: number): Promise<Pipeline | undefined>;
@@ -181,6 +184,22 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(workSessions)
       .orderBy(desc(workSessions.startedAt));
+  }
+
+  async createMeetingNote(insertNote: InsertMeetingNote): Promise<MeetingNote> {
+    const [note] = await db
+      .insert(meetingNotes)
+      .values(insertNote)
+      .returning();
+    return note;
+  }
+
+  async getMeetingNotesByFile(fileId: number): Promise<MeetingNote[]> {
+    return await db
+      .select()
+      .from(meetingNotes)
+      .where(eq(meetingNotes.fileId, fileId))
+      .orderBy(desc(meetingNotes.createdAt));
   }
 
   async getAllPipelines(companyId?: number): Promise<Pipeline[]> {

@@ -28,6 +28,13 @@ export const workSessions = pgTable("work_sessions", {
   notes: text("notes"),
 });
 
+export const meetingNotes = pgTable("meeting_notes", {
+  id: serial("id").primaryKey(),
+  fileId: integer("file_id").notNull().references(() => clientFiles.id, { onDelete: "cascade" }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const pipelines = pgTable("pipelines", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -98,6 +105,14 @@ export type WorkSession = typeof workSessions.$inferSelect;
 export const touchFileSchema = z.object({
   notes: z.string().optional(),
 });
+
+export const insertMeetingNoteSchema = createInsertSchema(meetingNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMeetingNote = z.infer<typeof insertMeetingNoteSchema>;
+export type MeetingNote = typeof meetingNotes.$inferSelect;
 
 export const insertPipelineSchema = createInsertSchema(pipelines).omit({
   id: true,

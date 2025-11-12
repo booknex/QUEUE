@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema } from "@shared/schema";
 import { z } from "zod";
-import type { ClientFile, WorkSession, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
+import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
 import twilio from "twilio";
 
@@ -20,6 +20,13 @@ function serializeSession(session: WorkSession) {
   return {
     ...session,
     startedAt: session.startedAt.toISOString(),
+  };
+}
+
+function serializeMeetingNote(note: MeetingNote) {
+  return {
+    ...note,
+    createdAt: note.createdAt.toISOString(),
   };
 }
 
@@ -246,6 +253,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid file ID" });
       }
       const validated = updateClientFileSchema.parse(req.body);
+      
+      // Get current file to check if description changed
+      const currentFile = await storage.getFile(id);
+      if (!currentFile) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // If description is being updated and it changed, save it as a meeting note
+      if (validated.description !== undefined && 
+          validated.description !== null && 
+          validated.description.trim() !== "" &&
+          validated.description !== currentFile.description) {
+        await storage.createMeetingNote({
+          fileId: id,
+          notes: validated.description,
+        });
+      }
+      
       const file = await storage.updateFile(id, validated);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
@@ -341,6 +366,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(sessions.map(serializeSession));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch work sessions" });
+    }
+  });
+
+  app.get("/api/files/:id/meeting-notes", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid file ID" });
+      }
+      const notes = await storage.getMeetingNotesByFile(id);
+      res.json(notes.map(serializeMeetingNote));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch meeting notes" });
     }
   });
 
