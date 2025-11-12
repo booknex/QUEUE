@@ -80,16 +80,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schema = z.object({
         companyId: z.number(),
         email: z.string().email("Invalid email address"),
-        role: z.enum(["owner", "member"]).default("member"),
+        role: z.enum(["owner", "admin", "member"]).default("member"),
       });
       
       const validated = schema.parse(req.body);
       const { companyId, email, role } = validated;
       
-      // Verify current user is an owner of this company
+      // Verify current user is an owner or admin of this company
       const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner') {
-        return res.status(403).json({ error: "Only owners can add users to the company" });
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can add users to the company" });
       }
       
       // Find user by email
@@ -132,10 +132,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { role, companyId } = validated;
       
-      // Verify current user is an owner of this company
+      // Verify current user is an owner or admin of this company
       const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner') {
-        return res.status(403).json({ error: "Only owners can update user roles" });
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can update user roles" });
       }
       
       // Cannot change your own role
@@ -179,10 +179,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Verify current user is an owner of this company
+      // Verify current user is an owner or admin of this company
       const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner') {
-        return res.status(403).json({ error: "Only owners can remove users from company" });
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can remove users from company" });
       }
       
       // Cannot remove yourself
