@@ -36,7 +36,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ClientFile, Pipeline, StatusFilter, WorkSession } from "@shared/schema";
+import type { ClientFile, Pipeline, StatusFilter, WorkSession, MeetingNote } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
@@ -83,6 +83,17 @@ export function AddEditClientModal({
       if (!editingFile?.id) return [];
       const response = await fetch(`/api/files/${editingFile.id}/sessions`);
       if (!response.ok) throw new Error("Failed to fetch work sessions");
+      return response.json();
+    },
+    enabled: !!editingFile?.id && open,
+  });
+
+  const { data: meetingNotes = [], isLoading: isLoadingMeetingNotes } = useQuery<MeetingNote[]>({
+    queryKey: ["/api/files", editingFile?.id, "meeting-notes"],
+    queryFn: async () => {
+      if (!editingFile?.id) return [];
+      const response = await fetch(`/api/files/${editingFile.id}/meeting-notes`);
+      if (!response.ok) throw new Error("Failed to fetch meeting notes");
       return response.json();
     },
     enabled: !!editingFile?.id && open,
@@ -148,10 +159,13 @@ export function AddEditClientModal({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details" data-testid="tab-details">Details</TabsTrigger>
-            <TabsTrigger value="notes" disabled={!editingFile} data-testid="tab-notes">
-              Notes History {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+            <TabsTrigger value="meeting-notes" disabled={!editingFile} data-testid="tab-meeting-notes">
+              Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="touch-comments" disabled={!editingFile} data-testid="tab-touch-comments">
+              Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
             </TabsTrigger>
           </TabsList>
 
@@ -277,15 +291,55 @@ export function AddEditClientModal({
             </Form>
           </TabsContent>
 
-          <TabsContent value="notes" className="mt-4">
+          <TabsContent value="meeting-notes" className="mt-4">
+            <ScrollArea className="h-[400px] pr-4">
+              {isLoadingMeetingNotes ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Loading meeting notes...
+                </div>
+              ) : meetingNotes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No meeting notes yet. Update the client with meeting notes to create history.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {meetingNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="border rounded-md p-4 bg-card"
+                      data-testid={`meeting-note-${note.id}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
+                          {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(note.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      {note.notes ? (
+                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
+                          {note.notes}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No notes added</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="touch-comments" className="mt-4">
             <ScrollArea className="h-[400px] pr-4">
               {isLoadingSessions ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Loading notes history...
+                  Loading touch comments...
                 </div>
               ) : workSessions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No meeting notes yet. Touch this client to add notes.
+                  No touch comments yet. Touch this client to add comments.
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -293,10 +347,10 @@ export function AddEditClientModal({
                     <div
                       key={session.id}
                       className="border rounded-md p-4 bg-card"
-                      data-testid={`note-${session.id}`}
+                      data-testid={`touch-comment-${session.id}`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground" data-testid={`note-time-${session.id}`}>
+                        <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
                           {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -304,11 +358,11 @@ export function AddEditClientModal({
                         </p>
                       </div>
                       {session.notes ? (
-                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`note-content-${session.id}`}>
+                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
                           {session.notes}
                         </p>
                       ) : (
-                        <p className="text-sm text-muted-foreground italic">No notes added</p>
+                        <p className="text-sm text-muted-foreground italic">No comment added</p>
                       )}
                     </div>
                   ))}

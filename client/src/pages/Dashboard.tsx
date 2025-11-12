@@ -174,8 +174,10 @@ export default function Dashboard() {
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
       return await apiRequest("PATCH", `/api/files/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", variables.id, "meeting-notes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/files", variables.id, "sessions"] });
       setModalOpen(false);
       setEditingFile(null);
       toast({
