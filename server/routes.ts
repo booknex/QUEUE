@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
 import twilio from "twilio";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 function serializeFile(file: ClientFile) {
   return {
@@ -38,8 +39,26 @@ function serializeCompany(company: Company) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Company routes
-  app.get("/api/companies", async (req, res) => {
+  app.get("/api/companies", isAuthenticated, async (req, res) => {
     try {
       const companies = await storage.getAllCompanies();
       res.json(companies.map(serializeCompany));

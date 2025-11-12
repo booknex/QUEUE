@@ -1,11 +1,17 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type InsertUserCompany, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
 export interface IStorage {
-  getAllCompanies(): Promise<Company[]>;
+  // User operations (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  getUserCompanies(userId: string): Promise<number[]>;
+  addUserToCompany(userId: string, companyId: number, role: string): Promise<void>;
+
+  getAllCompanies(userId?: string): Promise<Company[]>;
   getCompany(id: number): Promise<Company | undefined>;
-  createCompany(company: InsertCompany): Promise<Company>;
+  createCompany(company: InsertCompany, userId?: string): Promise<Company>;
   updateCompany(id: number, updates: UpdateCompany): Promise<Company | undefined>;
   deleteCompany(id: number): Promise<boolean>;
 
@@ -59,7 +65,58 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getAllCompanies(): Promise<Company[]> {
+  // User operations (required for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async getUserCompanies(userId: string): Promise<number[]> {
+    const results = await db
+      .select({ companyId: userCompanies.companyId })
+      .from(userCompanies)
+      .where(eq(userCompanies.userId, userId));
+    return results.map(r => r.companyId);
+  }
+
+  async addUserToCompany(userId: string, companyId: number, role: string): Promise<void> {
+    await db.insert(userCompanies).values({
+      userId,
+      companyId,
+      role,
+    });
+  }
+
+  async getAllCompanies(userId?: string): Promise<Company[]> {
+    if (userId) {
+      // Filter companies by user access
+      const results = await db
+        .select({
+          id: companies.id,
+          name: companies.name,
+          createdAt: companies.createdAt,
+        })
+        .from(companies)
+        .innerJoin(userCompanies, eq(companies.id, userCompanies.companyId))
+        .where(eq(userCompanies.userId, userId))
+        .orderBy(asc(companies.name));
+      return results;
+    }
     return await db.select().from(companies).orderBy(asc(companies.name));
   }
 
@@ -68,8 +125,14 @@ export class DatabaseStorage implements IStorage {
     return company || undefined;
   }
 
-  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+  async createCompany(insertCompany: InsertCompany, userId?: string): Promise<Company> {
     const [company] = await db.insert(companies).values(insertCompany).returning();
+    
+    // Auto-link creator as owner
+    if (userId) {
+      await this.addUserToCompany(userId, company.id, 'owner');
+    }
+    
     return company;
   }
 
