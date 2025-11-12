@@ -172,14 +172,14 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
                   </span>
                 )}
               </p>
-              {!isOwner && (
+              {!canManageUsers && (
                 <p className="text-sm text-muted-foreground mt-1">
                   <Shield className="w-3 h-3 inline mr-1" />
-                  Only owners can edit user roles or remove users
+                  Only owners and admins can edit user roles or remove users
                 </p>
               )}
             </div>
-            {isOwner && (
+            {canManageUsers && (
               <Button
                 onClick={() => setShowAddUser(true)}
                 disabled={selectedCompanyId === null}
@@ -256,7 +256,7 @@ export default function UsersView({ selectedCompanyId }: UsersViewProps) {
                           </div>
                         </div>
 
-                        {isOwner && !isCurrentUser && (
+                        {canManageUsers && !isCurrentUser && (
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"

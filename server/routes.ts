@@ -60,10 +60,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Verify user has access to this company
-      const userCompanies = await storage.getUserCompanies(userId);
-      if (!userCompanies.includes(companyId)) {
-        return res.status(403).json({ error: "Access denied to this company" });
+      // Check if user is super admin
+      const user = await storage.getUser(userId);
+      const isSuperAdmin = user?.isSuperAdmin === 'true';
+      
+      // Verify user has access to this company (super admins can access any company)
+      if (!isSuperAdmin) {
+        const userCompanies = await storage.getUserCompanies(userId);
+        if (!userCompanies.includes(companyId)) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
       }
       
       const users = await storage.getUsersByCompany(companyId);
