@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,6 +33,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { TouchNoteModal } from "@/components/TouchNoteModal";
 import { PhoneWidget } from "@/components/PhoneWidget";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ClientFile, KanbanColumn, Pipeline, Company, StatusFilter } from "@shared/schema";
 
@@ -69,6 +70,7 @@ export default function Dashboard() {
   });
   const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   const { data: companies = [] } = useQuery<Company[]>({
     queryKey: ["/api/companies"],
@@ -605,6 +607,28 @@ export default function Dashboard() {
                   >
                     <Users className="w-4 h-4 mr-2" />
                     Users
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      try {
+                        await logout();
+                        toast({
+                          title: "Logged out",
+                          description: "You have been logged out successfully",
+                        });
+                      } catch (error) {
+                        toast({
+                          title: "Logout failed",
+                          description: error instanceof Error ? error.message : "Failed to logout",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    data-testid="menu-item-logout"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
