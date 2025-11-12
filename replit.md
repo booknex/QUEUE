@@ -34,7 +34,9 @@ The application is structured around a **Client Queue** for daily tasks and a **
 
 Key features include:
 
--   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector.
+-   **Multi-User Authentication**: Integrated Replit Auth (OIDC) supporting Google, GitHub, and email login. New users automatically receive a default company on first login with owner role. Users can belong to multiple companies with role-based access (owner/member).
+-   **User Management**: Owner-only interface for viewing all company users, editing roles, and removing users. Protection against demoting or removing the last owner. Users view accessible via dedicated "Users" tab in the kanban sidebar.
+-   **Multi-Company Support**: Users can manage isolated data for multiple companies with a dropdown selector. Automatic company provisioning for new users with naming pattern "{FirstName}'s Company".
 -   **Real-Time Multi-User Collaboration**: WebSocket-based synchronization ensures instant updates across all connected clients for data changes (companies, files, pipelines, columns, opportunities, contacts).
 -   **Priority Queue Ordering**: Client files are automatically sorted with untouched clients first (never touched since creation), followed by touched clients ordered by time since last touch (oldest first). This ensures clients who have never been attended to get immediate priority and visibility.
 -   **Real-time Timer Tracking**: Wait times are calculated and displayed with second precision.
@@ -59,10 +61,11 @@ Key features include:
 
 #### System Design Choices
 -   **Frontend**: React 18, TypeScript, TanStack Query v5, Wouter, Shadcn UI, Tailwind CSS, date-fns, WebSocket client.
--   **Backend**: Express.js, PostgreSQL with Drizzle ORM, Zod validation, RESTful API, WebSocket server.
--   **Data Models**: Core entities include `Company`, `ClientFile`, `Pipeline`, `Contact`, `KanbanColumn`, `Opportunity`, and `StatusFilter`, all designed with appropriate foreign key relationships for data integrity and company isolation. The `StatusFilter` model includes an `isSystem` flag to distinguish between system (non-editable) and custom (user-created) filters.
+-   **Backend**: Express.js, PostgreSQL with Drizzle ORM, Zod validation, RESTful API, WebSocket server, Replit Auth (OIDC) with Passport.js.
+-   **Authentication & Authorization**: All 50+ API routes protected with Replit Auth middleware. Role-based access control (owner/member) enforced at route level. User-company relationships stored in `user_companies` junction table.
+-   **Data Models**: Core entities include `User`, `Company`, `ClientFile`, `Pipeline`, `Contact`, `KanbanColumn`, `Opportunity`, and `StatusFilter`, all designed with appropriate foreign key relationships for data integrity and company isolation. The `StatusFilter` model includes an `isSystem` flag to distinguish between system (non-editable) and custom (user-created) filters. The `user_companies` table manages many-to-many user-company relationships with role differentiation.
 -   **Project Structure**: `client/` for frontend, `server/` for backend, `shared/` for common schemas.
--   **Company Isolation**: All data is scoped to its parent company using foreign keys.
+-   **Company Isolation**: All data is scoped to its parent company using foreign keys. Users can only access companies they're members of.
 
 ### External Dependencies
 -   **PostgreSQL**: Primary database for all persistent data.

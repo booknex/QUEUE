@@ -837,7 +837,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           const duplicate = await storage.findDuplicateContact(
             validated.companyId,
-            name,
+            name || "",
             email,
             phone
           );
@@ -851,9 +851,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           await storage.createContact({
             companyId: validated.companyId,
-            name,
-            phone,
-            email,
+            name: name || phone || email || "Unknown Contact",
+            phone: phone || undefined,
+            email: email || undefined,
           });
           
           results.success++;
