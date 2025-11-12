@@ -76,7 +76,7 @@ export default function Dashboard() {
     if (companies.length > 0 && selectedCompanyId === null) {
       setSelectedCompanyId(companies[0].id);
     }
-  }, [companies, selectedCompanyId]);
+  }, [companies]);
 
   // Save selected company to localStorage
   useEffect(() => {
