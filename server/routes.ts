@@ -58,16 +58,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Company routes
-  app.get("/api/companies", isAuthenticated, async (req, res) => {
+  app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const companies = await storage.getAllCompanies();
+      const userId = req.user.claims.sub;
+      const companies = await storage.getAllCompanies(userId);
       res.json(companies.map(serializeCompany));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch companies" });
     }
   });
 
-  app.get("/api/companies/:id", async (req, res) => {
+  app.get("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -83,10 +84,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/companies", async (req, res) => {
+  app.post("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const validated = insertCompanySchema.parse(req.body);
-      const company = await storage.createCompany(validated);
+      const company = await storage.createCompany(validated, userId);
       broadcast({ type: "company:created", companyId: company.id });
       res.status(201).json(serializeCompany(company));
     } catch (error) {
@@ -97,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/companies/:id", async (req, res) => {
+  app.patch("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
