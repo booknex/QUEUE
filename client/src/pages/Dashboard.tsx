@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { QueueItem } from "@/components/QueueItem";
 import { KanbanView } from "@/components/KanbanView";
+import UsersView from "@/pages/UsersView";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { AddEditFilterModal } from "@/components/AddEditFilterModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
@@ -66,6 +67,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem('selectedCompanyId');
     return saved ? parseInt(saved) : null;
   });
+  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
   const { toast } = useToast();
 
   const { data: companies = [] } = useQuery<Company[]>({
@@ -577,6 +579,35 @@ export default function Dashboard() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add Client
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" data-testid="button-more-actions">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" data-testid="menu-more-actions">
+                  <DropdownMenuItem
+                    onClick={() => setActiveView("opportunities")}
+                    data-testid="menu-item-opportunities"
+                  >
+                    Opportunities
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setActiveView("contacts")}
+                    data-testid="menu-item-contacts"
+                  >
+                    Contacts
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setActiveView("users")}
+                    data-testid="menu-item-users"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Users
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -687,11 +718,17 @@ export default function Dashboard() {
         )}
 
         <div className="mb-6">
-          <KanbanView 
-            selectedPipelineId={selectedPipelineId}
-            onPipelineChange={setSelectedPipelineId}
-            selectedCompanyId={selectedCompanyId}
-          />
+          {activeView === "users" ? (
+            <UsersView selectedCompanyId={selectedCompanyId} />
+          ) : (
+            <KanbanView 
+              selectedPipelineId={selectedPipelineId}
+              onPipelineChange={setSelectedPipelineId}
+              selectedCompanyId={selectedCompanyId}
+              activeView={activeView}
+              onViewChange={setActiveView}
+            />
+          )}
         </div>
       </main>
 

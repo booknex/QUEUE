@@ -33,7 +33,6 @@ import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
 import Contacts from "@/pages/Contacts";
-import UsersView from "@/pages/UsersView";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
@@ -42,10 +41,11 @@ interface KanbanViewProps {
   selectedPipelineId: number | null;
   onPipelineChange: (id: number) => void;
   selectedCompanyId: number | null;
+  activeView: "opportunities" | "contacts" | "users";
+  onViewChange: (view: "opportunities" | "contacts" | "users") => void;
 }
 
-export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
-  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
+export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId, activeView, onViewChange }: KanbanViewProps) {
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -418,7 +418,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           <Button
             variant={activeView === "opportunities" ? "default" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveView("opportunities")}
+            onClick={() => onViewChange("opportunities")}
             data-testid="button-sidebar-opportunities"
           >
             Opportunities
@@ -426,18 +426,10 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           <Button
             variant={activeView === "contacts" ? "default" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveView("contacts")}
+            onClick={() => onViewChange("contacts")}
             data-testid="button-sidebar-contacts"
           >
             Contacts
-          </Button>
-          <Button
-            variant={activeView === "users" ? "default" : "ghost"}
-            className="w-full justify-start"
-            onClick={() => setActiveView("users")}
-            data-testid="button-sidebar-users"
-          >
-            Users
           </Button>
         </div>
       </div>
@@ -652,12 +644,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           {activeView === "contacts" && (
             <div data-testid="content-contacts">
               <Contacts selectedCompanyId={selectedCompanyId} />
-            </div>
-          )}
-
-          {activeView === "users" && (
-            <div data-testid="content-users">
-              <UsersView selectedCompanyId={selectedCompanyId} />
             </div>
           )}
         </div>
