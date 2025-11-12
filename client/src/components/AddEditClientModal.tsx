@@ -1,9 +1,22 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { Trash2 } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -66,6 +79,11 @@ export function AddEditClientModal({
   pipelines,
   companyId,
 }: AddEditClientModalProps) {
+  const { toast } = useToast();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteType, setDeleteType] = useState<"meeting-note" | "session" | null>(null);
+
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
     queryKey: ["/api/filters", companyId?.toString()],
     queryFn: async () => {
@@ -98,6 +116,70 @@ export function AddEditClientModal({
     },
     enabled: !!editingFile?.id && open,
   });
+
+  const deleteMeetingNoteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/meeting-notes/${id}`, {});
+    },
+    onSuccess: () => {
+      if (editingFile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/files", editingFile.id, "meeting-notes"] });
+      }
+      toast({
+        title: "Meeting note deleted",
+        description: "The meeting note has been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete meeting note. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteSessionMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/sessions/${id}`, {});
+    },
+    onSuccess: () => {
+      if (editingFile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/files", editingFile.id, "sessions"] });
+      }
+      toast({
+        title: "Touch comment deleted",
+        description: "The touch comment has been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete touch comment. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteClick = (id: number, type: "meeting-note" | "session") => {
+    setDeletingId(id);
+    setDeleteType(type);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deletingId === null || deleteType === null) return;
+    
+    if (deleteType === "meeting-note") {
+      deleteMeetingNoteMutation.mutate(deletingId);
+    } else {
+      deleteSessionMutation.mutate(deletingId);
+    }
+    
+    setDeleteConfirmOpen(false);
+    setDeletingId(null);
+    setDeleteType(null);
+  };
 
   // Preserve the order from the API (sorted by position) instead of alphabetically sorting
   const sortedFilters = [...filters].sort((a, b) => a.position - b.position);
@@ -310,12 +392,25 @@ export function AddEditClientModal({
                       data-testid={`meeting-note-${note.id}`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
-                          {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(note.createdAt).toLocaleString()}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
+                            {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(note.createdAt).toLocaleString()}
+                          </p>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(note.id, "meeting-note")}
+                            data-testid={`button-delete-meeting-note-${note.id}`}
+                            className="h-6 w-6"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                       {note.notes ? (
                         <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
@@ -350,12 +445,25 @@ export function AddEditClientModal({
                       data-testid={`touch-comment-${session.id}`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                          {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(session.startedAt).toLocaleString()}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
+                            {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(session.startedAt).toLocaleString()}
+                          </p>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(session.id, "session")}
+                            data-testid={`button-delete-touch-comment-${session.id}`}
+                            className="h-6 w-6"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                       {session.notes ? (
                         <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
@@ -372,6 +480,28 @@ export function AddEditClientModal({
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteType === "meeting-note" 
+                ? "This will permanently delete this meeting note from the history."
+                : "This will permanently delete this touch comment from the history."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              data-testid="button-confirm-delete"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
