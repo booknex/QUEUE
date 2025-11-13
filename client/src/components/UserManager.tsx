@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Search, User } from "lucide-react";
 import { AddUserModal } from "./AddUserModal";
-import { ChangeUserRoleDialog } from "./ChangeUserRoleDialog";
+import { ManageUserModal } from "./ManageUserModal";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { UserWithRole } from "@shared/schema";
 
@@ -37,7 +37,7 @@ interface UserManagerProps {
 export function UserManager({ open, onClose, companyId }: UserManagerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
+  const [managingUser, setManagingUser] = useState<UserWithRole | null>(null);
   const [removingUser, setRemovingUser] = useState<UserWithRole | null>(null);
   const { toast } = useToast();
 
@@ -153,7 +153,12 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
               filteredUsers.map((user: UserWithRole) => {
                 const isCurrentUser = currentUser?.id === user.id;
                 return (
-                  <Card key={user.id} className="hover-elevate" data-testid={`card-user-${user.id}`}>
+                  <Card 
+                    key={user.id} 
+                    className="hover-elevate cursor-pointer" 
+                    data-testid={`card-user-${user.id}`}
+                    onClick={() => canManageUsers && setManagingUser(user)}
+                  >
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -190,15 +195,7 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
                         </div>
                       </div>
                       {canManageUsers && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingUser(user)}
-                            data-testid={`button-edit-role-${user.id}`}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -220,23 +217,18 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
       </Dialog>
 
       {companyId && (
-        <>
-          <AddUserModal
-            open={addUserModalOpen}
-            onClose={() => setAddUserModalOpen(false)}
-            companyId={companyId}
-          />
-
-          {editingUser && companyId && (
-            <ChangeUserRoleDialog
-              open={!!editingUser}
-              onClose={() => setEditingUser(null)}
-              user={editingUser}
-              companyId={companyId}
-            />
-          )}
-        </>
+        <AddUserModal
+          open={addUserModalOpen}
+          onClose={() => setAddUserModalOpen(false)}
+          companyId={companyId}
+        />
       )}
+
+      <ManageUserModal
+        open={!!managingUser}
+        onClose={() => setManagingUser(null)}
+        user={managingUser}
+      />
 
       <AlertDialog open={!!removingUser} onOpenChange={(open) => !open && setRemovingUser(null)}>
         <AlertDialogContent data-testid="dialog-remove-user">

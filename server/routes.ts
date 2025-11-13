@@ -296,6 +296,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get companies for a specific user (admin/owner only)
+  app.get("/api/users/:userId/companies", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.userId;
+      
+      // Get all companies the current user has access to
+      const currentUserCompanyIds = await storage.getUserCompanies(currentUserId);
+      
+      // Check if current user is admin/owner in at least one company
+      let hasAdminAccess = false;
+      for (const companyId of currentUserCompanyIds) {
+        const role = await storage.getUserRole(currentUserId, companyId);
+        if (role === 'owner' || role === 'admin') {
+          hasAdminAccess = true;
+          break;
+        }
+      }
+      
+      if (!hasAdminAccess && currentUserId !== targetUserId) {
+        return res.status(403).json({ error: "Only admins and owners can view other users' companies" });
+      }
+      
+      // Get target user's company IDs
+      const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
+      res.json(targetUserCompanyIds);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch user companies" });
+    }
+  });
+
   // Company routes
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
