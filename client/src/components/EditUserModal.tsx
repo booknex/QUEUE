@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -81,6 +81,21 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       confirmPassword: "",
     },
   });
+
+  // Reset forms when user changes to prevent stale data
+  useEffect(() => {
+    profileForm.reset({
+      username: user.username,
+      email: user.email || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      isSuperAdmin: (user.isSuperAdmin === "true" ? "true" : "false") as "true" | "false",
+    });
+    passwordForm.reset({
+      newPassword: "",
+      confirmPassword: "",
+    });
+  }, [user, profileForm, passwordForm]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
