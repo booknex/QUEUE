@@ -340,10 +340,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUserId = req.user.id;
       const targetUserId = req.params.id;
       
-      // Check if user exists and is super admin
+      // Check if current user is super admin
       const currentUser = await storage.getUser(currentUserId);
       if (!currentUser) {
-        return res.status(403).json({ error: "User not found" });
+        return res.status(404).json({ error: "Current user not found" });
       }
       
       const isSuperAdmin = currentUser.isSuperAdmin === 'true';
