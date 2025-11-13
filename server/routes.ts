@@ -235,6 +235,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // System-wide all users route (not company-specific, super admin only)
+  app.get("/api/all-users", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Check if user exists and is super admin
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(403).json({ error: "User not found" });
+      }
+      
+      const isSuperAdmin = user.isSuperAdmin === 'true';
+      if (!isSuperAdmin) {
+        return res.status(403).json({ error: "Access denied. Only super admins can view all users." });
+      }
+      
+      const users = await storage.getAllUsers();
+      // Remove sensitive fields before sending to client
+      const safeUsers = users.map(({ password, ...safeUser }) => safeUser);
+      res.json(safeUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch all users" });
+    }
+  });
+
   // Company routes
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
