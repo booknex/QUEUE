@@ -302,26 +302,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
+      // Allow users to view their own companies
+      if (currentUserId === targetUserId) {
+        const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
+        return res.json(targetUserCompanyIds);
+      }
+      
       // Get all companies the current user has access to
       const currentUserCompanyIds = await storage.getUserCompanies(currentUserId);
       
-      // Check if current user is admin/owner in at least one company
-      let hasAdminAccess = false;
+      // Verify current user is owner/admin in companies they have access to
+      const adminCompanies: number[] = [];
       for (const companyId of currentUserCompanyIds) {
         const role = await storage.getUserRole(currentUserId, companyId);
         if (role === 'owner' || role === 'admin') {
-          hasAdminAccess = true;
-          break;
+          adminCompanies.push(companyId);
         }
       }
       
-      if (!hasAdminAccess && currentUserId !== targetUserId) {
-        return res.status(403).json({ error: "Only admins and owners can view other users' companies" });
+      // Non-admins get generic 404 regardless of user existence (prevents enumeration)
+      if (adminCompanies.length === 0) {
+        return res.status(404).json({ error: "Resource not found" });
       }
       
-      // Get target user's company IDs
+      // For admins only: check if target user exists
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ error: "Resource not found" });
+      }
+      
+      // Get target user's company IDs, but only return companies where current user is admin/owner
       const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
-      res.json(targetUserCompanyIds);
+      const filteredCompanyIds = targetUserCompanyIds.filter(id => adminCompanies.includes(id));
+      
+      // Return empty array for admins with no overlap (enables legitimate assignment workflows)
+      // This is safe because we've already verified: (1) user exists, (2) requester is admin
+      res.json(filteredCompanyIds);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user companies" });
     }

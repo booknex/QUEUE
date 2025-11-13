@@ -62,18 +62,34 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
 
   // Add user to company mutation
   const addToCompanyMutation = useMutation({
-    mutationFn: async ({ companyId, userId }: { companyId: number; userId: string }) => {
+    mutationFn: async ({ companyId, userEmail }: { companyId: number; userEmail: string }) => {
       return apiRequest("POST", `/api/company-users`, {
         companyId,
-        email: userId,
+        email: userEmail,
         role: "member",
       });
     },
-    onError: () => {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return key === "/api/company-users" || 
+                 key === "/api/companies" ||
+                 (Array.isArray(query.queryKey) && query.queryKey[0] === "/api/users" && query.queryKey[2] === "companies");
+        }
+      });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Failed to add user to company";
+      if (typeof error?.error === 'string') {
+        errorMessage = error.error;
+      } else if (typeof error?.message === 'string') {
+        errorMessage = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add user to company",
+        description: errorMessage,
       });
     },
   });
@@ -83,11 +99,27 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
     mutationFn: async ({ companyId, userId }: { companyId: number; userId: string }) => {
       return apiRequest("DELETE", `/api/company-users/${userId}`, { companyId });
     },
-    onError: () => {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return key === "/api/company-users" || 
+                 key === "/api/companies" ||
+                 (Array.isArray(query.queryKey) && query.queryKey[0] === "/api/users" && query.queryKey[2] === "companies");
+        }
+      });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Failed to remove user from company";
+      if (typeof error?.error === 'string') {
+        errorMessage = error.error;
+      } else if (typeof error?.message === 'string') {
+        errorMessage = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to remove user from company",
+        description: errorMessage,
       });
     },
   });
@@ -102,14 +134,9 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
       setSelectedCompanyIds(newSelectedCompanyIds);
       
       try {
-        await addToCompanyMutation.mutateAsync({ companyId, userId: user.id });
-        await queryClient.invalidateQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            return key === "/api/company-users" || 
-                   (Array.isArray(query.queryKey) && query.queryKey[0] === "/api/users" && query.queryKey[2] === "companies");
-          }
-        });
+        // Use email or username as the identifier
+        const userIdentifier = user.email || user.username;
+        await addToCompanyMutation.mutateAsync({ companyId, userEmail: userIdentifier });
         toast({
           title: "Success",
           description: `${user.username} added to company`,
@@ -125,13 +152,6 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
       
       try {
         await removeFromCompanyMutation.mutateAsync({ companyId, userId: user.id });
-        await queryClient.invalidateQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            return key === "/api/company-users" || 
-                   (Array.isArray(query.queryKey) && query.queryKey[0] === "/api/users" && query.queryKey[2] === "companies");
-          }
-        });
         toast({
           title: "Success",
           description: `${user.username} removed from company`,
