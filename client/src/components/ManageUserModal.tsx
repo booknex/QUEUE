@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Company } from "@shared/schema";
@@ -30,6 +31,7 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<number>>(new Set());
 
   // Fetch all companies the current user has access to
@@ -124,6 +126,75 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
     },
   });
 
+  // Update user profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { username: string; email: string; firstName: string; lastName: string }) => {
+      return apiRequest("PATCH", `/api/users/${user?.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/company-users"] });
+      toast({
+        title: "Success",
+        description: "User profile updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Failed to update user profile";
+      if (typeof error?.error === 'string') {
+        errorMessage = error.error;
+      } else if (typeof error?.message === 'string') {
+        errorMessage = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    },
+  });
+
+  // Update password mutation
+  const updatePasswordMutation = useMutation({
+    mutationFn: async (newPassword: string) => {
+      return apiRequest("POST", `/api/users/${user?.id}/password`, { newPassword });
+    },
+    onSuccess: () => {
+      setNewPassword("");
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      let errorMessage = "Failed to update password";
+      if (typeof error?.error === 'string') {
+        errorMessage = error.error;
+      } else if (typeof error?.message === 'string') {
+        errorMessage = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    },
+  });
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    await updateProfileMutation.mutateAsync({
+      username,
+      email,
+      firstName,
+      lastName,
+    });
+  };
+
+  const handleSavePassword = async () => {
+    if (!user || !newPassword) return;
+    await updatePasswordMutation.mutateAsync(newPassword);
+  };
+
   const handleCompanyToggle = async (companyId: number, checked: boolean) => {
     if (!user) return;
 
@@ -175,102 +246,147 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
           <DialogTitle data-testid="text-manage-user-title">Manage User: {user.username}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-8rem)] pr-4">
-          <div className="space-y-6">
-            {/* User Info Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">User Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    value={username}
-                    disabled
-                    data-testid="input-username"
-                  />
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
+            <TabsTrigger value="password" data-testid="tab-password">Password</TabsTrigger>
+            <TabsTrigger value="companies" data-testid="tab-companies">Companies</TabsTrigger>
+          </TabsList>
+
+          <ScrollArea className="max-h-[calc(90vh-12rem)] mt-4 pr-4">
+            <TabsContent value="profile" className="space-y-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      data-testid="input-username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      data-testid="input-email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      data-testid="input-first-name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      data-testid="input-last-name"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    disabled
-                    data-testid="input-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    disabled
-                    data-testid="input-first-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    disabled
-                    data-testid="input-last-name"
-                  />
-                </div>
+                <Button 
+                  onClick={handleSaveProfile}
+                  disabled={updateProfileMutation.isPending}
+                  data-testid="button-save-profile"
+                >
+                  {updateProfileMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Profile"
+                  )}
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                User profile editing is self-service only. Users must edit their own profile.
-              </p>
-            </div>
+            </TabsContent>
 
-            <Separator />
-
-            {/* Company Assignment Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Company Access</h3>
-              <p className="text-xs text-muted-foreground">
-                Select which companies this user can access. You can only assign users to companies where you are an owner or admin.
-              </p>
-
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : allCompanies.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4">No companies available</p>
-              ) : (
+            <TabsContent value="password" className="space-y-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  {allCompanies.map((company) => (
-                    <div
-                      key={company.id}
-                      className="flex items-center space-x-2 p-2 rounded hover-elevate"
-                      data-testid={`company-checkbox-${company.id}`}
-                    >
-                      <Checkbox
-                        id={`company-${company.id}`}
-                        checked={selectedCompanyIds.has(company.id)}
-                        onCheckedChange={(checked) => handleCompanyToggle(company.id, checked as boolean)}
-                        disabled={addToCompanyMutation.isPending || removeFromCompanyMutation.isPending}
-                        data-testid={`checkbox-company-${company.id}`}
-                      />
-                      <Label
-                        htmlFor={`company-${company.id}`}
-                        className="flex-1 cursor-pointer"
-                        data-testid={`label-company-${company.id}`}
-                      >
-                        {company.name}
-                      </Label>
-                    </div>
-                  ))}
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    data-testid="input-new-password"
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
+                <Button 
+                  onClick={handleSavePassword}
+                  disabled={updatePasswordMutation.isPending || !newPassword}
+                  data-testid="button-save-password"
+                >
+                  {updatePasswordMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Password"
+                  )}
+                </Button>
+              </div>
+            </TabsContent>
 
-        <div className="flex justify-end pt-4">
-          <Button onClick={onClose} data-testid="button-close-manage-user">
+            <TabsContent value="companies" className="space-y-4">
+              <div className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Select which companies this user can access. You can only assign users to companies where you are an owner or admin.
+                </p>
+
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : allCompanies.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">No companies available</p>
+                ) : (
+                  <div className="space-y-2">
+                    {allCompanies.map((company) => (
+                      <div
+                        key={company.id}
+                        className="flex items-center space-x-2 p-2 rounded hover-elevate"
+                        data-testid={`company-checkbox-${company.id}`}
+                      >
+                        <Checkbox
+                          id={`company-${company.id}`}
+                          checked={selectedCompanyIds.has(company.id)}
+                          onCheckedChange={(checked) => handleCompanyToggle(company.id, checked as boolean)}
+                          disabled={addToCompanyMutation.isPending || removeFromCompanyMutation.isPending}
+                          data-testid={`checkbox-company-${company.id}`}
+                        />
+                        <Label
+                          htmlFor={`company-${company.id}`}
+                          className="flex-1 cursor-pointer"
+                          data-testid={`label-company-${company.id}`}
+                        >
+                          {company.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
+
+        <div className="flex justify-end pt-4 border-t">
+          <Button onClick={onClose} variant="outline" data-testid="button-close-manage-user">
             Close
           </Button>
         </div>
