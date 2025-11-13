@@ -83,16 +83,16 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
         <DialogHeader>
           <DialogTitle>Add User to Company</DialogTitle>
           <DialogDescription>
-            Add an existing user to this company by their email address. They must have logged in to the application at least once.
+            Add an existing user to this company by their email address or username. They must have logged in to the application at least once.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email or Username</Label>
             <Input
               id="email"
-              type="email"
-              placeholder="user@example.com"
+              type="text"
+              placeholder="user@example.com or username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={addUserMutation.isPending}

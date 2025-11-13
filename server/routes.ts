@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const schema = z.object({
         companyId: z.number(),
-        email: z.string().email("Invalid email address"),
+        email: z.string().min(1, "Email or username is required"),
         role: z.enum(["owner", "admin", "member"]).default("member"),
       });
       
@@ -104,8 +104,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Find user by email
-      const targetUser = await storage.getUserByEmail(email);
+      // Find user by email or username
+      let targetUser = await storage.getUserByEmail(email);
+      if (!targetUser) {
+        targetUser = await storage.getUserByUsername(email);
+      }
+      
       if (!targetUser) {
         return res.status(404).json({ error: "User not found. They must log in to the application first." });
       }
