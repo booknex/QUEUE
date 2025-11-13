@@ -9,7 +9,6 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: UpsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
-  getAllUsers(): Promise<User[]>;
   getUserCompanies(userId: string): Promise<number[]>;
   addUserToCompany(userId: string, companyId: number, role: string): Promise<void>;
   getUsersByCompany(companyId: number): Promise<UserWithRole[]>;
@@ -110,11 +109,6 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    const allUsers = await db.select().from(users).orderBy(users.username);
-    return allUsers;
   }
 
   async getUserCompanies(userId: string): Promise<number[]> {

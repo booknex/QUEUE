@@ -115,7 +115,12 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/all-users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          Array.isArray(query.queryKey) && 
+          query.queryKey[0] === "/api/company-users" 
+      });
       toast({
         title: "Success",
         description: "User profile updated successfully",
@@ -138,7 +143,12 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/all-users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          Array.isArray(query.queryKey) && 
+          query.queryKey[0] === "/api/company-users" 
+      });
       toast({
         title: "Success",
         description: "Password reset successfully",
@@ -167,7 +177,12 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       return apiRequest(`/api/users/${user.id}`, "DELETE");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/all-users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          Array.isArray(query.queryKey) && 
+          query.queryKey[0] === "/api/company-users" 
+      });
       toast({
         title: "Success",
         description: "User deleted successfully",
