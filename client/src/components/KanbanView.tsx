@@ -28,12 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2, Briefcase, Users as UsersIcon, UserCircle } from "lucide-react";
+import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2, Briefcase, UserCircle } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
 import Contacts from "@/pages/Contacts";
-import UsersView from "@/pages/UsersView";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
@@ -45,7 +44,7 @@ interface KanbanViewProps {
 }
 
 export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
-  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
+  const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -433,15 +432,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
             <UserCircle className="w-4 h-4 mr-2" />
             Contacts
           </Button>
-          <Button
-            variant="ghost"
-            className={`justify-start toggle-elevate ${activeView === "users" ? "toggle-elevated" : ""}`}
-            onClick={() => setActiveView("users")}
-            data-testid="sidebar-button-employees"
-          >
-            <UsersIcon className="w-4 h-4 mr-2" />
-            Employees
-          </Button>
         </div>
 
         {/* Right Content Area */}
@@ -657,12 +647,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       {activeView === "contacts" && (
         <div className="flex-1 overflow-auto">
           <Contacts selectedCompanyId={selectedCompanyId} />
-        </div>
-      )}
-
-      {activeView === "users" && (
-        <div className="flex-1 overflow-auto">
-          <UsersView selectedCompanyId={selectedCompanyId} />
         </div>
       )}
         </div>
