@@ -503,7 +503,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       </Card>
 
       {/* Content Area - Scrollable Columns */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-scroll">
         <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
                 {(provided) => (
