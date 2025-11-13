@@ -34,9 +34,23 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const updateUserProfileSchema = z.object({
+  username: z.string().min(1).optional(),
+  email: z.string().email().optional().nullable(),
+  firstName: z.string().optional().nullable(),
+  lastName: z.string().optional().nullable(),
+  isSuperAdmin: z.enum(["true", "false"]).optional(),
+});
+
+export const updateUserPasswordSchema = z.object({
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+export type UpdateUserPassword = z.infer<typeof updateUserPasswordSchema>;
 
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
