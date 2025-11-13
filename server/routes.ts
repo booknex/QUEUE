@@ -236,16 +236,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset user password (self-only)
+  // Reset user password (any authenticated user can change any password)
   app.post("/api/users/:id/password", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.id;
-      
-      // Users can only reset their own password
-      if (currentUserId !== targetUserId) {
-        return res.status(403).json({ error: "Access denied. You can only reset your own password." });
-      }
       
       // Validate request body
       const validated = updateUserPasswordSchema.parse(req.body);
