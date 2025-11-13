@@ -445,11 +445,11 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
       {activeView === "opportunities" && (
         <>
       {/* Header Card */}
-      <Card>
+      <Card className="flex-shrink-0">
           <CardHeader>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="space-y-3">
@@ -503,7 +503,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       </Card>
 
       {/* Content Area - Scrollable Columns */}
-      <div className="overflow-x-scroll">
+      <div className="flex-1 overflow-x-scroll overflow-y-hidden">
         <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
                 {(provided) => (
@@ -655,11 +655,15 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       )}
 
       {activeView === "contacts" && (
-        <Contacts selectedCompanyId={selectedCompanyId} />
+        <div className="flex-1 overflow-auto">
+          <Contacts selectedCompanyId={selectedCompanyId} />
+        </div>
       )}
 
       {activeView === "users" && (
-        <UsersView selectedCompanyId={selectedCompanyId} />
+        <div className="flex-1 overflow-auto">
+          <UsersView selectedCompanyId={selectedCompanyId} />
+        </div>
       )}
         </div>
       </div>
