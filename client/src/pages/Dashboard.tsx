@@ -22,8 +22,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { QueueItem } from "@/components/QueueItem";
 import { KanbanView } from "@/components/KanbanView";
-import Contacts from "@/pages/Contacts";
-import UsersView from "@/pages/UsersView";
 import { AddEditClientModal } from "@/components/AddEditClientModal";
 import { AddEditFilterModal } from "@/components/AddEditFilterModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
@@ -69,7 +67,6 @@ export default function Dashboard() {
     const saved = localStorage.getItem('selectedCompanyId');
     return saved ? parseInt(saved) : null;
   });
-  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
   const { toast } = useToast();
   const { logout } = useAuth();
 
@@ -590,26 +587,6 @@ export default function Dashboard() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" data-testid="menu-more-actions">
                   <DropdownMenuItem
-                    onClick={() => setActiveView("opportunities")}
-                    data-testid="menu-item-opportunities"
-                  >
-                    Opportunities
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setActiveView("contacts")}
-                    data-testid="menu-item-contacts"
-                  >
-                    Contacts
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setActiveView("users")}
-                    data-testid="menu-item-employees"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    Employees
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
                     onClick={async () => {
                       try {
                         await logout();
@@ -742,19 +719,11 @@ export default function Dashboard() {
         )}
 
         <div className="mb-6">
-          {activeView === "opportunities" && (
-            <KanbanView 
-              selectedPipelineId={selectedPipelineId}
-              onPipelineChange={setSelectedPipelineId}
-              selectedCompanyId={selectedCompanyId}
-            />
-          )}
-          {activeView === "contacts" && (
-            <Contacts selectedCompanyId={selectedCompanyId} />
-          )}
-          {activeView === "users" && (
-            <UsersView selectedCompanyId={selectedCompanyId} />
-          )}
+          <KanbanView 
+            selectedPipelineId={selectedPipelineId}
+            onPipelineChange={setSelectedPipelineId}
+            selectedCompanyId={selectedCompanyId}
+          />
         </div>
       </main>
 

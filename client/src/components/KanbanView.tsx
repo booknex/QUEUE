@@ -28,10 +28,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2 } from "lucide-react";
+import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2, Briefcase, Users as UsersIcon, UserCircle } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
+import Contacts from "@/pages/Contacts";
+import UsersView from "@/pages/UsersView";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
@@ -43,6 +45,7 @@ interface KanbanViewProps {
 }
 
 export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
+  const [activeView, setActiveView] = useState<"opportunities" | "contacts" | "users">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -409,7 +412,42 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
   return (
     <>
-      <div className="space-y-4" data-testid="kanban-view">
+      <div className="flex w-full h-full gap-4" data-testid="kanban-view">
+        {/* Left Sidebar Menu */}
+        <div className="w-64 flex flex-col gap-2">
+          <Button
+            variant="ghost"
+            className={`justify-start toggle-elevate ${activeView === "opportunities" ? "toggle-elevated" : ""}`}
+            onClick={() => setActiveView("opportunities")}
+            data-testid="sidebar-button-opportunities"
+          >
+            <Briefcase className="w-4 h-4 mr-2" />
+            Opportunities
+          </Button>
+          <Button
+            variant="ghost"
+            className={`justify-start toggle-elevate ${activeView === "contacts" ? "toggle-elevated" : ""}`}
+            onClick={() => setActiveView("contacts")}
+            data-testid="sidebar-button-contacts"
+          >
+            <UserCircle className="w-4 h-4 mr-2" />
+            Contacts
+          </Button>
+          <Button
+            variant="ghost"
+            className={`justify-start toggle-elevate ${activeView === "users" ? "toggle-elevated" : ""}`}
+            onClick={() => setActiveView("users")}
+            data-testid="sidebar-button-employees"
+          >
+            <UsersIcon className="w-4 h-4 mr-2" />
+            Employees
+          </Button>
+        </div>
+
+        {/* Right Content Area */}
+        <div className="flex-1 space-y-4">
+      {activeView === "opportunities" && (
+        <>
       {/* Header Card */}
       <Card>
           <CardHeader>
@@ -612,6 +650,17 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                 )}
               </Droppable>
             </DragDropContext>
+        </div>
+        </>
+      )}
+
+      {activeView === "contacts" && (
+        <Contacts selectedCompanyId={selectedCompanyId} />
+      )}
+
+      {activeView === "users" && (
+        <UsersView selectedCompanyId={selectedCompanyId} />
+      )}
         </div>
       </div>
 
