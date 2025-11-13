@@ -32,7 +32,6 @@ import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2 } from "luc
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import MessageInboxModal from "./MessageInboxModal";
-import Contacts from "@/pages/Contacts";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Pipeline, OpportunityWithContact, KanbanColumn, Contact } from "@shared/schema";
@@ -41,11 +40,9 @@ interface KanbanViewProps {
   selectedPipelineId: number | null;
   onPipelineChange: (id: number) => void;
   selectedCompanyId: number | null;
-  activeView: "opportunities" | "contacts" | "users";
-  onViewChange: (view: "opportunities" | "contacts" | "users") => void;
 }
 
-export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId, activeView, onViewChange }: KanbanViewProps) {
+export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -411,33 +408,10 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
   };
 
   return (
-    <div className="flex gap-4" data-testid="kanban-view">
-      {/* Full-height Sidebar */}
-      <div className="w-56 flex-shrink-0 bg-sidebar rounded-lg p-3 border border-sidebar-border" data-testid="kanban-sidebar">
-        <div className="space-y-2">
-          <Button
-            variant={activeView === "opportunities" ? "default" : "ghost"}
-            className="w-full justify-start"
-            onClick={() => onViewChange("opportunities")}
-            data-testid="button-sidebar-opportunities"
-          >
-            Opportunities
-          </Button>
-          <Button
-            variant={activeView === "contacts" ? "default" : "ghost"}
-            className="w-full justify-start"
-            onClick={() => onViewChange("contacts")}
-            data-testid="button-sidebar-contacts"
-          >
-            Contacts
-          </Button>
-        </div>
-      </div>
-
-      {/* Right side: Header + Content */}
-      <div className="flex-1 space-y-4 min-w-0">
-        {/* Header Card */}
-        <Card>
+    <>
+      <div className="space-y-4" data-testid="kanban-view">
+      {/* Header Card */}
+      <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="space-y-3">
@@ -488,12 +462,11 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
               </div>
             </div>
           </CardHeader>
-        </Card>
+      </Card>
 
-        {/* Content Area - Scrollable Columns */}
-        <div className="overflow-x-auto">
-          {activeView === "opportunities" && (
-            <DragDropContext onDragEnd={handleDragEnd}>
+      {/* Content Area - Scrollable Columns */}
+      <div className="overflow-x-auto">
+        <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
                 {(provided) => (
                   <div 
@@ -639,13 +612,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                 )}
               </Droppable>
             </DragDropContext>
-          )}
-
-          {activeView === "contacts" && (
-            <div data-testid="content-contacts">
-              <Contacts selectedCompanyId={selectedCompanyId} />
-            </div>
-          )}
         </div>
       </div>
 
@@ -766,6 +732,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
