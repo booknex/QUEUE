@@ -23,7 +23,6 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  isSuperAdmin: text("is_super_admin").notNull().default("false"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -39,7 +38,6 @@ export const updateUserProfileSchema = z.object({
   email: z.string().email().optional().nullable(),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
-  isSuperAdmin: z.enum(["true", "false"]).optional(),
 });
 
 export const updateUserPasswordSchema = z.object({
