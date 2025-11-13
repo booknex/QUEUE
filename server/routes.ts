@@ -334,6 +334,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user (super admin only)
+  app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.id;
+      
+      // Check if user exists and is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      if (!currentUser) {
+        return res.status(403).json({ error: "User not found" });
+      }
+      
+      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
+      if (!isSuperAdmin) {
+        return res.status(403).json({ error: "Access denied. Only super admins can delete users." });
+      }
+      
+      // Prevent user from deleting themselves
+      if (currentUserId === targetUserId) {
+        return res.status(400).json({ error: "You cannot delete your own account" });
+      }
+      
+      // Delete user
+      const deleted = await storage.deleteUser(targetUserId);
+      if (!deleted) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
   // Company routes
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
