@@ -27,8 +27,9 @@ export function useAuth() {
       const response = await apiRequest("POST", "/api/login", credentials);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    onSuccess: async (data) => {
+      queryClient.setQueryData(["/api/user"], data);
+      await queryClient.ensureQueryData({ queryKey: ["/api/user"] });
     },
   });
 
@@ -37,8 +38,9 @@ export function useAuth() {
       const response = await apiRequest("POST", "/api/register", credentials);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    onSuccess: async (data) => {
+      queryClient.setQueryData(["/api/user"], data);
+      await queryClient.ensureQueryData({ queryKey: ["/api/user"] });
     },
   });
 
