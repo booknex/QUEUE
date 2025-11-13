@@ -445,7 +445,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col gap-4 overflow-hidden">
       {activeView === "opportunities" && (
         <>
       {/* Header Card */}
