@@ -25,22 +25,18 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       const response = await apiRequest("POST", "/api/login", credentials);
+      queryClient.setQueryData(["/api/user"], response);
+      await queryClient.refetchQueries({ queryKey: ["/api/user"] });
       return response;
-    },
-    onSuccess: async (data) => {
-      queryClient.setQueryData(["/api/user"], data);
-      await queryClient.ensureQueryData({ queryKey: ["/api/user"] });
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterCredentials) => {
       const response = await apiRequest("POST", "/api/register", credentials);
+      queryClient.setQueryData(["/api/user"], response);
+      await queryClient.refetchQueries({ queryKey: ["/api/user"] });
       return response;
-    },
-    onSuccess: async (data) => {
-      queryClient.setQueryData(["/api/user"], data);
-      await queryClient.ensureQueryData({ queryKey: ["/api/user"] });
     },
   });
 
