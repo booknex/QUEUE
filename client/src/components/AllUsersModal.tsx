@@ -61,7 +61,12 @@ export function AllUsersModal({ open, onOpenChange }: AllUsersModalProps) {
           ) : (
             <div className="space-y-3">
               {users?.map((user) => (
-                <Card key={user.id} className="hover-elevate" data-testid={`user-card-${user.id}`}>
+                <Card 
+                  key={user.id} 
+                  className="hover-elevate cursor-pointer" 
+                  onClick={() => setEditingUser(user)}
+                  data-testid={`user-card-${user.id}`}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
@@ -100,7 +105,10 @@ export function AllUsersModal({ open, onOpenChange }: AllUsersModalProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setEditingUser(user)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingUser(user);
+                        }}
                         data-testid={`button-edit-user-${user.id}`}
                       >
                         <Pencil className="w-4 h-4" />
