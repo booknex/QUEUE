@@ -27,6 +27,7 @@ import { AddEditFilterModal } from "@/components/AddEditFilterModal";
 import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
 import { CompanyManager } from "@/components/CompanyManager";
+import { UserManager } from "@/components/UserManager";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { TouchNoteModal } from "@/components/TouchNoteModal";
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [closingFile, setClosingFile] = useState<ClientFile | null>(null);
   const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
+  const [userManagerOpen, setUserManagerOpen] = useState(false);
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -587,8 +589,8 @@ export default function Dashboard() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" data-testid="menu-more-actions">
                   <DropdownMenuItem
-                    onClick={() => setCompanyManagerOpen(true)}
-                    data-testid="menu-item-company-management"
+                    onClick={() => setUserManagerOpen(true)}
+                    data-testid="menu-item-users"
                   >
                     <Users className="w-4 h-4 mr-2" />
                     Users
@@ -775,6 +777,12 @@ export default function Dashboard() {
       <CompanyManager
         open={companyManagerOpen}
         onClose={() => setCompanyManagerOpen(false)}
+      />
+
+      <UserManager
+        open={userManagerOpen}
+        onClose={() => setUserManagerOpen(false)}
+        companyId={selectedCompanyId}
       />
 
       <AddEditFilterModal
