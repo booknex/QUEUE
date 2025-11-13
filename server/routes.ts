@@ -50,20 +50,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (sets up /api/register, /api/login, /api/logout, /api/user)
   setupAuth(app);
 
-  // Company user management routes
+  // Company user management routes (any authenticated user can manage any company)
   app.get("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       
       if (!companyId) {
         return res.status(400).json({ error: "companyId is required" });
-      }
-      
-      // Verify user has access to this company
-      const userCompanies = await storage.getUserCompanies(userId);
-      if (!userCompanies.includes(companyId)) {
-        return res.status(403).json({ error: "Access denied to this company" });
       }
       
       const users = await storage.getUsersByCompany(companyId);
@@ -114,7 +107,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
       if (!targetUserId) {
@@ -127,17 +119,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       const validated = schema.parse(req.body);
       const { role, companyId } = validated;
-      
-      // Verify current user is an owner or admin
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can update user roles" });
-      }
-      
-      // Cannot change your own role
-      if (currentUserId === targetUserId) {
-        return res.status(400).json({ error: "Cannot change your own role" });
-      }
       
       // Check if demoting the last owner
       if (role !== 'owner') {
@@ -277,11 +258,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Company routes
+  // Company routes (any authenticated user can view all companies)
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const companies = await storage.getAllCompanies(userId);
+      const companies = await storage.getAllCompanies();
       res.json(companies.map(serializeCompany));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch companies" });

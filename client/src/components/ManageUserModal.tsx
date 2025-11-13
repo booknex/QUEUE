@@ -353,7 +353,7 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
             <TabsContent value="companies" className="space-y-4">
               <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  Select which companies this user can access. You can only assign users to companies where you are an owner or admin.
+                  Select which companies this user can access.
                 </p>
 
                 {isLoading ? (
