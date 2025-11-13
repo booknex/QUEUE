@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
   const [lastName, setLastName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<number>>(new Set());
+  const prevUserCompanyIdsRef = useRef<string>("");
 
   // Fetch all companies the current user has access to
   const { data: allCompanies = [], isLoading: loadingCompanies } = useQuery<Company[]>({
@@ -41,12 +42,12 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
   });
 
   // Fetch companies the target user belongs to
-  const { data: userCompanyIds = [], isLoading: loadingUserCompanies } = useQuery<number[]>({
+  const { data: userCompanyIds, isLoading: loadingUserCompanies } = useQuery<number[]>({
     queryKey: ["/api/users", user?.id, "companies"],
     enabled: open && !!user,
   });
 
-  // Initialize form when user or userCompanyIds change
+  // Initialize form when user changes
   useEffect(() => {
     if (user) {
       setUsername(user.username);
@@ -56,9 +57,16 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
     }
   }, [user]);
 
+  // Initialize selected companies when userCompanyIds is loaded
   useEffect(() => {
-    if (userCompanyIds) {
-      setSelectedCompanyIds(new Set(userCompanyIds));
+    const currentUserCompanyIds = JSON.stringify(userCompanyIds || []);
+    if (currentUserCompanyIds !== prevUserCompanyIdsRef.current) {
+      prevUserCompanyIdsRef.current = currentUserCompanyIds;
+      if (userCompanyIds && Array.isArray(userCompanyIds)) {
+        setSelectedCompanyIds(new Set(userCompanyIds));
+      } else {
+        setSelectedCompanyIds(new Set());
+      }
     }
   }, [userCompanyIds]);
 
@@ -352,11 +360,11 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin" />
                   </div>
-                ) : allCompanies.length === 0 ? (
+                ) : (allCompanies || []).length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4">No companies available</p>
                 ) : (
                   <div className="space-y-2">
-                    {allCompanies.map((company) => (
+                    {(allCompanies || []).map((company) => (
                       <div
                         key={company.id}
                         className="flex items-center space-x-2 p-2 rounded hover-elevate"

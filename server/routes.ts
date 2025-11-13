@@ -75,8 +75,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
-      
       const schema = z.object({
         companyId: z.number(),
         email: z.string().min(1, "Email or username is required"),
@@ -85,12 +83,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validated = schema.parse(req.body);
       const { companyId, email, role } = validated;
-      
-      // Verify current user is an owner or admin
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can add users to the company" });
-      }
       
       // Find user by email or username
       let targetUser = await storage.getUserByEmail(email);
@@ -171,7 +163,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/company-users/:userId", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
       
@@ -181,17 +172,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!companyId) {
         return res.status(400).json({ error: "companyId is required" });
-      }
-      
-      // Verify current user is an owner or admin
-      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-        return res.status(403).json({ error: "Only owners and admins can remove users from company" });
-      }
-      
-      // Cannot remove yourself
-      if (currentUserId === targetUserId) {
-        return res.status(400).json({ error: "Cannot remove yourself from the company" });
       }
       
       // Check if removing the last owner
@@ -278,48 +258,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get companies for a specific user (admin/owner only)
+  // Get companies for a specific user (any authenticated user can view)
   app.get("/api/users/:userId/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.userId;
       
-      // Allow users to view their own companies
-      if (currentUserId === targetUserId) {
-        const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
-        return res.json(targetUserCompanyIds);
-      }
-      
-      // Get all companies the current user has access to
-      const currentUserCompanyIds = await storage.getUserCompanies(currentUserId);
-      
-      // Verify current user is owner/admin in companies they have access to
-      const adminCompanies: number[] = [];
-      for (const companyId of currentUserCompanyIds) {
-        const role = await storage.getUserRole(currentUserId, companyId);
-        if (role === 'owner' || role === 'admin') {
-          adminCompanies.push(companyId);
-        }
-      }
-      
-      // Non-admins get generic 404 regardless of user existence (prevents enumeration)
-      if (adminCompanies.length === 0) {
-        return res.status(404).json({ error: "Resource not found" });
-      }
-      
-      // For admins only: check if target user exists
+      // Check if target user exists
       const targetUser = await storage.getUser(targetUserId);
       if (!targetUser) {
         return res.status(404).json({ error: "Resource not found" });
       }
       
-      // Get target user's company IDs, but only return companies where current user is admin/owner
+      // Get target user's company IDs
       const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
-      const filteredCompanyIds = targetUserCompanyIds.filter(id => adminCompanies.includes(id));
-      
-      // Return empty array for admins with no overlap (enables legitimate assignment workflows)
-      // This is safe because we've already verified: (1) user exists, (2) requester is admin
-      res.json(filteredCompanyIds);
+      res.json(targetUserCompanyIds);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch user companies" });
     }
