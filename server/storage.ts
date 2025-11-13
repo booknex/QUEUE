@@ -18,6 +18,7 @@ export interface IStorage {
   getUserRole(userId: string, companyId: number): Promise<string | undefined>;
   updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User | undefined>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<User | undefined>;
+  deleteUser(userId: string): Promise<boolean>;
 
   getAllCompanies(userId?: string): Promise<Company[]>;
   getCompany(id: number): Promise<Company | undefined>;
@@ -205,6 +206,14 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  async deleteUser(userId: string): Promise<boolean> {
+    const result = await db
+      .delete(users)
+      .where(eq(users.id, userId))
+      .returning();
+    return result.length > 0;
   }
 
   async updateUserRole(userId: string, companyId: number, role: string): Promise<void> {
