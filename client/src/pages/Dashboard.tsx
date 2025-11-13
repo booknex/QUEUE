@@ -590,8 +590,8 @@ export default function Dashboard() {
                     onClick={() => setCompanyManagerOpen(true)}
                     data-testid="menu-item-company-management"
                   >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Company Management
+                    <Users className="w-4 h-4 mr-2" />
+                    Users
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
