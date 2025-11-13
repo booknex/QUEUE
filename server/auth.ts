@@ -136,13 +136,6 @@ export function setupAuth(app: Express) {
         profileImageUrl: null,
       });
 
-      // Create default company for new user
-      await storage.ensureUserHasDefaultCompany(
-        user.id,
-        firstName || username,
-        lastName || ""
-      );
-
       // Auto-login the user
       req.login(user, (err) => {
         if (err) return next(err);
