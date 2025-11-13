@@ -261,16 +261,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete user (self-only)
+  // Delete user (any authenticated user can delete any account)
   app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.id;
-      
-      // Users can only delete their own account
-      if (currentUserId !== targetUserId) {
-        return res.status(403).json({ error: "Access denied. You can only delete your own account." });
-      }
       
       // Delete user
       const deleted = await storage.deleteUser(targetUserId);
