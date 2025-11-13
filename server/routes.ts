@@ -211,16 +211,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user profile (self-only)
+  // Update user profile (any authenticated user can edit any user)
   app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const currentUserId = req.user.id;
       const targetUserId = req.params.id;
-      
-      // Users can only edit their own profile
-      if (currentUserId !== targetUserId) {
-        return res.status(403).json({ error: "Access denied. You can only edit your own profile." });
-      }
       
       // Validate request body
       const validated = updateUserProfileSchema.parse(req.body);
