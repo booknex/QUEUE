@@ -414,7 +414,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
     <>
       <div className="flex w-full h-full gap-4" data-testid="kanban-view">
         {/* Left Sidebar Menu */}
-        <div className="w-64 flex flex-col gap-2 bg-primary/10 p-4 rounded-lg">
+        <div className="w-64 flex-shrink-0 flex flex-col gap-2 bg-primary/10 p-4 rounded-lg">
           <Button
             variant="ghost"
             className={`justify-start toggle-elevate ${activeView === "opportunities" ? "toggle-elevated" : ""}`}
