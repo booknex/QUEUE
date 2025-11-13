@@ -1,12 +1,12 @@
 import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema, updateUserProfileSchema, updateUserPasswordSchema } from "@shared/schema";
 import { z } from "zod";
 import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
 import twilio from "twilio";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 
 // Middleware to check if user is authenticated
 const isAuthenticated: RequestHandler = (req, res, next) => {
@@ -257,6 +257,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(safeUsers);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch all users" });
+    }
+  });
+
+  // Update user profile (super admin only)
+  app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.id;
+      
+      // Check if user exists and is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      if (!currentUser) {
+        return res.status(403).json({ error: "User not found" });
+      }
+      
+      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
+      if (!isSuperAdmin) {
+        return res.status(403).json({ error: "Access denied. Only super admins can edit users." });
+      }
+      
+      // Validate request body
+      const validated = updateUserProfileSchema.parse(req.body);
+      
+      // Update user profile
+      const updated = await storage.updateUserProfile(targetUserId, validated);
+      if (!updated) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...safeUser } = updated;
+      res.json(safeUser);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('already exists')) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  // Reset user password (super admin only)
+  app.post("/api/users/:id/password", isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUserId = req.user.id;
+      const targetUserId = req.params.id;
+      
+      // Check if user exists and is super admin
+      const currentUser = await storage.getUser(currentUserId);
+      if (!currentUser) {
+        return res.status(403).json({ error: "User not found" });
+      }
+      
+      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
+      if (!isSuperAdmin) {
+        return res.status(403).json({ error: "Access denied. Only super admins can reset passwords." });
+      }
+      
+      // Validate request body
+      const validated = updateUserPasswordSchema.parse(req.body);
+      
+      // Hash the new password
+      const hashedPassword = await hashPassword(validated.newPassword);
+      
+      // Update user password
+      const updated = await storage.updateUserPassword(targetUserId, hashedPassword);
+      if (!updated) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...safeUser } = updated;
+      res.json(safeUser);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to reset password" });
     }
   });
 
