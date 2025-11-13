@@ -207,7 +207,6 @@ export function setupAuth(app: Express) {
       profileImageUrl: user.profileImageUrl,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      isSuperAdmin: user.isSuperAdmin === 'true',
     });
   });
 }

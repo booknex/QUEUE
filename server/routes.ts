@@ -60,16 +60,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Check if user is super admin
-      const user = await storage.getUser(userId);
-      const isSuperAdmin = user?.isSuperAdmin === 'true';
-      
-      // Verify user has access to this company (super admins can access any company)
-      if (!isSuperAdmin) {
-        const userCompanies = await storage.getUserCompanies(userId);
-        if (!userCompanies.includes(companyId)) {
-          return res.status(403).json({ error: "Access denied to this company" });
-        }
+      // Verify user has access to this company
+      const userCompanies = await storage.getUserCompanies(userId);
+      if (!userCompanies.includes(companyId)) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
       
       const users = await storage.getUsersByCompany(companyId);
@@ -92,16 +86,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { companyId, email, role } = validated;
       
-      // Check if user is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
-      
-      // Verify current user is an owner, admin, or super admin
-      if (!isSuperAdmin) {
-        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-          return res.status(403).json({ error: "Only owners and admins can add users to the company" });
-        }
+      // Verify current user is an owner or admin
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can add users to the company" });
       }
       
       // Find user by email or username
@@ -148,16 +136,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { role, companyId } = validated;
       
-      // Check if user is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
-      
-      // Verify current user is an owner, admin, or super admin
-      if (!isSuperAdmin) {
-        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-          return res.status(403).json({ error: "Only owners and admins can update user roles" });
-        }
+      // Verify current user is an owner or admin
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can update user roles" });
       }
       
       // Cannot change your own role
@@ -201,16 +183,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Check if user is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      const isSuperAdmin = currentUser?.isSuperAdmin === 'true';
-      
-      // Verify current user is an owner, admin, or super admin
-      if (!isSuperAdmin) {
-        const currentUserRole = await storage.getUserRole(currentUserId, companyId);
-        if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
-          return res.status(403).json({ error: "Only owners and admins can remove users from company" });
-        }
+      // Verify current user is an owner or admin
+      const currentUserRole = await storage.getUserRole(currentUserId, companyId);
+      if (currentUserRole !== 'owner' && currentUserRole !== 'admin') {
+        return res.status(403).json({ error: "Only owners and admins can remove users from company" });
       }
       
       // Cannot remove yourself
@@ -235,46 +211,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // System-wide all users route (not company-specific, super admin only)
-  app.get("/api/all-users", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.id;
-      
-      // Check if user exists and is super admin
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(403).json({ error: "User not found" });
-      }
-      
-      const isSuperAdmin = user.isSuperAdmin === 'true';
-      if (!isSuperAdmin) {
-        return res.status(403).json({ error: "Access denied. Only super admins can view all users." });
-      }
-      
-      const users = await storage.getAllUsers();
-      // Remove sensitive fields before sending to client
-      const safeUsers = users.map(({ password, ...safeUser }) => safeUser);
-      res.json(safeUsers);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch all users" });
-    }
-  });
-
-  // Update user profile (super admin only)
+  // Update user profile (self-only)
   app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const targetUserId = req.params.id;
       
-      // Check if user exists and is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      if (!currentUser) {
-        return res.status(403).json({ error: "User not found" });
-      }
-      
-      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
-      if (!isSuperAdmin) {
-        return res.status(403).json({ error: "Access denied. Only super admins can edit users." });
+      // Users can only edit their own profile
+      if (currentUserId !== targetUserId) {
+        return res.status(403).json({ error: "Access denied. You can only edit your own profile." });
       }
       
       // Validate request body
@@ -297,21 +242,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset user password (super admin only)
+  // Reset user password (self-only)
   app.post("/api/users/:id/password", isAuthenticated, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const targetUserId = req.params.id;
       
-      // Check if user exists and is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      if (!currentUser) {
-        return res.status(403).json({ error: "User not found" });
-      }
-      
-      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
-      if (!isSuperAdmin) {
-        return res.status(403).json({ error: "Access denied. Only super admins can reset passwords." });
+      // Users can only reset their own password
+      if (currentUserId !== targetUserId) {
+        return res.status(403).json({ error: "Access denied. You can only reset your own password." });
       }
       
       // Validate request body
@@ -334,26 +273,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete user (super admin only)
+  // Delete user (self-only)
   app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
       const currentUserId = req.user.id;
       const targetUserId = req.params.id;
       
-      // Check if current user is super admin
-      const currentUser = await storage.getUser(currentUserId);
-      if (!currentUser) {
-        return res.status(404).json({ error: "Current user not found" });
-      }
-      
-      const isSuperAdmin = currentUser.isSuperAdmin === 'true';
-      if (!isSuperAdmin) {
-        return res.status(403).json({ error: "Access denied. Only super admins can delete users." });
-      }
-      
-      // Prevent user from deleting themselves
-      if (currentUserId === targetUserId) {
-        return res.status(400).json({ error: "You cannot delete your own account" });
+      // Users can only delete their own account
+      if (currentUserId !== targetUserId) {
+        return res.status(403).json({ error: "Access denied. You can only delete your own account." });
       }
       
       // Delete user

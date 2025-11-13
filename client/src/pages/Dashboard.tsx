@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut, UsersRound } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,7 +31,6 @@ import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { TouchNoteModal } from "@/components/TouchNoteModal";
 import { PhoneWidget } from "@/components/PhoneWidget";
-import { AllUsersModal } from "@/components/AllUsersModal";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -60,7 +59,6 @@ export default function Dashboard() {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [editingFilter, setEditingFilter] = useState<StatusFilter | null>(null);
   const [deleteFilterId, setDeleteFilterId] = useState<number | null>(null);
-  const [allUsersModalOpen, setAllUsersModalOpen] = useState(false);
   const [selectedPipelineId, setSelectedPipelineId] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedPipelineId');
     return saved ? parseInt(saved) : null;
@@ -588,18 +586,14 @@ export default function Dashboard() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" data-testid="menu-more-actions">
-                  {user?.isSuperAdmin && (
-                    <>
-                      <DropdownMenuItem
-                        onClick={() => setAllUsersModalOpen(true)}
-                        data-testid="menu-item-all-users"
-                      >
-                        <UsersRound className="w-4 h-4 mr-2" />
-                        All Users
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
+                  <DropdownMenuItem
+                    onClick={() => setCompanyManagerOpen(true)}
+                    data-testid="menu-item-company-management"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Company Management
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={async () => {
                       try {
@@ -789,11 +783,6 @@ export default function Dashboard() {
         onSubmit={handleFilterSubmit}
         editingFilter={editingFilter}
         isPending={createFilterMutation.isPending || updateFilterMutation.isPending}
-      />
-
-      <AllUsersModal
-        open={allUsersModalOpen}
-        onOpenChange={setAllUsersModalOpen}
       />
 
       <AlertDialog open={deleteFilterId !== null} onOpenChange={(open) => !open && setDeleteFilterId(null)}>

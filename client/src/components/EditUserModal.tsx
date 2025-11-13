@@ -54,7 +54,6 @@ const profileSchema = z.object({
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   firstName: z.string().optional().or(z.literal("")),
   lastName: z.string().optional().or(z.literal("")),
-  isSuperAdmin: z.enum(["true", "false"]),
 });
 
 const passwordSchema = z.object({
@@ -81,7 +80,6 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       email: user.email || "",
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      isSuperAdmin: (user.isSuperAdmin === "true" ? "true" : "false") as "true" | "false",
     },
   });
 
@@ -100,7 +98,6 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
       email: user.email || "",
       firstName: user.firstName || "",
       lastName: user.lastName || "",
-      isSuperAdmin: (user.isSuperAdmin === "true" ? "true" : "false") as "true" | "false",
     });
     passwordForm.reset({
       newPassword: "",
@@ -115,7 +112,6 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
         email: data.email || null,
         firstName: data.firstName || null,
         lastName: data.lastName || null,
-        isSuperAdmin: data.isSuperAdmin,
       });
     },
     onSuccess: () => {
@@ -268,28 +264,6 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={profileForm.control}
-                  name="isSuperAdmin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Super Admin</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-super-admin">
-                            <SelectValue placeholder="Select super admin status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="false" data-testid="option-super-admin-false">No</SelectItem>
-                          <SelectItem value="true" data-testid="option-super-admin-true">Yes</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <div className="flex justify-end gap-2">
                   <Button

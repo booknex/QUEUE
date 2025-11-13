@@ -138,12 +138,10 @@ export class DatabaseStorage implements IStorage {
       .select({
         id: users.id,
         username: users.username,
-        password: users.password,
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,
         profileImageUrl: users.profileImageUrl,
-        isSuperAdmin: users.isSuperAdmin,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         role: userCompanies.role,
@@ -237,14 +235,6 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCompanies(userId?: string): Promise<Company[]> {
     if (userId) {
-      // Check if user is a super admin
-      const [user] = await db.select({ isSuperAdmin: users.isSuperAdmin }).from(users).where(eq(users.id, userId));
-      
-      // Super admins can see all companies
-      if (user && user.isSuperAdmin === 'true') {
-        return await db.select().from(companies).orderBy(asc(companies.name));
-      }
-      
       // Filter companies by user access
       const results = await db
         .select({
