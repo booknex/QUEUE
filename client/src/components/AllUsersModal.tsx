@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { User, Shield, ShieldCheck } from "lucide-react";
+import { User, Shield, ShieldCheck, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EditUserModal } from "@/components/EditUserModal";
 import type { User as UserType } from "@shared/schema";
 
 interface AllUsersModalProps {
@@ -17,6 +20,8 @@ interface AllUsersModalProps {
 }
 
 export function AllUsersModal({ open, onOpenChange }: AllUsersModalProps) {
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  
   const { data: users, isLoading, error } = useQuery<UserType[]>({
     queryKey: ["/api/all-users"],
     enabled: open,
@@ -92,6 +97,14 @@ export function AllUsersModal({ open, onOpenChange }: AllUsersModalProps) {
                           </p>
                         </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingUser(user)}
+                        data-testid={`button-edit-user-${user.id}`}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -100,6 +113,14 @@ export function AllUsersModal({ open, onOpenChange }: AllUsersModalProps) {
           )}
         </div>
       </DialogContent>
+      
+      {editingUser && (
+        <EditUserModal
+          open={!!editingUser}
+          onOpenChange={(open) => !open && setEditingUser(null)}
+          user={editingUser}
+        />
+      )}
     </Dialog>
   );
 }
