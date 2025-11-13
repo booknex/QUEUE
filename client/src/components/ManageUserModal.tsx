@@ -107,7 +107,7 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
   // Remove user from company mutation
   const removeFromCompanyMutation = useMutation({
     mutationFn: async ({ companyId, userId }: { companyId: number; userId: string }) => {
-      return apiRequest("DELETE", `/api/company-users/${userId}`, { companyId });
+      return apiRequest("DELETE", `/api/company-users/${userId}?companyId=${companyId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ 
