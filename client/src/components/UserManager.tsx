@@ -22,11 +22,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Search, User } from "lucide-react";
+import { Plus, Edit, Trash2, Search, User as UserIcon } from "lucide-react";
 import { AddUserModal } from "./AddUserModal";
 import { ManageUserModal } from "./ManageUserModal";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { UserWithRole } from "@shared/schema";
+import type { UserWithRole, User as UserType } from "@shared/schema";
+
+type UserWithoutPassword = Omit<UserType, 'password'>;
 
 interface UserManagerProps {
   open: boolean;
@@ -37,51 +39,48 @@ interface UserManagerProps {
 export function UserManager({ open, onClose, companyId }: UserManagerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
-  const [managingUser, setManagingUser] = useState<UserWithRole | null>(null);
-  const [removingUser, setRemovingUser] = useState<UserWithRole | null>(null);
+  const [managingUser, setManagingUser] = useState<UserWithoutPassword | null>(null);
+  const [removingUser, setRemovingUser] = useState<UserWithoutPassword | null>(null);
   const { toast } = useToast();
 
-  const { data: users = [], isLoading } = useQuery<UserWithRole[]>({
-    queryKey: ["/api/company-users", companyId?.toString()],
+  const { data: users = [], isLoading } = useQuery<UserWithoutPassword[]>({
+    queryKey: ["/api/users"],
     queryFn: async () => {
-      if (!companyId) return [];
-      const response = await fetch(`/api/company-users?companyId=${companyId}`);
+      const response = await fetch(`/api/users`);
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },
-    enabled: open && companyId !== null,
+    enabled: open,
   });
 
   const { data: currentUser } = useQuery<{ id: string }>({
     queryKey: ["/api/user"],
   });
 
-  const currentUserRole = users.find(u => u.id === currentUser?.id)?.role;
   const canManageUsers = true; // Unrestricted access - any user can manage all users
 
-  const removeUserMutation = useMutation({
+  const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      if (!companyId) throw new Error("Company ID is required");
-      return apiRequest("DELETE", `/api/company-users/${userId}?companyId=${companyId}`);
+      return apiRequest("DELETE", `/api/users/${userId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/company-users", companyId?.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       setRemovingUser(null);
       toast({
         title: "Success",
-        description: "User removed from company successfully",
+        description: "User deleted successfully",
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to remove user from company",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     },
   });
 
-  const filteredUsers = users.filter((user: UserWithRole) => {
+  const filteredUsers = users.filter((user: UserWithoutPassword) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       user.username.toLowerCase().includes(searchLower) ||
@@ -91,20 +90,9 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
     );
   });
 
-  const getRoleBadgeVariant = (role: string): "default" | "secondary" | "outline" => {
-    switch (role) {
-      case "owner":
-        return "default";
-      case "admin":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
   const handleRemoveConfirm = () => {
     if (removingUser) {
-      removeUserMutation.mutate(removingUser.id);
+      deleteUserMutation.mutate(removingUser.id);
     }
   };
 
@@ -150,7 +138,7 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
                 {searchTerm ? "No users found matching your search." : "No users in this company yet."}
               </div>
             ) : (
-              filteredUsers.map((user: UserWithRole) => {
+              filteredUsers.map((user: UserWithoutPassword) => {
                 const isCurrentUser = currentUser?.id === user.id;
                 return (
                   <Card 
@@ -169,7 +157,7 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (
-                            <User className="w-5 h-5 text-primary" />
+                            <UserIcon className="w-5 h-5 text-primary" />
                           )}
                         </div>
                         <div className="flex-1">
@@ -180,9 +168,6 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
                                 <span className="text-xs text-muted-foreground ml-2">(You)</span>
                               )}
                             </p>
-                            <Badge variant={getRoleBadgeVariant(user.role)} data-testid={`badge-role-${user.id}`}>
-                              {user.role}
-                            </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {user.email && <span data-testid={`text-email-${user.id}`}>{user.email}</span>}
@@ -233,9 +218,9 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
       <AlertDialog open={!!removingUser} onOpenChange={(open) => !open && setRemovingUser(null)}>
         <AlertDialogContent data-testid="dialog-remove-user">
           <AlertDialogHeader>
-            <AlertDialogTitle data-testid="text-remove-user-title">Remove User</AlertDialogTitle>
+            <AlertDialogTitle data-testid="text-remove-user-title">Delete User</AlertDialogTitle>
             <AlertDialogDescription data-testid="text-remove-user-description">
-              Are you sure you want to remove <strong>{removingUser?.username}</strong> from this company?
+              Are you sure you want to permanently delete <strong>{removingUser?.username}</strong>?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -243,10 +228,10 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
             <AlertDialogCancel data-testid="button-cancel-remove">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemoveConfirm}
-              disabled={removeUserMutation.isPending}
+              disabled={deleteUserMutation.isPending}
               data-testid="button-confirm-remove"
             >
-              {removeUserMutation.isPending ? "Removing..." : "Remove"}
+              {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -50,6 +50,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (sets up /api/register, /api/login, /api/logout, /api/user)
   setupAuth(app);
 
+  // Get all users in the system (unrestricted access)
+  app.get("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      // Remove password from response
+      const sanitizedUsers = allUsers.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      res.json(sanitizedUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // Company user management routes (any authenticated user can manage any company)
   app.get("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
