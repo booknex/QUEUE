@@ -57,12 +57,12 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
   });
 
   const currentUserRole = users.find(u => u.id === currentUser?.id)?.role;
-  const canManageUsers = currentUserRole === 'owner' || currentUserRole === 'admin';
+  const canManageUsers = true; // Unrestricted access - any user can manage all users
 
   const removeUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       if (!companyId) throw new Error("Company ID is required");
-      return apiRequest("DELETE", `/api/company-users/${userId}`, { companyId });
+      return apiRequest("DELETE", `/api/company-users/${userId}?companyId=${companyId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/company-users", companyId?.toString()] });
