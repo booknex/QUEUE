@@ -238,7 +238,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
     }, 1000);
   };
 
-  const handleLiveCall = async (numberToCall?: string) => {
+  const handleLiveCall = async (numberToCall?: string, skipInboxOpen?: boolean) => {
     if (!device) {
       setCallStatus("Device not ready");
       return;
@@ -265,10 +265,13 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
         setPhoneNumber(numberToCall);
       }
 
-      // Find and open the contact's conversation history (only if not already open)
-      const matchingContact = contacts.find(c => c.phone === targetNumber);
-      if (matchingContact && (!inboxContact || inboxContact.id !== matchingContact.id)) {
-        setInboxContact(matchingContact);
+      // Only open inbox if not called from conversation history
+      if (!skipInboxOpen) {
+        // Find and open the contact's conversation history (only if not already open)
+        const matchingContact = contacts.find(c => c.phone === targetNumber);
+        if (matchingContact && (!inboxContact || inboxContact.id !== matchingContact.id)) {
+          setInboxContact(matchingContact);
+        }
       }
     } catch (error: any) {
       console.error("Call failed:", error);
@@ -520,9 +523,9 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
           if (!open) setInboxContact(null);
         }}
         onCallContact={(phoneNumber) => {
-          // Call directly with the number - no need to set state first
-          // This prevents unnecessary re-renders and flickering
-          handleLiveCall(phoneNumber);
+          // Call directly with the number, skip opening inbox since it's already open
+          // This prevents duplicate modals from appearing
+          handleLiveCall(phoneNumber, true);
         }}
         activeCallNumber={activeCall ? phoneNumber : null}
         callDuration={callDuration}
