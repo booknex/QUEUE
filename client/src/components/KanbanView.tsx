@@ -598,6 +598,11 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                             {opportunity.contactName || opportunity.title}
                                           </span>
                                         </CardTitle>
+                                        {opportunity.assignedUserName && (
+                                          <p className="text-xs text-muted-foreground mt-1" data-testid={`assigned-user-${opportunity.id}`}>
+                                            Assigned to: {opportunity.assignedUserName}
+                                          </p>
+                                        )}
                                       </CardHeader>
                                       {opportunity.description && (
                                         <CardContent className="pt-0 pb-3 px-3">
