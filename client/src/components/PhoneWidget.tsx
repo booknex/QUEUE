@@ -78,12 +78,9 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
   // Handle pending call requests from other components
   useEffect(() => {
     if (pendingCallNumber && device) {
-      setPhoneNumber(pendingCallNumber);
       setOpen(true);
-      // Wait a moment for UI to update, then initiate call
-      setTimeout(() => {
-        handleLiveCall();
-      }, 100);
+      // Initiate call directly with the pending number
+      handleLiveCall(pendingCallNumber);
       // Clear the pending call
       if (onCallNumberHandled) {
         onCallNumberHandled();
@@ -241,13 +238,14 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
     }, 1000);
   };
 
-  const handleLiveCall = async () => {
+  const handleLiveCall = async (numberToCall?: string) => {
     if (!device) {
       setCallStatus("Device not ready");
       return;
     }
 
-    if (!phoneNumber.trim()) {
+    const targetNumber = numberToCall || phoneNumber;
+    if (!targetNumber.trim()) {
       setCallStatus("Phone number required");
       return;
     }
@@ -255,15 +253,20 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
     try {
       setCallStatus("Calling...");
       const call = await device.connect({
-        params: { To: phoneNumber }
+        params: { To: targetNumber }
       });
 
       setActiveCall(call);
       setupCallListeners(call);
       startCallTimer();
 
+      // Update phoneNumber state if we used a different number
+      if (numberToCall && numberToCall !== phoneNumber) {
+        setPhoneNumber(numberToCall);
+      }
+
       // Find and open the contact's conversation history
-      const matchingContact = contacts.find(c => c.phone === phoneNumber);
+      const matchingContact = contacts.find(c => c.phone === targetNumber);
       if (matchingContact) {
         setInboxContact(matchingContact);
       }
@@ -465,7 +468,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                     data-testid="input-call-phone"
                   />
                   <Button
-                    onClick={handleLiveCall}
+                    onClick={() => handleLiveCall()}
                     disabled={!device || !!activeCall}
                     className="w-full bg-green-600 hover:bg-green-700"
                     data-testid="button-place-call"
@@ -517,13 +520,9 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
           if (!open) setInboxContact(null);
         }}
         onCallContact={(phoneNumber) => {
-          setPhoneNumber(phoneNumber);
-          // Don't open the phone widget popover when calling from conversation history
-          // The user is already in the conversation view
-          // Auto-initiate call after a brief delay to ensure UI updates
-          setTimeout(() => {
-            handleLiveCall();
-          }, 100);
+          // Call directly with the number - no need to set state first
+          // This prevents unnecessary re-renders and flickering
+          handleLiveCall(phoneNumber);
         }}
         activeCallNumber={activeCall ? phoneNumber : null}
         callDuration={callDuration}
