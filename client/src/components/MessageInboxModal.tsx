@@ -314,11 +314,12 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
                 {contact.phone ? contact.phone : "No phone number available"}
               </DialogDescription>
             </div>
-            {contact.phone && onCallContact && (
+            {contact.phone && (
               <Button
                 onClick={handleCallContact}
                 variant="outline"
                 size="sm"
+                disabled={!onCallContact}
                 data-testid="button-call-contact"
               >
                 <Phone className="w-4 h-4 mr-2" />

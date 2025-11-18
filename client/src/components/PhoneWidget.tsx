@@ -20,9 +20,11 @@ import type { Contact } from "@shared/schema";
 
 interface PhoneWidgetProps {
   selectedCompanyId: number | null;
+  pendingCallNumber?: string | null;
+  onCallNumberHandled?: () => void;
 }
 
-export function PhoneWidget({ selectedCompanyId }: PhoneWidgetProps) {
+export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumberHandled }: PhoneWidgetProps) {
   const [open, setOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
@@ -72,6 +74,22 @@ export function PhoneWidget({ selectedCompanyId }: PhoneWidgetProps) {
       }
     };
   }, []);
+
+  // Handle pending call requests from other components
+  useEffect(() => {
+    if (pendingCallNumber && device) {
+      setPhoneNumber(pendingCallNumber);
+      setOpen(true);
+      // Wait a moment for UI to update, then initiate call
+      setTimeout(() => {
+        handleLiveCall();
+      }, 100);
+      // Clear the pending call
+      if (onCallNumberHandled) {
+        onCallNumberHandled();
+      }
+    }
+  }, [pendingCallNumber, device]);
 
   const refreshToken = async () => {
     try {

@@ -13,9 +13,10 @@ import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
   selectedCompanyId: number | null;
+  onCallContact?: (phoneNumber: string) => void;
 }
 
-export default function Contacts({ selectedCompanyId }: ContactsProps) {
+export default function Contacts({ selectedCompanyId, onCallContact }: ContactsProps) {
   const [showAddContact, setShowAddContact] = useState(false);
   const [showUploadContacts, setShowUploadContacts] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -218,6 +219,7 @@ export default function Contacts({ selectedCompanyId }: ContactsProps) {
         onOpenChange={(open: boolean) => {
           if (!open) setInboxContact(null);
         }}
+        onCallContact={onCallContact}
       />
     </div>
   );

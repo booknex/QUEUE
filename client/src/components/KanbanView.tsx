@@ -41,9 +41,10 @@ interface KanbanViewProps {
   selectedPipelineId: number | null;
   onPipelineChange: (id: number) => void;
   selectedCompanyId: number | null;
+  onCallContact?: (phoneNumber: string) => void;
 }
 
-export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId }: KanbanViewProps) {
+export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId, onCallContact }: KanbanViewProps) {
   const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
@@ -646,7 +647,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
       {activeView === "contacts" && (
         <div className="flex-1 overflow-auto">
-          <Contacts selectedCompanyId={selectedCompanyId} />
+          <Contacts selectedCompanyId={selectedCompanyId} onCallContact={onCallContact} />
         </div>
       )}
         </div>
@@ -664,6 +665,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         contact={inboxContact}
         open={inboxOpen}
         onOpenChange={setInboxOpen}
+        onCallContact={onCallContact}
       />
       
       {/* Add Column Dialog */}

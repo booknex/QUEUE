@@ -69,6 +69,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem('selectedCompanyId');
     return saved ? parseInt(saved) : null;
   });
+  const [pendingCallNumber, setPendingCallNumber] = useState<string | null>(null);
   const { toast } = useToast();
   const { logout, user } = useAuth();
 
@@ -576,7 +577,11 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <PhoneWidget selectedCompanyId={selectedCompanyId} />
+              <PhoneWidget 
+                selectedCompanyId={selectedCompanyId}
+                pendingCallNumber={pendingCallNumber}
+                onCallNumberHandled={() => setPendingCallNumber(null)}
+              />
               <Button onClick={handleAddNew} data-testid="button-add-client">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Client
@@ -733,6 +738,7 @@ export default function Dashboard() {
             selectedPipelineId={selectedPipelineId}
             onPipelineChange={setSelectedPipelineId}
             selectedCompanyId={selectedCompanyId}
+            onCallContact={(phoneNumber) => setPendingCallNumber(phoneNumber)}
           />
         </div>
       </main>
