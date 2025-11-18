@@ -77,7 +77,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     enabled: selectedPipelineId !== null,
   });
 
-  const { data: companyUsers = [] } = useQuery<UserWithRole[]>({
+  const { data: companyUsers = [], isLoading: isLoadingUsers } = useQuery<UserWithRole[]>({
     queryKey: ["/api/company-users", selectedCompanyId?.toString()],
     queryFn: async () => {
       if (selectedCompanyId === null) return [];
@@ -331,8 +331,8 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               control={form.control}
               name="assignedUserId"
               render={({ field }) => {
-                // Ensure the value is valid - if the assigned user is not in the list, default to ""
-                const validValue = field.value && companyUsers.some(u => u.id === field.value) 
+                // Only validate if users have loaded
+                const validValue = !isLoadingUsers && field.value && companyUsers.some(u => u.id === field.value) 
                   ? field.value 
                   : "";
                 
@@ -342,15 +342,16 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
                     <Select
                       value={validValue}
                       onValueChange={(value) => field.onChange(value === "" ? null : value)}
+                      disabled={isLoadingUsers}
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-assigned-user">
-                          <SelectValue placeholder="Select a user (optional)" />
+                          <SelectValue placeholder={isLoadingUsers ? "Loading users..." : "Select a user (optional)"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="">Unassigned</SelectItem>
-                        {companyUsers.map((user) => {
+                        {!isLoadingUsers && companyUsers.map((user) => {
                           const displayName = user.firstName && user.lastName
                             ? `${user.firstName} ${user.lastName}`
                             : user.firstName || user.username;
