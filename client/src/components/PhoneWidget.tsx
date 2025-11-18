@@ -418,21 +418,67 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                 </div>
               </div>
             ) : (
-              <Tabs defaultValue="contacts" className="w-full">
+              <Tabs defaultValue="call" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="call" data-testid="tab-call">
+                    <Phone className="h-3 w-3 mr-2" />
+                    Keypad
+                  </TabsTrigger>
                   <TabsTrigger value="contacts" data-testid="tab-contacts">
                     <User className="h-3 w-3 mr-2" />
                     Contacts
-                  </TabsTrigger>
-                  <TabsTrigger value="call" data-testid="tab-call">
-                    <Phone className="h-3 w-3 mr-2" />
-                    Call
                   </TabsTrigger>
                   <TabsTrigger value="sms" data-testid="tab-sms">
                     <MessageSquare className="h-3 w-3 mr-2" />
                     SMS
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="call" className="space-y-4">
+                  <div className="bg-muted/30 rounded-md p-4 text-center min-h-[60px] flex items-center justify-center">
+                    <div className="text-2xl font-mono tracking-wider" data-testid="keypad-display">
+                      {phoneNumber || <span className="text-muted-foreground">Enter number</span>}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-3">
+                    {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map((digit) => (
+                      <Button
+                        key={digit}
+                        onClick={() => setPhoneNumber(prev => prev + digit)}
+                        variant="outline"
+                        className="h-14 text-xl font-semibold hover-elevate active-elevate-2"
+                        data-testid={`keypad-${digit}`}
+                      >
+                        {digit}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setPhoneNumber(prev => prev.slice(0, -1))}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={!phoneNumber}
+                      data-testid="keypad-backspace"
+                    >
+                      ← Delete
+                    </Button>
+                  </div>
+
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      onClick={() => handleLiveCall()}
+                      disabled={!device || !!activeCall || !phoneNumber}
+                      className="h-16 w-16 rounded-full bg-green-600 hover:bg-green-700 shadow-lg"
+                      size="icon"
+                      data-testid="button-place-call"
+                    >
+                      <Phone className="h-6 w-6 text-white" />
+                    </Button>
+                  </div>
+                </TabsContent>
 
                 <TabsContent value="contacts" className="space-y-3">
                   <div className="relative">
@@ -474,24 +520,6 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                       </div>
                     )}
                   </ScrollArea>
-                </TabsContent>
-
-                <TabsContent value="call" className="space-y-3">
-                  <Input
-                    placeholder="+1 (555) 123-4567"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    data-testid="input-call-phone"
-                  />
-                  <Button
-                    onClick={() => handleLiveCall()}
-                    disabled={!device || !!activeCall}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    data-testid="button-place-call"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    {device ? "Call" : "Initializing..."}
-                  </Button>
                 </TabsContent>
 
                 <TabsContent value="sms" className="space-y-3">
