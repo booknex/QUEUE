@@ -18,6 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +39,7 @@ import {
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
-import type { KanbanColumn, OpportunityWithContact } from "@shared/schema";
+import type { KanbanColumn, OpportunityWithContact, UserWithRole } from "@shared/schema";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
@@ -50,6 +57,7 @@ const formSchema = z.object({
   contactPhone: z.string().optional(),
   contactEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
   description: z.string().optional(),
+  assignedUserId: z.string().nullable().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -69,6 +77,17 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     enabled: selectedPipelineId !== null,
   });
 
+  const { data: companyUsers = [] } = useQuery<UserWithRole[]>({
+    queryKey: ["/api/users", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/users?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch users");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null && open,
+  });
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,6 +95,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
       contactPhone: "",
       contactEmail: "",
       description: "",
+      assignedUserId: null,
     },
   });
 
@@ -87,6 +107,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         contactPhone: opportunity.contactPhone || "",
         contactEmail: opportunity.contactEmail || "",
         description: opportunity.description || "",
+        assignedUserId: opportunity.assignedUserId || null,
       });
     } else {
       form.reset({
@@ -94,6 +115,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         contactPhone: "",
         contactEmail: "",
         description: "",
+        assignedUserId: null,
       });
     }
   }, [opportunity, form]);
@@ -116,6 +138,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         const opportunityData: any = {
           title: data.title,
           description: data.description && data.description.trim() ? data.description : "",
+          assignedUserId: data.assignedUserId || null,
         };
 
         const opportunityRes = await apiRequest("PATCH", `/api/opportunities/${opportunity.id}`, opportunityData);
@@ -164,6 +187,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
           title: data.title,
           columnId: firstColumnId,
           contactId: contact.id,
+          assignedUserId: data.assignedUserId || null,
         };
         
         // Only include description if it has a value
@@ -298,6 +322,40 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
                       data-testid="input-contact-email"
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="assignedUserId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assigned To</FormLabel>
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={(value) => field.onChange(value || null)}
+                  >
+                    <FormControl>
+                      <SelectTrigger data-testid="select-assigned-user">
+                        <SelectValue placeholder="Select a user (optional)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Unassigned</SelectItem>
+                      {companyUsers.map((user) => {
+                        const displayName = user.firstName && user.lastName
+                          ? `${user.firstName} ${user.lastName}`
+                          : user.firstName || user.username;
+                        return (
+                          <SelectItem key={user.id} value={user.id}>
+                            {displayName}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
