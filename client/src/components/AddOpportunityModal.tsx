@@ -330,35 +330,42 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
             <FormField
               control={form.control}
               name="assignedUserId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Assigned To</FormLabel>
-                  <Select
-                    value={field.value || ""}
-                    onValueChange={(value) => field.onChange(value || null)}
-                  >
-                    <FormControl>
-                      <SelectTrigger data-testid="select-assigned-user">
-                        <SelectValue placeholder="Select a user (optional)" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">Unassigned</SelectItem>
-                      {companyUsers.map((user) => {
-                        const displayName = user.firstName && user.lastName
-                          ? `${user.firstName} ${user.lastName}`
-                          : user.firstName || user.username;
-                        return (
-                          <SelectItem key={user.id} value={user.id}>
-                            {displayName}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                // Ensure the value is valid - if the assigned user is not in the list, default to ""
+                const validValue = field.value && companyUsers.some(u => u.id === field.value) 
+                  ? field.value 
+                  : "";
+                
+                return (
+                  <FormItem>
+                    <FormLabel>Assigned To</FormLabel>
+                    <Select
+                      value={validValue}
+                      onValueChange={(value) => field.onChange(value === "" ? null : value)}
+                    >
+                      <FormControl>
+                        <SelectTrigger data-testid="select-assigned-user">
+                          <SelectValue placeholder="Select a user (optional)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Unassigned</SelectItem>
+                        {companyUsers.map((user) => {
+                          const displayName = user.firstName && user.lastName
+                            ? `${user.firstName} ${user.lastName}`
+                            : user.firstName || user.username;
+                          return (
+                            <SelectItem key={user.id} value={user.id}>
+                              {displayName}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
