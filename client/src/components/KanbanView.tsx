@@ -42,17 +42,16 @@ interface KanbanViewProps {
   onPipelineChange: (id: number) => void;
   selectedCompanyId: number | null;
   onCallContact?: (phoneNumber: string) => void;
+  onOpenInbox?: (contact: Contact) => void;
 }
 
-export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId, onCallContact }: KanbanViewProps) {
+export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompanyId, onCallContact, onOpenInbox }: KanbanViewProps) {
   const [activeView, setActiveView] = useState<"opportunities" | "contacts">("opportunities");
   const [pipelineManagerOpen, setPipelineManagerOpen] = useState(false);
   const [addOpportunityOpen, setAddOpportunityOpen] = useState(false);
   const [addColumnOpen, setAddColumnOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
   const [editingOpportunity, setEditingOpportunity] = useState<OpportunityWithContact | null>(null);
-  const [inboxContact, setInboxContact] = useState<Contact | null>(null);
-  const [inboxOpen, setInboxOpen] = useState(false);
   const [editColumnOpen, setEditColumnOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<KanbanColumn | null>(null);
   const [editColumnName, setEditColumnName] = useState("");
@@ -396,7 +395,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
   const handleContactClick = (e: React.MouseEvent, opportunity: OpportunityWithContact) => {
     e.stopPropagation();
-    if (opportunity.contactId) {
+    if (opportunity.contactId && onOpenInbox) {
       const contact: Contact = {
         id: opportunity.contactId,
         name: opportunity.contactName || "Unknown",
@@ -405,8 +404,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         companyId: selectedCompanyId!,
         createdAt: new Date(),
       };
-      setInboxContact(contact);
-      setInboxOpen(true);
+      onOpenInbox(contact);
     }
   };
 
@@ -647,7 +645,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
 
       {activeView === "contacts" && (
         <div className="flex-1 overflow-auto">
-          <Contacts selectedCompanyId={selectedCompanyId} onCallContact={onCallContact} />
+          <Contacts selectedCompanyId={selectedCompanyId} onCallContact={onCallContact} onOpenInbox={onOpenInbox} />
         </div>
       )}
         </div>
@@ -660,15 +658,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         selectedPipelineId={selectedPipelineId}
         selectedCompanyId={selectedCompanyId}
         opportunity={editingOpportunity}
-      />
-      <MessageInboxModal
-        contact={inboxContact}
-        open={inboxOpen}
-        onOpenChange={setInboxOpen}
-        onCallContact={onCallContact}
-        activeCallNumber={null}
-        callDuration={undefined}
-        onHangup={undefined}
       />
       
       {/* Add Column Dialog */}

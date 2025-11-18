@@ -35,7 +35,7 @@ import { PhoneWidget } from "@/components/PhoneWidget";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import type { ClientFile, KanbanColumn, Pipeline, Company, StatusFilter } from "@shared/schema";
+import type { ClientFile, KanbanColumn, Pipeline, Company, StatusFilter, Contact } from "@shared/schema";
 
 function parseClientFileDates(file: any): ClientFile {
   return {
@@ -70,6 +70,7 @@ export default function Dashboard() {
     return saved ? parseInt(saved) : null;
   });
   const [pendingCallNumber, setPendingCallNumber] = useState<string | null>(null);
+  const [requestedInboxContact, setRequestedInboxContact] = useState<Contact | null>(null);
   const { toast } = useToast();
   const { logout, user } = useAuth();
 
@@ -581,6 +582,8 @@ export default function Dashboard() {
                 selectedCompanyId={selectedCompanyId}
                 pendingCallNumber={pendingCallNumber}
                 onCallNumberHandled={() => setPendingCallNumber(null)}
+                externalInboxContact={requestedInboxContact}
+                onExternalInboxContactHandled={() => setRequestedInboxContact(null)}
               />
               <Button onClick={handleAddNew} data-testid="button-add-client">
                 <Plus className="w-4 h-4 mr-2" />
@@ -739,6 +742,7 @@ export default function Dashboard() {
             onPipelineChange={setSelectedPipelineId}
             selectedCompanyId={selectedCompanyId}
             onCallContact={(phoneNumber) => setPendingCallNumber(phoneNumber)}
+            onOpenInbox={(contact) => setRequestedInboxContact(contact)}
           />
         </div>
       </main>

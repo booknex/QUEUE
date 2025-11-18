@@ -22,9 +22,11 @@ interface PhoneWidgetProps {
   selectedCompanyId: number | null;
   pendingCallNumber?: string | null;
   onCallNumberHandled?: () => void;
+  externalInboxContact?: Contact | null;
+  onExternalInboxContactHandled?: () => void;
 }
 
-export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumberHandled }: PhoneWidgetProps) {
+export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumberHandled, externalInboxContact, onExternalInboxContactHandled }: PhoneWidgetProps) {
   const [open, setOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
@@ -87,6 +89,17 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
       }
     }
   }, [pendingCallNumber, device]);
+
+  // Handle external inbox contact requests
+  useEffect(() => {
+    if (externalInboxContact) {
+      setInboxContact(externalInboxContact);
+      // Clear the external request
+      if (onExternalInboxContactHandled) {
+        onExternalInboxContactHandled();
+      }
+    }
+  }, [externalInboxContact]);
 
   const refreshToken = async () => {
     try {

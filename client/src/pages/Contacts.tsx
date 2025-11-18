@@ -8,19 +8,18 @@ import { Input } from "@/components/ui/input";
 import { AddContactModal } from "@/components/AddContactModal";
 import { UploadContactsModal } from "@/components/UploadContactsModal";
 import { EditContactModal } from "@/components/EditContactModal";
-import MessageInboxModal from "@/components/MessageInboxModal";
 import type { Contact } from "@shared/schema";
 
 interface ContactsProps {
   selectedCompanyId: number | null;
   onCallContact?: (phoneNumber: string) => void;
+  onOpenInbox?: (contact: Contact) => void;
 }
 
-export default function Contacts({ selectedCompanyId, onCallContact }: ContactsProps) {
+export default function Contacts({ selectedCompanyId, onCallContact, onOpenInbox }: ContactsProps) {
   const [showAddContact, setShowAddContact] = useState(false);
   const [showUploadContacts, setShowUploadContacts] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [inboxContact, setInboxContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
   const { data: contacts, isLoading } = useQuery<Contact[]>({
@@ -144,7 +143,9 @@ export default function Contacts({ selectedCompanyId, onCallContact }: ContactsP
                             className="font-medium text-base text-primary cursor-pointer hover:underline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setInboxContact(contact);
+                              if (onOpenInbox) {
+                                onOpenInbox(contact);
+                              }
                             }}
                             data-testid={`contact-name-${contact.id}`}
                           >
@@ -213,17 +214,6 @@ export default function Contacts({ selectedCompanyId, onCallContact }: ContactsP
         selectedCompanyId={selectedCompanyId}
       />
 
-      <MessageInboxModal
-        contact={inboxContact}
-        open={!!inboxContact}
-        onOpenChange={(open: boolean) => {
-          if (!open) setInboxContact(null);
-        }}
-        onCallContact={onCallContact}
-        activeCallNumber={null}
-        callDuration={undefined}
-        onHangup={undefined}
-      />
     </div>
   );
 }
