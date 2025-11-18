@@ -23,6 +23,7 @@ interface MessageInboxModalProps {
   onCallContact?: (phoneNumber: string) => void;
   activeCallNumber?: string | null;
   callDuration?: number;
+  onHangup?: () => void;
 }
 
 interface Call {
@@ -68,7 +69,7 @@ type TimelineItem = {
   recordings?: Recording[];
 };
 
-export default function MessageInboxModal({ contact, open, onOpenChange, onCallContact, activeCallNumber, callDuration }: MessageInboxModalProps) {
+export default function MessageInboxModal({ contact, open, onOpenChange, onCallContact, activeCallNumber, callDuration, onHangup }: MessageInboxModalProps) {
   const [expandedCallSids, setExpandedCallSids] = useState<Set<string>>(new Set());
   const [recordingsByCallSid, setRecordingsByCallSid] = useState<Map<string, Recording[]>>(new Map());
   const [messageText, setMessageText] = useState("");
@@ -357,6 +358,16 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
                       {callDuration !== undefined ? `Duration: ${formatDurationLive(callDuration)}` : 'Active call in progress'}
                     </div>
                   </div>
+                  {onHangup && (
+                    <Button
+                      onClick={onHangup}
+                      variant="destructive"
+                      size="sm"
+                      data-testid="button-hangup-call"
+                    >
+                      Hang Up
+                    </Button>
+                  )}
                 </div>
               </div>
             )}

@@ -668,6 +668,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         onCallContact={onCallContact}
         activeCallNumber={null}
         callDuration={undefined}
+        onHangup={undefined}
       />
       
       {/* Add Column Dialog */}

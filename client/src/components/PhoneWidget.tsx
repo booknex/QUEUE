@@ -526,6 +526,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
         }}
         activeCallNumber={activeCall ? phoneNumber : null}
         callDuration={callDuration}
+        onHangup={handleHangup}
       />
     </>
   );

@@ -222,6 +222,7 @@ export default function Contacts({ selectedCompanyId, onCallContact }: ContactsP
         onCallContact={onCallContact}
         activeCallNumber={null}
         callDuration={undefined}
+        onHangup={undefined}
       />
     </div>
   );
