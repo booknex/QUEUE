@@ -592,31 +592,49 @@ export class DatabaseStorage implements IStorage {
         description: opportunities.description,
         columnId: opportunities.columnId,
         contactId: opportunities.contactId,
+        assignedUserId: opportunities.assignedUserId,
         position: opportunities.position,
         createdAt: opportunities.createdAt,
         contactName: contacts.name,
         contactPhone: contacts.phone,
         contactEmail: contacts.email,
         columnName: kanbanColumns.name,
+        assignedUserFirstName: users.firstName,
+        assignedUserLastName: users.lastName,
+        assignedUserUsername: users.username,
       })
       .from(opportunities)
       .leftJoin(contacts, eq(opportunities.contactId, contacts.id))
       .leftJoin(kanbanColumns, eq(opportunities.columnId, kanbanColumns.id))
+      .leftJoin(users, eq(opportunities.assignedUserId, users.id))
       .orderBy(asc(opportunities.createdAt));
     
-    return results.map((row) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      columnId: row.columnId,
-      contactId: row.contactId,
-      position: row.position,
-      createdAt: row.createdAt,
-      contactName: row.contactName || "Unknown Contact",
-      contactPhone: row.contactPhone || null,
-      contactEmail: row.contactEmail || null,
-      columnName: row.columnName || "Unknown Column",
-    }));
+    return results.map((row) => {
+      let assignedUserName = null;
+      if (row.assignedUserFirstName && row.assignedUserLastName) {
+        assignedUserName = `${row.assignedUserFirstName} ${row.assignedUserLastName}`;
+      } else if (row.assignedUserFirstName) {
+        assignedUserName = row.assignedUserFirstName;
+      } else if (row.assignedUserUsername) {
+        assignedUserName = row.assignedUserUsername;
+      }
+      
+      return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        columnId: row.columnId,
+        contactId: row.contactId,
+        assignedUserId: row.assignedUserId,
+        position: row.position,
+        createdAt: row.createdAt,
+        contactName: row.contactName || "Unknown Contact",
+        contactPhone: row.contactPhone || null,
+        contactEmail: row.contactEmail || null,
+        columnName: row.columnName || "Unknown Column",
+        assignedUserName,
+      };
+    });
   }
 
   async getOpportunity(id: number): Promise<Opportunity | undefined> {
