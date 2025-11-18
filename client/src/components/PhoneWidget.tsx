@@ -524,6 +524,8 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
             handleLiveCall();
           }, 100);
         }}
+        activeCallNumber={activeCall ? phoneNumber : null}
+        callDuration={callDuration}
       />
     </>
   );

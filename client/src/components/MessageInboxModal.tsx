@@ -21,6 +21,8 @@ interface MessageInboxModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCallContact?: (phoneNumber: string) => void;
+  activeCallNumber?: string | null;
+  callDuration?: number;
 }
 
 interface Call {
@@ -66,11 +68,19 @@ type TimelineItem = {
   recordings?: Recording[];
 };
 
-export default function MessageInboxModal({ contact, open, onOpenChange, onCallContact }: MessageInboxModalProps) {
+export default function MessageInboxModal({ contact, open, onOpenChange, onCallContact, activeCallNumber, callDuration }: MessageInboxModalProps) {
   const [expandedCallSids, setExpandedCallSids] = useState<Set<string>>(new Set());
   const [recordingsByCallSid, setRecordingsByCallSid] = useState<Map<string, Recording[]>>(new Map());
   const [messageText, setMessageText] = useState("");
   const { toast } = useToast();
+  
+  const isActiveCall = contact?.phone === activeCallNumber;
+  
+  const formatDurationLive = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const { data: calls = [], isLoading: callsLoading } = useQuery<Call[]>({
     queryKey: ["/api/twilio/calls", contact?.phone],
@@ -334,6 +344,23 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
           </div>
         ) : (
           <>
+            {/* Active Call Indicator */}
+            {isActiveCall && (
+              <div className="mx-2 mb-3 p-4 bg-green-50 dark:bg-green-950 border-2 border-green-500 rounded-lg" data-testid="active-call-indicator">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-500 p-2 rounded-full animate-pulse">
+                    <Phone className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-green-700 dark:text-green-300">Call Connected</div>
+                    <div className="text-sm text-green-600 dark:text-green-400">
+                      {callDuration !== undefined ? `Duration: ${formatDurationLive(callDuration)}` : 'Active call in progress'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex-1 overflow-y-auto px-2" data-testid="message-timeline">
               {callsLoading || messagesLoading ? (
                 <div className="space-y-4 py-4">

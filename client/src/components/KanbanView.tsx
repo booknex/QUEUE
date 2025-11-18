@@ -666,6 +666,8 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
         open={inboxOpen}
         onOpenChange={setInboxOpen}
         onCallContact={onCallContact}
+        activeCallNumber={null}
+        callDuration={undefined}
       />
       
       {/* Add Column Dialog */}

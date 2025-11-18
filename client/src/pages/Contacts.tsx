@@ -220,6 +220,8 @@ export default function Contacts({ selectedCompanyId, onCallContact }: ContactsP
           if (!open) setInboxContact(null);
         }}
         onCallContact={onCallContact}
+        activeCallNumber={null}
+        callDuration={undefined}
       />
     </div>
   );
