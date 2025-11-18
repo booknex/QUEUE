@@ -294,7 +294,6 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
     if (!contact?.phone) return;
     if (onCallContact) {
       onCallContact(contact.phone);
-      onOpenChange(false);
     }
   };
 
