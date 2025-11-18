@@ -492,6 +492,14 @@ export function PhoneWidget({ selectedCompanyId }: PhoneWidgetProps) {
         onOpenChange={(open) => {
           if (!open) setInboxContact(null);
         }}
+        onCallContact={(phoneNumber) => {
+          setPhoneNumber(phoneNumber);
+          setOpen(true);
+          // Auto-initiate call after a brief delay to ensure UI updates
+          setTimeout(() => {
+            handleLiveCall();
+          }, 100);
+        }}
       />
     </>
   );

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Phone, MessageSquare, PhoneMissed, PhoneIncoming, PhoneOutgoing } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Phone, MessageSquare, PhoneMissed, PhoneIncoming, PhoneOutgoing, Send } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Contact } from "@shared/schema";
 
 interface MessageInboxModalProps {
   contact: Contact | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCallContact?: (phoneNumber: string) => void;
 }
 
 interface Call {
@@ -61,9 +66,11 @@ type TimelineItem = {
   recordings?: Recording[];
 };
 
-export default function MessageInboxModal({ contact, open, onOpenChange }: MessageInboxModalProps) {
+export default function MessageInboxModal({ contact, open, onOpenChange, onCallContact }: MessageInboxModalProps) {
   const [expandedCallSids, setExpandedCallSids] = useState<Set<string>>(new Set());
   const [recordingsByCallSid, setRecordingsByCallSid] = useState<Map<string, Recording[]>>(new Map());
+  const [messageText, setMessageText] = useState("");
+  const { toast } = useToast();
 
   const { data: calls = [], isLoading: callsLoading } = useQuery<Call[]>({
     queryKey: ["/api/twilio/calls", contact?.phone],
@@ -256,17 +263,69 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
     );
   };
 
+  const smsMutation = useMutation({
+    mutationFn: async ({ to, message }: { to: string; message: string }) => {
+      const response = await apiRequest("POST", "/api/twilio/sms", { to, message });
+      return await response.json();
+    },
+    onSuccess: () => {
+      setMessageText("");
+      toast({
+        title: "Message sent",
+        description: "Your SMS has been delivered",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/twilio/messages", contact?.phone] });
+    },
+    onError: (error: Error) => {
+      console.error("SMS failed:", error);
+      toast({
+        title: "Failed to send message",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendMessage = () => {
+    if (!contact?.phone) return;
+    if (!messageText.trim()) return;
+    smsMutation.mutate({ to: contact.phone, message: messageText });
+  };
+
+  const handleCallContact = () => {
+    if (!contact?.phone) return;
+    if (onCallContact) {
+      onCallContact(contact.phone);
+      onOpenChange(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col" data-testid="dialog-message-inbox">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            {contact.name}
-          </DialogTitle>
-          <DialogDescription>
-            {contact.phone ? contact.phone : "No phone number available"}
-          </DialogDescription>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <DialogTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                {contact.name}
+              </DialogTitle>
+              <DialogDescription>
+                {contact.phone ? contact.phone : "No phone number available"}
+              </DialogDescription>
+            </div>
+            {contact.phone && onCallContact && (
+              <Button
+                onClick={handleCallContact}
+                variant="outline"
+                size="sm"
+                data-testid="button-call-contact"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Call
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         {!contact.phone ? (
@@ -274,39 +333,74 @@ export default function MessageInboxModal({ contact, open, onOpenChange }: Messa
             This contact doesn't have a phone number.
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-2" data-testid="message-timeline">
-            {callsLoading || messagesLoading ? (
-              <div className="space-y-4 py-4">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-                    <Skeleton className={`h-20 ${i % 3 === 0 ? 'w-3/4' : 'w-1/2'} rounded-2xl`} />
-                  </div>
-                ))}
-              </div>
-            ) : timeline.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
-                <p>No conversation history with this contact</p>
-              </div>
-            ) : (
-              <div className="py-4">
-                {groupedTimeline.map(group => (
-                  <div key={group.date} className="mb-6">
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground">
-                        {group.date}
-                      </div>
+          <>
+            <div className="flex-1 overflow-y-auto px-2" data-testid="message-timeline">
+              {callsLoading || messagesLoading ? (
+                <div className="space-y-4 py-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                      <Skeleton className={`h-20 ${i % 3 === 0 ? 'w-3/4' : 'w-1/2'} rounded-2xl`} />
                     </div>
-                    {group.items.map(item => (
-                      <div key={item.id}>
-                        {item.type === 'call' ? renderCallMessage(item) : renderSmsMessage(item)}
+                  ))}
+                </div>
+              ) : timeline.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
+                  <p>No conversation history with this contact</p>
+                </div>
+              ) : (
+                <div className="py-4">
+                  {groupedTimeline.map(group => (
+                    <div key={group.date} className="mb-6">
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground">
+                          {group.date}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      {group.items.map(item => (
+                        <div key={item.id}>
+                          {item.type === 'call' ? renderCallMessage(item) : renderSmsMessage(item)}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* SMS Input */}
+            <div className="border-t pt-4 px-2">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a message..."
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  disabled={smsMutation.isPending}
+                  data-testid="input-message-text"
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!messageText.trim() || smsMutation.isPending}
+                  data-testid="button-send-message"
+                >
+                  {smsMutation.isPending ? (
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
               </div>
-            )}
-          </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Press Enter to send
+              </div>
+            </div>
+          </>
         )}
       </DialogContent>
     </Dialog>
