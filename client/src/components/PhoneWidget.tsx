@@ -518,7 +518,8 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
         }}
         onCallContact={(phoneNumber) => {
           setPhoneNumber(phoneNumber);
-          setOpen(true);
+          // Don't open the phone widget popover when calling from conversation history
+          // The user is already in the conversation view
           // Auto-initiate call after a brief delay to ensure UI updates
           setTimeout(() => {
             handleLiveCall();
