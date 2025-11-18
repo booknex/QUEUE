@@ -139,6 +139,7 @@ export const opportunities = pgTable("opportunities", {
   description: text("description"),
   columnId: integer("column_id").notNull().references(() => kanbanColumns.id, { onDelete: "cascade" }),
   contactId: integer("contact_id").notNull().references(() => contacts.id, { onDelete: "cascade" }),
+  assignedUserId: varchar("assigned_user_id").references(() => users.id, { onDelete: "set null" }),
   position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -258,12 +259,14 @@ export type OpportunityWithContact = Opportunity & {
   contactPhone: string | null;
   contactEmail: string | null;
   columnName: string;
+  assignedUserName?: string | null;
 };
 
 export const updateOpportunitySchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   columnId: z.number().optional(),
+  assignedUserId: z.string().nullable().optional(),
   position: z.number().optional(),
 });
 
