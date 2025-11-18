@@ -144,8 +144,6 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
     return grouped;
   }, [timeline]);
 
-  if (!contact) return null;
-
   const formatDuration = (seconds: string | number) => {
     const total = typeof seconds === 'string' ? parseInt(seconds) : seconds;
     if (!total || total === 0) return "0s";
@@ -299,6 +297,8 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
       onOpenChange(false);
     }
   };
+
+  if (!contact) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
