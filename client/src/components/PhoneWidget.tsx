@@ -480,7 +480,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                   </div>
                 </TabsContent>
 
-                <TabsContent value="contacts" className="space-y-3">
+                <TabsContent value="contacts" className="space-y-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -491,7 +491,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                       data-testid="input-search-contacts-phone"
                     />
                   </div>
-                  <ScrollArea className="h-64">
+                  <ScrollArea className="h-[420px]">
                     {filteredContacts.length === 0 ? (
                       <div className="text-center text-sm text-muted-foreground py-8">
                         {contactSearchQuery ? "No contacts found" : "No contacts available"}
@@ -522,7 +522,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                   </ScrollArea>
                 </TabsContent>
 
-                <TabsContent value="sms" className="space-y-3">
+                <TabsContent value="sms" className="space-y-4">
                   <Input
                     placeholder="+1 (555) 123-4567"
                     value={phoneNumber}
@@ -533,7 +533,8 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
                     placeholder="Type your message..."
                     value={smsMessage}
                     onChange={(e) => setSmsMessage(e.target.value)}
-                    rows={3}
+                    rows={16}
+                    className="min-h-[360px] resize-none"
                     data-testid="input-sms-message"
                   />
                   <div className="flex items-center justify-between">
