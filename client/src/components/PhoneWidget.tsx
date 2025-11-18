@@ -261,6 +261,12 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
       setActiveCall(call);
       setupCallListeners(call);
       startCallTimer();
+
+      // Find and open the contact's conversation history
+      const matchingContact = contacts.find(c => c.phone === phoneNumber);
+      if (matchingContact) {
+        setInboxContact(matchingContact);
+      }
     } catch (error: any) {
       console.error("Call failed:", error);
       setCallStatus("Call failed");
