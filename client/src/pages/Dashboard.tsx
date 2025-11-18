@@ -79,10 +79,17 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (companies.length > 0 && selectedCompanyId === null) {
-      setSelectedCompanyId(companies[0].id);
+    if (companies.length > 0) {
+      // If no company is selected, select the first one
+      if (selectedCompanyId === null) {
+        setSelectedCompanyId(companies[0].id);
+      } 
+      // If the selected company doesn't exist in user's companies, reset to first company
+      else if (!companies.find(c => c.id === selectedCompanyId)) {
+        setSelectedCompanyId(companies[0].id);
+      }
     }
-  }, [companies]);
+  }, [companies, selectedCompanyId]);
 
   // Save selected company to localStorage
   useEffect(() => {
