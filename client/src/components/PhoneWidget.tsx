@@ -265,9 +265,9 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
         setPhoneNumber(numberToCall);
       }
 
-      // Find and open the contact's conversation history
+      // Find and open the contact's conversation history (only if not already open)
       const matchingContact = contacts.find(c => c.phone === targetNumber);
-      if (matchingContact) {
+      if (matchingContact && (!inboxContact || inboxContact.id !== matchingContact.id)) {
         setInboxContact(matchingContact);
       }
     } catch (error: any) {
