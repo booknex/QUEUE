@@ -78,10 +78,10 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
   });
 
   const { data: companyUsers = [] } = useQuery<UserWithRole[]>({
-    queryKey: ["/api/users", selectedCompanyId?.toString()],
+    queryKey: ["/api/company-users", selectedCompanyId?.toString()],
     queryFn: async () => {
       if (selectedCompanyId === null) return [];
-      const response = await fetch(`/api/users?companyId=${selectedCompanyId}`);
+      const response = await fetch(`/api/company-users?companyId=${selectedCompanyId}`);
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },

@@ -74,6 +74,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
+      // Verify the requesting user is a member of the company
+      const userRole = await storage.getUserRole(req.user.id, companyId);
+      if (!userRole) {
+        return res.status(403).json({ error: "Access denied: You are not a member of this company" });
+      }
+      
       const users = await storage.getUsersByCompany(companyId);
       res.json(users);
     } catch (error) {
@@ -1051,14 +1057,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/opportunities", isAuthenticated, async (req, res) => {
+  app.post("/api/opportunities", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertOpportunitySchema.parse(req.body);
-      const opportunity = await storage.createOpportunity(validated);
-      const contact = await storage.getContact(opportunity.contactId);
-      if (contact) {
-        broadcast({ type: "opportunity:created", companyId: contact.companyId });
+      
+      // Get the contact to determine the company
+      const contact = await storage.getContact(validated.contactId);
+      if (!contact) {
+        return res.status(400).json({ error: "Contact not found" });
       }
+      
+      // Verify the requesting user is a member of the contact's company
+      const requestingUserRole = await storage.getUserRole(req.user.id, contact.companyId);
+      if (!requestingUserRole) {
+        return res.status(403).json({ error: "Access denied: You are not a member of this company" });
+      }
+      
+      // If assignedUserId is provided, verify it belongs to the same company
+      if (validated.assignedUserId) {
+        const userRole = await storage.getUserRole(validated.assignedUserId, contact.companyId);
+        if (!userRole) {
+          return res.status(400).json({ error: "Assigned user must be a member of the same company" });
+        }
+      }
+      
+      const opportunity = await storage.createOpportunity(validated);
+      broadcast({ type: "opportunity:created", companyId: contact.companyId });
       res.status(201).json(serializeOpportunity(opportunity));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1068,21 +1092,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/opportunities/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid opportunity ID" });
       }
       const validated = updateOpportunitySchema.parse(req.body);
+      
+      // Get existing opportunity to access its contact
+      const existingOpportunity = await storage.getOpportunity(id);
+      if (!existingOpportunity) {
+        return res.status(404).json({ error: "Opportunity not found" });
+      }
+      
+      // Get the contact to determine the company
+      const contact = await storage.getContact(existingOpportunity.contactId);
+      if (!contact) {
+        return res.status(400).json({ error: "Contact not found" });
+      }
+      
+      // Verify the requesting user is a member of the contact's company
+      const requestingUserRole = await storage.getUserRole(req.user.id, contact.companyId);
+      if (!requestingUserRole) {
+        return res.status(403).json({ error: "Access denied: You are not a member of this company" });
+      }
+      
+      // If assignedUserId is provided, verify it belongs to the same company
+      if (validated.assignedUserId) {
+        const userRole = await storage.getUserRole(validated.assignedUserId, contact.companyId);
+        if (!userRole) {
+          return res.status(400).json({ error: "Assigned user must be a member of the same company" });
+        }
+      }
+      
       const opportunity = await storage.updateOpportunity(id, validated);
       if (!opportunity) {
         return res.status(404).json({ error: "Opportunity not found" });
       }
-      const contact = await storage.getContact(opportunity.contactId);
-      if (contact) {
-        broadcast({ type: "opportunity:updated", companyId: contact.companyId });
-      }
+      broadcast({ type: "opportunity:updated", companyId: contact.companyId });
       res.json(serializeOpportunity(opportunity));
     } catch (error) {
       if (error instanceof z.ZodError) {
