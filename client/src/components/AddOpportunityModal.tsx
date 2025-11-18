@@ -331,16 +331,16 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               control={form.control}
               name="assignedUserId"
               render={({ field }) => {
-                // Only validate if users have loaded
-                const validValue = !isLoadingUsers && field.value && companyUsers.some(u => u.id === field.value) 
-                  ? field.value 
-                  : "";
+                // Convert null to empty string and check if value is valid
+                const currentValue = field.value || "";
+                const isValueValid = currentValue && companyUsers.some(u => u.id === currentValue);
+                const selectValue = isValueValid ? currentValue : "";
                 
                 return (
                   <FormItem>
                     <FormLabel>Assigned To</FormLabel>
                     <Select
-                      value={validValue}
+                      value={selectValue}
                       onValueChange={(value) => field.onChange(value === "" ? null : value)}
                       disabled={isLoadingUsers}
                     >
@@ -351,7 +351,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="">Unassigned</SelectItem>
-                        {!isLoadingUsers && companyUsers.map((user) => {
+                        {companyUsers.map((user) => {
                           const displayName = user.firstName && user.lastName
                             ? `${user.firstName} ${user.lastName}`
                             : user.firstName || user.username;
