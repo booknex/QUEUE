@@ -54,7 +54,7 @@ import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
 import type { KanbanColumn, OpportunityWithContact, UserWithRole, Contact } from "@shared/schema";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,6 +82,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [contactSearchOpen, setContactSearchOpen] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
     queryKey: ["/api/columns", selectedPipelineId?.toString()],
@@ -293,6 +294,21 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
     setContactSearchOpen(false);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setContactSearchOpen(false);
+      }
+    };
+
+    if (contactSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [contactSearchOpen]);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px]" data-testid="dialog-add-opportunity">
@@ -311,67 +327,58 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem className="flex flex-col relative" ref={dropdownRef}>
                   <FormLabel>Contact Name *</FormLabel>
-                  <Popover open={contactSearchOpen} onOpenChange={setContactSearchOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={contactSearchOpen}
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          data-testid="input-opportunity-title"
-                        >
-                          {field.value || "Search or enter contact name..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[500px] p-0">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Search contacts..." 
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            setSelectedContactId(null);
-                          }}
-                        />
-                        <CommandList>
-                          <CommandEmpty>No contact found. Type to create new.</CommandEmpty>
-                          <CommandGroup>
-                            {companyContacts.map((contact) => (
-                              <CommandItem
-                                key={contact.id}
-                                value={contact.name}
-                                onSelect={() => handleContactSelect(contact)}
-                                data-testid={`contact-option-${contact.id}`}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedContactId === contact.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                                <div className="flex flex-col">
-                                  <span className="font-medium">{contact.name}</span>
-                                  {(contact.phone || contact.email) && (
-                                    <span className="text-xs text-muted-foreground">
-                                      {[contact.phone, contact.email].filter(Boolean).join(" • ")}
-                                    </span>
-                                  )}
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Start typing contact name..."
+                      data-testid="input-opportunity-title"
+                      onFocus={() => {
+                        if (field.value && companyContacts.length > 0) {
+                          setContactSearchOpen(true);
+                        }
+                      }}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        setSelectedContactId(null);
+                        setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
+                      }}
+                    />
+                  </FormControl>
+                  {contactSearchOpen && companyContacts.filter(contact => 
+                    contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                  ).length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                      {companyContacts
+                        .filter(contact => 
+                          contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                        )
+                        .map((contact) => (
+                          <div
+                            key={contact.id}
+                            className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
+                            onClick={() => handleContactSelect(contact)}
+                            data-testid={`contact-option-${contact.id}`}
+                          >
+                            <Check
+                              className={cn(
+                                "h-4 w-4 mt-0.5 shrink-0",
+                                selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <span className="font-medium text-sm">{contact.name}</span>
+                              {(contact.phone || contact.email) && (
+                                <span className="text-xs text-muted-foreground">
+                                  {[contact.phone, contact.email].filter(Boolean).join(" • ")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
