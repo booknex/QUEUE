@@ -283,14 +283,15 @@ export function AddEditClientModal({
       <DialogPortal>
         <DialogOverlay />
         
-        {/* Left Sliding Panel - Behind Modal but Not Dimmed (z-50) */}
+        {/* Left Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
         {open && (
           <aside
             onClick={() => setIsNotesOpen(!isNotesOpen)}
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-50 overflow-hidden cursor-pointer",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
               isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
             )}
+            data-testid="panel-meeting-notes"
           >
             <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
@@ -347,14 +348,15 @@ export function AddEditClientModal({
         </aside>
       )}
 
-        {/* Right Sliding Panel - Behind Modal but Not Dimmed (z-50) */}
+        {/* Right Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
         {open && (
           <aside
             onClick={() => setIsTouchesOpen(!isTouchesOpen)}
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-50 overflow-hidden cursor-pointer",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
               isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
             )}
+            data-testid="panel-touch-comments"
           >
             <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
