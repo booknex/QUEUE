@@ -8,6 +8,7 @@ import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import connectPg from "connect-pg-simple";
 import { z } from "zod";
+import { broadcast } from "./websocket";
 
 const registerSchema = z.object({
   username: z.string().min(3).max(50),
@@ -135,6 +136,9 @@ export function setupAuth(app: Express) {
         lastName: lastName || null,
         profileImageUrl: null,
       });
+
+      // Broadcast user creation event
+      broadcast({ type: "user:created" });
 
       // Auto-login the user
       req.login(user, (err) => {

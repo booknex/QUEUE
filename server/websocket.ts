@@ -28,7 +28,8 @@ export type BroadcastEvent =
   | { type: "column:created" | "column:updated" | "column:deleted"; pipelineId: number }
   | { type: "opportunity:created" | "opportunity:updated" | "opportunity:deleted"; companyId: number }
   | { type: "contact:created" | "contact:updated" | "contact:deleted"; companyId: number }
-  | { type: "filter:created" | "filter:updated" | "filter:deleted"; companyId: number };
+  | { type: "filter:created" | "filter:updated" | "filter:deleted"; companyId: number }
+  | { type: "user:created" | "user:updated" | "user:deleted" };
 
 export function broadcast(event: BroadcastEvent) {
   if (!wss) {

@@ -112,6 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add user to company
       await storage.addUserToCompany(targetUser.id, companyId, role);
       
+      broadcast({ type: "user:created" });
       res.status(201).json({ success: true, userId: targetUser.id });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -202,6 +203,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
       
+      broadcast({ type: "user:updated" });
+      
       // Remove password from response
       const { password, ...safeUser } = updated;
       res.json(safeUser);
@@ -230,6 +233,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
       
+      broadcast({ type: "user:updated" });
+      
       // Remove password from response
       const { password, ...safeUser } = updated;
       res.json(safeUser);
@@ -249,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
       
+      broadcast({ type: "user:deleted" });
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting user:", error);

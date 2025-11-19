@@ -41,6 +41,7 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/company-users", companyId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       toast({
         title: "Success",
         description: "User added to company successfully",
