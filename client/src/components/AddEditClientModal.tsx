@@ -341,209 +341,217 @@ export function AddEditClientModal({
 
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">Details</h3>
-            <div className="border rounded-md p-4">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="clientName"
-              render={({ field }) => (
-                <FormItem className="flex flex-col relative" ref={dropdownRef}>
-                  <FormLabel>Client Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Start typing client name..."
-                      data-testid="input-client-name"
-                      onFocus={() => {
-                        if (field.value && companyContacts.length > 0) {
-                          setContactSearchOpen(true);
-                        }
-                      }}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        setSelectedContactId(null);
-                        setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
-                      }}
-                    />
-                  </FormControl>
-                  {contactSearchOpen && companyContacts.filter(contact => 
-                    contact.name.toLowerCase().includes((field.value || "").toLowerCase())
-                  ).length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
-                      {companyContacts
-                        .filter(contact => 
-                          contact.name.toLowerCase().includes((field.value || "").toLowerCase())
-                        )
-                        .map((contact) => (
-                          <div
-                            key={contact.id}
-                            className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
-                            onClick={() => handleContactSelect(contact)}
-                            data-testid={`contact-option-${contact.id}`}
-                          >
-                            <Check
-                              className={cn(
-                                "h-4 w-4 mt-0.5 shrink-0",
-                                selectedContactId === contact.id ? "opacity-100" : "opacity-0"
-                              )}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
+                <div className="border rounded-md p-4">
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3">Contact Information</h4>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="clientName"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col relative" ref={dropdownRef}>
+                          <FormLabel>Client Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Start typing client name..."
+                              data-testid="input-client-name"
+                              onFocus={() => {
+                                if (field.value && companyContacts.length > 0) {
+                                  setContactSearchOpen(true);
+                                }
+                              }}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setSelectedContactId(null);
+                                setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
+                              }}
                             />
-                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                              <span className="font-medium text-sm">{contact.name}</span>
-                              {(contact.phone || contact.email) && (
-                                <span className="text-xs text-muted-foreground">
-                                  {[contact.phone, contact.email].filter(Boolean).join(" • ")}
-                                </span>
-                              )}
+                          </FormControl>
+                          {contactSearchOpen && companyContacts.filter(contact => 
+                            contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                          ).length > 0 && (
+                            <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                              {companyContacts
+                                .filter(contact => 
+                                  contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                                )
+                                .map((contact) => (
+                                  <div
+                                    key={contact.id}
+                                    className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
+                                    onClick={() => handleContactSelect(contact)}
+                                    data-testid={`contact-option-${contact.id}`}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "h-4 w-4 mt-0.5 shrink-0",
+                                        selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                                      <span className="font-medium text-sm">{contact.name}</span>
+                                      {(contact.phone || contact.email) && (
+                                        <span className="text-xs text-muted-foreground">
+                                          {[contact.phone, contact.email].filter(Boolean).join(" • ")}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      placeholder="Enter phone number..."
-                      data-testid="input-phone"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      type="email"
-                      placeholder="Enter email address..."
-                      data-testid="input-email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meeting notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add notes from your meeting or work session"
-                      className="min-h-24 resize-none"
-                      {...field}
-                      data-testid="input-description"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={isLoadingFilters}
-                  >
-                    <FormControl>
-                      <SelectTrigger data-testid="select-status">
-                        <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {uniqueStatuses.length > 0 ? (
-                        uniqueStatuses.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {status}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="no-status" disabled>
-                          No statuses available
-                        </SelectItem>
+                          )}
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    />
 
-            <FormField
-              control={form.control}
-              name="pipelineId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Pipeline</FormLabel>
-                  <Select 
-                    onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
-                    value={field.value ? String(field.value) : "none"}
-                  >
-                    <FormControl>
-                      <SelectTrigger data-testid="select-pipeline">
-                        <SelectValue placeholder="Select pipeline (optional)" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No Pipeline</SelectItem>
-                      {pipelines.map((pipeline) => (
-                        <SelectItem key={pipeline.id} value={String(pipeline.id)}>
-                          {pipeline.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value || ""}
+                              placeholder="Enter phone number..."
+                              data-testid="input-phone"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleOpenChange(false)}
-                      disabled={isPending}
-                      data-testid="button-cancel"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isPending} data-testid="button-submit">
-                      {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
-                    </Button>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              value={field.value || ""}
+                              type="email"
+                              placeholder="Enter email address..."
+                              data-testid="input-email"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                </form>
-              </Form>
-            </div>
+                </div>
+
+                <div className="border rounded-md p-4">
+                  <h4 className="text-xs font-semibold text-muted-foreground mb-3">Dashboard Display</h4>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Meeting notes</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Add notes from your meeting or work session"
+                              className="min-h-24 resize-none"
+                              {...field}
+                              data-testid="input-description"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value}
+                            disabled={isLoadingFilters}
+                          >
+                            <FormControl>
+                              <SelectTrigger data-testid="select-status">
+                                <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {uniqueStatuses.length > 0 ? (
+                                uniqueStatuses.map((status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {status}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="no-status" disabled>
+                                  No statuses available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pipelineId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pipeline</FormLabel>
+                          <Select 
+                            onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
+                            value={field.value ? String(field.value) : "none"}
+                          >
+                            <FormControl>
+                              <SelectTrigger data-testid="select-pipeline">
+                                <SelectValue placeholder="Select pipeline (optional)" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">No Pipeline</SelectItem>
+                              {pipelines.map((pipeline) => (
+                                <SelectItem key={pipeline.id} value={String(pipeline.id)}>
+                                  {pipeline.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                    disabled={isPending}
+                    data-testid="button-cancel"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isPending} data-testid="button-submit">
+                    {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </div>
 
           <div className="space-y-3">
