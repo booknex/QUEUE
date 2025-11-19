@@ -440,35 +440,33 @@ export function AddEditClientModal({
           )}
           data-testid="modal-add-edit-client"
         >
-        {/* Edge Trigger Buttons - Aligned with Title */}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsNotesOpen(!isNotesOpen)}
-          className="absolute left-6 top-6 z-50"
-          data-testid="button-toggle-meeting-notes"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-          className="absolute right-16 top-6 z-50"
-          data-testid="button-toggle-touch-comments"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-
-        <DialogHeader className="text-center">
-          <DialogTitle data-testid="text-modal-title" className="text-center">
+        {/* Header with Title and Arrow Buttons */}
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setIsNotesOpen(!isNotesOpen)}
+            data-testid="button-toggle-meeting-notes"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <DialogTitle data-testid="text-modal-title" className="text-lg font-semibold">
             {editingFile ? "Edit Client File" : "Add New Client"}
           </DialogTitle>
-        </DialogHeader>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setIsTouchesOpen(!isTouchesOpen)}
+            data-testid="button-toggle-touch-comments"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
 
         {/* Details Form */}
-        <div className="mt-4">
+        <div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
               <div className="space-y-2 max-h-[calc(90vh-12rem)] overflow-auto pr-2">
