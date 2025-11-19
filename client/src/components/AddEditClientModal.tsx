@@ -279,23 +279,19 @@ export function AddEditClientModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogPortal>
-        <DialogOverlay />
-        
-        {/* Left Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
-        {open && (
-          <aside
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsNotesOpen(!isNotesOpen);
-            }}
-            className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
-              isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
-            )}
-            data-testid="panel-meeting-notes"
-          >
+      {/* Left Sliding Panel - Outside DialogPortal (z-[51]) */}
+      {open && (
+        <aside
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsNotesOpen(!isNotesOpen);
+          }}
+          className={cn(
+            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
+            isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
+          )}
+          data-testid="panel-meeting-notes"
+        >
             <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
@@ -351,19 +347,19 @@ export function AddEditClientModal({
         </aside>
       )}
 
-        {/* Right Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
-        {open && (
-          <aside
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsTouchesOpen(!isTouchesOpen);
-            }}
-            className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
-              isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
-            )}
-            data-testid="panel-touch-comments"
-          >
+      {/* Right Sliding Panel - Outside DialogPortal (z-[51]) */}
+      {open && (
+        <aside
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsTouchesOpen(!isTouchesOpen);
+          }}
+          className={cn(
+            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
+            isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
+          )}
+          data-testid="panel-touch-comments"
+        >
             <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
@@ -431,6 +427,10 @@ export function AddEditClientModal({
         </aside>
       )}
 
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogPortal>
+        <DialogOverlay />
+        
         {/* Main Modal Dialog Content (z-[52] - Above panels) */}
         <DialogPrimitive.Content
           className={cn(
