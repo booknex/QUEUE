@@ -274,17 +274,19 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="relative max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 max-h-[90vh] overflow-visible" data-testid="modal-add-edit-client">
-        <DialogHeader>
-          <DialogTitle data-testid="text-modal-title">
-            {editingFile ? "Edit Client File" : "Add New Client"}
-          </DialogTitle>
-          <DialogDescription data-testid="text-modal-description">
-            {editingFile
-              ? "Update the client details below."
-              : "Add a new client to your work queue."}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="relative max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 max-h-[90vh] overflow-hidden p-0" data-testid="modal-add-edit-client">
+        <div className="p-6 pb-4">
+          <DialogHeader>
+            <DialogTitle data-testid="text-modal-title">
+              {editingFile ? "Edit Client File" : "Add New Client"}
+            </DialogTitle>
+            <DialogDescription data-testid="text-modal-description">
+              {editingFile
+                ? "Update the client details below."
+                : "Add a new client to your work queue."}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
         {/* Left Edge Trigger Button */}
         <Button
@@ -461,11 +463,10 @@ export function AddEditClientModal({
           </aside>
 
           {/* Details Form */}
-          <div className="mt-4">
-            <div className="h-[500px] border rounded-md p-3 flex flex-col">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
-                  <div className="flex-1 space-y-2 overflow-auto">
+          <div className="px-6 pb-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col space-y-3">
+                <div className="space-y-2 max-h-[400px] overflow-auto pr-2">
                     <div>
                       <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Contact Information</h4>
                       <div className="space-y-2">
@@ -679,7 +680,6 @@ export function AddEditClientModal({
                   </div>
                 </form>
               </Form>
-            </div>
           </div>
       </DialogContent>
 
