@@ -428,25 +428,25 @@ export function AddEditClientModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Edge Trigger Buttons */}
+        {/* Edge Trigger Buttons - Top Corners */}
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setIsNotesOpen(!isNotesOpen)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-50"
+          className="absolute left-2 top-2 z-50"
           data-testid="button-toggle-meeting-notes"
         >
-          {isNotesOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-50"
+          className="absolute right-12 top-2 z-50"
           data-testid="button-toggle-touch-comments"
         >
-          {isTouchesOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <ChevronRight className="h-4 w-4" />
         </Button>
 
         {/* Details Form */}
