@@ -31,6 +31,7 @@ import {
 import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2, Briefcase, UserCircle } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
+import { ErrorBoundary } from "./ErrorBoundary";
 import MessageInboxModal from "./MessageInboxModal";
 import Contacts from "@/pages/Contacts";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -657,13 +658,15 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
       </div>
 
       <PipelineManager open={pipelineManagerOpen} onClose={() => setPipelineManagerOpen(false)} selectedCompanyId={selectedCompanyId} />
-      <AddOpportunityModal 
-        open={addOpportunityOpen} 
-        onClose={handleCloseOpportunityModal} 
-        selectedPipelineId={selectedPipelineId}
-        selectedCompanyId={selectedCompanyId}
-        opportunity={editingOpportunity}
-      />
+      <ErrorBoundary>
+        <AddOpportunityModal 
+          open={addOpportunityOpen} 
+          onClose={handleCloseOpportunityModal} 
+          selectedPipelineId={selectedPipelineId}
+          selectedCompanyId={selectedCompanyId}
+          opportunity={editingOpportunity}
+        />
+      </ErrorBoundary>
       
       {/* Add Column Dialog */}
       <Dialog open={addColumnOpen} onOpenChange={setAddColumnOpen}>
