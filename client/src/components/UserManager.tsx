@@ -65,6 +65,7 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
       return apiRequest("DELETE", `/api/users/${userId}`);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/company-users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       setRemovingUser(null);
       toast({
