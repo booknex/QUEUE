@@ -604,7 +604,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                           <Tooltip>
                                             <TooltipTrigger asChild>
                                               <div
-                                                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold"
+                                                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-semibold"
                                                 data-testid={`assigned-user-${opportunity.id}`}
                                                 onClick={(e) => e.stopPropagation()}
                                               >
@@ -618,7 +618,7 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                         );
                                       })()}
                                       <CardHeader className="pb-2 pt-3 px-3">
-                                        <CardTitle className="text-sm pr-10">
+                                        <CardTitle className="text-sm pr-8">
                                           <span 
                                             className="cursor-pointer hover:underline text-primary"
                                             onClick={(e) => handleContactClick(e, opportunity)}
