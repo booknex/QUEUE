@@ -292,7 +292,10 @@ export function AddEditClientModal({
             size="icon"
             variant="ghost"
             onClick={() => setIsNotesOpen(!isNotesOpen)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-30"
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
+              isNotesOpen ? "left-[316px]" : "left-2"
+            )}
             aria-controls="meeting-notes-panel"
             aria-expanded={isNotesOpen}
             data-testid="button-toggle-meeting-notes"
@@ -305,7 +308,10 @@ export function AddEditClientModal({
             size="icon"
             variant="ghost"
             onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-30"
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
+              isTouchesOpen ? "right-[316px]" : "right-2"
+            )}
             aria-controls="touch-comments-panel"
             aria-expanded={isTouchesOpen}
             data-testid="button-toggle-touch-comments"
