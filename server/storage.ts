@@ -286,6 +286,8 @@ export class DatabaseStorage implements IStorage {
       .select({
         id: clientFiles.id,
         clientName: clientFiles.clientName,
+        phone: clientFiles.phone,
+        email: clientFiles.email,
         description: clientFiles.description,
         status: clientFiles.status,
         companyId: clientFiles.companyId,

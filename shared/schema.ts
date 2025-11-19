@@ -77,8 +77,8 @@ export type InsertUserCompany = z.infer<typeof insertUserCompanySchema>;
 export type UserCompany = typeof userCompanies.$inferSelect;
 export type UpdateUserCompany = z.infer<typeof updateUserCompanySchema>;
 
-// Enriched type for user with company membership info
-export type UserWithRole = User & {
+// Enriched type for user with company membership info (password excluded for security)
+export type UserWithRole = Omit<User, 'password'> & {
   role: string;
   memberSince: Date;
 };
@@ -86,6 +86,8 @@ export type UserWithRole = User & {
 export const clientFiles = pgTable("client_files", {
   id: serial("id").primaryKey(),
   clientName: text("client_name").notNull(),
+  phone: text("phone"),
+  email: text("email"),
   description: text("description"),
   status: text("status").notNull().default("APP-INTAKE"),
   companyId: integer("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
@@ -157,6 +159,8 @@ export type ClientFile = typeof clientFiles.$inferSelect & {
 
 export const updateClientFileSchema = z.object({
   clientName: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
   description: z.string().optional(),
   status: z.string().min(1).optional(),
   pipelineId: z.number().nullable().optional(),

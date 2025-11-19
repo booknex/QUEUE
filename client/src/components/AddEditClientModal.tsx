@@ -1,12 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,10 +44,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ClientFile, Pipeline, StatusFilter, WorkSessionWithUser, MeetingNote } from "@shared/schema";
+import type { ClientFile, Pipeline, StatusFilter, WorkSessionWithUser, MeetingNote, Contact } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
   description: z.string().optional(),
   status: z.string().min(1, "Status is required"),
   pipelineId: z.number().nullable().optional(),
@@ -77,6 +80,9 @@ export function AddEditClientModal({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteType, setDeleteType] = useState<"meeting-note" | "session" | null>(null);
+  const [contactSearchOpen, setContactSearchOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
     queryKey: ["/api/filters", companyId?.toString()],
@@ -87,6 +93,17 @@ export function AddEditClientModal({
       return response.json();
     },
     enabled: companyId !== null,
+  });
+
+  const { data: companyContacts = [] } = useQuery<Contact[]>({
+    queryKey: ["/api/contacts", companyId?.toString()],
+    queryFn: async () => {
+      if (companyId === null) return [];
+      const response = await fetch(`/api/contacts?companyId=${companyId}`);
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      return response.json();
+    },
+    enabled: companyId !== null && open,
   });
 
   const { data: workSessions = [], isLoading: isLoadingSessions } = useQuery<WorkSessionWithUser[]>({
@@ -184,6 +201,8 @@ export function AddEditClientModal({
     resolver: zodResolver(formSchema),
     defaultValues: {
       clientName: "",
+      phone: "",
+      email: "",
       description: "",
       status: defaultStatus,
       pipelineId: null,
@@ -194,6 +213,8 @@ export function AddEditClientModal({
     if (editingFile) {
       form.reset({
         clientName: editingFile.clientName,
+        phone: editingFile.phone || "",
+        email: editingFile.email || "",
         description: editingFile.description || "",
         status: editingFile.status,
         pipelineId: editingFile.pipelineId || null,
@@ -201,12 +222,37 @@ export function AddEditClientModal({
     } else {
       form.reset({
         clientName: "",
+        phone: "",
+        email: "",
         description: "",
         status: defaultStatus,
         pipelineId: null,
       });
     }
   }, [editingFile, form, defaultStatus]);
+
+  const handleContactSelect = (contact: Contact) => {
+    setSelectedContactId(contact.id);
+    form.setValue("clientName", contact.name);
+    form.setValue("phone", contact.phone || "");
+    form.setValue("email", contact.email || "");
+    setContactSearchOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setContactSearchOpen(false);
+      }
+    };
+
+    if (contactSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [contactSearchOpen]);
 
   const handleSubmit = (data: FormData) => {
     onSubmit(data);
@@ -216,6 +262,8 @@ export function AddEditClientModal({
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && !isPending) {
       form.reset();
+      setContactSearchOpen(false);
+      setSelectedContactId(null);
     }
     onOpenChange(newOpen);
   };
@@ -300,13 +348,95 @@ export function AddEditClientModal({
               control={form.control}
               name="clientName"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col relative" ref={dropdownRef}>
                   <FormLabel>Client Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter client name"
                       {...field}
+                      placeholder="Start typing client name..."
                       data-testid="input-client-name"
+                      onFocus={() => {
+                        if (field.value && companyContacts.length > 0) {
+                          setContactSearchOpen(true);
+                        }
+                      }}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        setSelectedContactId(null);
+                        setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
+                      }}
+                    />
+                  </FormControl>
+                  {contactSearchOpen && companyContacts.filter(contact => 
+                    contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                  ).length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                      {companyContacts
+                        .filter(contact => 
+                          contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                        )
+                        .map((contact) => (
+                          <div
+                            key={contact.id}
+                            className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
+                            onClick={() => handleContactSelect(contact)}
+                            data-testid={`contact-option-${contact.id}`}
+                          >
+                            <Check
+                              className={cn(
+                                "h-4 w-4 mt-0.5 shrink-0",
+                                selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <span className="font-medium text-sm">{contact.name}</span>
+                              {(contact.phone || contact.email) && (
+                                <span className="text-xs text-muted-foreground">
+                                  {[contact.phone, contact.email].filter(Boolean).join(" • ")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Enter phone number..."
+                      data-testid="input-phone"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ""}
+                      type="email"
+                      placeholder="Enter email address..."
+                      data-testid="input-email"
                     />
                   </FormControl>
                   <FormMessage />
