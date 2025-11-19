@@ -287,7 +287,7 @@ export function AddEditClientModal({
             setIsNotesOpen(!isNotesOpen);
           }}
           className={cn(
-            "fixed top-[40%] -translate-y-[40%] w-[36rem] h-[450vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-[40%] -translate-y-[40%] w-[36rem] h-[180vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isNotesOpen ? "left-[calc(50%-21rem-1.25rem)]" : "left-[calc(50%-21rem-30rem)]"
           )}
           data-testid="panel-meeting-notes"
@@ -355,7 +355,7 @@ export function AddEditClientModal({
             setIsTouchesOpen(!isTouchesOpen);
           }}
           className={cn(
-            "fixed top-[40%] -translate-y-[40%] w-[36rem] h-[450vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-[40%] -translate-y-[40%] w-[36rem] h-[180vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-21rem-1.25rem)]" : "right-[calc(50%-21rem-30rem)]"
           )}
           data-testid="panel-touch-comments"
