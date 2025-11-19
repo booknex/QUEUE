@@ -274,7 +274,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="relative max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 h-[600px] overflow-hidden p-6" data-testid="modal-add-edit-client">
+      <DialogContent className="relative max-w-4xl w-full max-h-[85vh] flex flex-col p-6" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -461,9 +461,9 @@ export function AddEditClientModal({
           </aside>
 
           {/* Details Form */}
-          <div className="mt-4">
+          <div className="flex-1 flex flex-col overflow-hidden mt-4">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full space-y-3">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
                 <div className="flex-1 space-y-2 overflow-auto pr-2">
                     <div>
                       <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Contact Information</h4>
