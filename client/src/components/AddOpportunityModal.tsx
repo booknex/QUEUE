@@ -182,29 +182,37 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
           throw new Error("Please add at least one column to this pipeline before creating opportunities");
         }
         
-        // First create the contact using the title field as the contact name
-        const contactData: any = {
-          name: data.title,
-          companyId: selectedCompanyId,
-        };
+        let contactId: number;
         
-        // Only include phone and email if they have values
-        if (data.contactPhone && data.contactPhone.trim()) {
-          contactData.phone = data.contactPhone;
-        }
-        if (data.contactEmail && data.contactEmail.trim()) {
-          contactData.email = data.contactEmail;
-        }
-
-        const contactRes = await apiRequest("POST", "/api/contacts", contactData);
-        if (!contactRes.ok) {
-          const errorData = await contactRes.json();
-          if (contactRes.status === 409) {
-            throw new Error(`Contact "${data.title}" already exists. Please use a different name or update the existing contact.`);
+        // If a contact was selected from the autocomplete, use that existing contact
+        if (selectedContactId !== null) {
+          contactId = selectedContactId;
+        } else {
+          // Create a new contact using the title field as the contact name
+          const contactData: any = {
+            name: data.title,
+            companyId: selectedCompanyId,
+          };
+          
+          // Only include phone and email if they have values
+          if (data.contactPhone && data.contactPhone.trim()) {
+            contactData.phone = data.contactPhone;
           }
-          throw new Error(errorData.error || "Failed to create contact");
+          if (data.contactEmail && data.contactEmail.trim()) {
+            contactData.email = data.contactEmail;
+          }
+
+          const contactRes = await apiRequest("POST", "/api/contacts", contactData);
+          if (!contactRes.ok) {
+            const errorData = await contactRes.json();
+            if (contactRes.status === 409) {
+              throw new Error(`Contact "${data.title}" already exists. Please use a different name or update the existing contact.`);
+            }
+            throw new Error(errorData.error || "Failed to create contact");
+          }
+          const contact = await contactRes.json();
+          contactId = contact.id;
         }
-        const contact = await contactRes.json();
 
         // Then create the opportunity with the contactId
         // Use the contact name as the opportunity title
@@ -214,7 +222,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         const opportunityData: any = {
           title: data.title,
           columnId: firstColumnId,
-          contactId: contact.id,
+          contactId: contactId,
           assignedUserId: data.assignedUserId || null,
         };
         
