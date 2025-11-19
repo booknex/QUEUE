@@ -25,6 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,10 +52,11 @@ import {
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { insertContactSchema } from "@shared/schema";
-import type { KanbanColumn, OpportunityWithContact, UserWithRole } from "@shared/schema";
+import type { KanbanColumn, OpportunityWithContact, UserWithRole, Contact } from "@shared/schema";
 import { z } from "zod";
 import { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddOpportunityModalProps {
   open: boolean;
@@ -66,6 +80,8 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
   const { toast } = useToast();
   const isEditMode = !!opportunity;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [contactSearchOpen, setContactSearchOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
 
   const { data: pipelineColumns = [] } = useQuery<KanbanColumn[]>({
     queryKey: ["/api/columns", selectedPipelineId?.toString()],
@@ -83,6 +99,17 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
       if (selectedCompanyId === null) return [];
       const response = await fetch(`/api/company-users?companyId=${selectedCompanyId}`);
       if (!response.ok) throw new Error("Failed to fetch users");
+      return response.json();
+    },
+    enabled: selectedCompanyId !== null && open,
+  });
+
+  const { data: companyContacts = [] } = useQuery<Contact[]>({
+    queryKey: ["/api/contacts", selectedCompanyId?.toString()],
+    queryFn: async () => {
+      if (selectedCompanyId === null) return [];
+      const response = await fetch(`/api/contacts?companyId=${selectedCompanyId}`);
+      if (!response.ok) throw new Error("Failed to fetch contacts");
       return response.json();
     },
     enabled: selectedCompanyId !== null && open,
@@ -252,8 +279,18 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
   const handleClose = () => {
     if (!saveMutation.isPending) {
       form.reset();
+      setContactSearchOpen(false);
+      setSelectedContactId(null);
       onClose();
     }
+  };
+
+  const handleContactSelect = (contact: Contact) => {
+    setSelectedContactId(contact.id);
+    form.setValue("title", contact.name);
+    form.setValue("contactPhone", contact.phone || "");
+    form.setValue("contactEmail", contact.email || "");
+    setContactSearchOpen(false);
   };
 
   return (
@@ -274,15 +311,67 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Contact Name *</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Enter contact name..."
-                      data-testid="input-opportunity-title"
-                    />
-                  </FormControl>
+                  <Popover open={contactSearchOpen} onOpenChange={setContactSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={contactSearchOpen}
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                          data-testid="input-opportunity-title"
+                        >
+                          {field.value || "Search or enter contact name..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[500px] p-0">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Search contacts..." 
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedContactId(null);
+                          }}
+                        />
+                        <CommandList>
+                          <CommandEmpty>No contact found. Type to create new.</CommandEmpty>
+                          <CommandGroup>
+                            {companyContacts.map((contact) => (
+                              <CommandItem
+                                key={contact.id}
+                                value={contact.name}
+                                onSelect={() => handleContactSelect(contact)}
+                                data-testid={`contact-option-${contact.id}`}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{contact.name}</span>
+                                  {(contact.phone || contact.email) && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {[contact.phone, contact.email].filter(Boolean).join(" • ")}
+                                    </span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
