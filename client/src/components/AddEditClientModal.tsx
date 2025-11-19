@@ -277,11 +277,11 @@ export function AddEditClientModal({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogPortal>
-        {/* Left Sliding Panel - Behind Modal (z-[45]) */}
+        {/* Left Sliding Panel - Above Overlay (z-[51]) */}
         {open && (
           <aside
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[45] overflow-hidden",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden",
               isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
             )}
           >
@@ -340,11 +340,11 @@ export function AddEditClientModal({
         </aside>
       )}
 
-        {/* Right Sliding Panel - Behind Modal (z-[45]) */}
+        {/* Right Sliding Panel - Above Overlay (z-[51]) */}
         {open && (
           <aside
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[45] overflow-hidden",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden",
               isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
             )}
           >
@@ -438,8 +438,14 @@ export function AddEditClientModal({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
+        <DialogHeader className="text-center">
+          <DialogTitle data-testid="text-modal-title" className="text-center">
+            {editingFile ? "Edit Client File" : "Add New Client"}
+          </DialogTitle>
+        </DialogHeader>
+
         {/* Details Form */}
-        <div className="mt-2">
+        <div className="mt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
               <div className="space-y-2 max-h-[calc(90vh-12rem)] overflow-auto pr-2">
