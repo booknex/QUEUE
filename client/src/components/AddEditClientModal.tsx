@@ -274,7 +274,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" data-testid="modal-add-edit-client">
+      <DialogContent className="relative max-w-4xl max-h-[90vh] overflow-visible p-6" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -286,9 +286,42 @@ export function AddEditClientModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          {/* Left Panel - Meeting Notes */}
-          <div className="border rounded-md p-3 overflow-hidden flex flex-col">
+        {/* Left Edge Trigger Button */}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setIsNotesOpen(!isNotesOpen)}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
+            isNotesOpen ? "left-[316px]" : "left-0"
+          )}
+          data-testid="button-toggle-meeting-notes"
+        >
+          {isNotesOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+
+        {/* Right Edge Trigger Button */}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setIsTouchesOpen(!isTouchesOpen)}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
+            isTouchesOpen ? "right-[316px]" : "right-0"
+          )}
+          data-testid="button-toggle-touch-comments"
+        >
+          {isTouchesOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </Button>
+
+        {/* Left Sliding Panel - Meeting Notes */}
+        <aside
+          className={cn(
+            "absolute left-0 top-0 bottom-0 w-80 bg-background border-r shadow-lg transition-transform duration-300 ease-in-out z-20",
+            isNotesOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+          )}
+        >
+          <div className="h-full flex flex-col p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
                 Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
