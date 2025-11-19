@@ -286,7 +286,10 @@ export function AddEditClientModal({
         {/* Left Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
         {open && (
           <aside
-            onClick={() => setIsNotesOpen(!isNotesOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsNotesOpen(!isNotesOpen);
+            }}
             className={cn(
               "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
               isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
@@ -351,7 +354,10 @@ export function AddEditClientModal({
         {/* Right Sliding Panel - Behind Modal but Not Dimmed (z-[51]) */}
         {open && (
           <aside
-            onClick={() => setIsTouchesOpen(!isTouchesOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsTouchesOpen(!isTouchesOpen);
+            }}
             className={cn(
               "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer",
               isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
