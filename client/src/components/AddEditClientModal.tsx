@@ -42,12 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ClientFile, Pipeline, StatusFilter, WorkSession, MeetingNote } from "@shared/schema";
 
@@ -228,7 +222,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl sm:top-[10%] sm:translate-y-0 max-h-[85vh]" data-testid="modal-add-edit-client">
+      <DialogContent className="max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 max-h-[90vh]" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -240,20 +234,68 @@ export function AddEditClientModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details" data-testid="tab-details">Details</TabsTrigger>
-            <TabsTrigger value="meeting-notes" disabled={!editingFile} data-testid="tab-meeting-notes">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">
               Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
-            </TabsTrigger>
-            <TabsTrigger value="touch-comments" disabled={!editingFile} data-testid="tab-touch-comments">
-              Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
-            </TabsTrigger>
-          </TabsList>
+            </h3>
+            <ScrollArea className="h-[500px] pr-4 border rounded-md p-4">
+              {!editingFile ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  Save the client first to view meeting notes.
+                </div>
+              ) : isLoadingMeetingNotes ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  Loading meeting notes...
+                </div>
+              ) : meetingNotes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No meeting notes yet. Update the client with meeting notes to create history.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {meetingNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="border rounded-md p-3 bg-card"
+                      data-testid={`meeting-note-${note.id}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
+                          {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
+                        </p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteClick(note.id, "meeting-note")}
+                          data-testid={`button-delete-meeting-note-${note.id}`}
+                          className="h-6 w-6"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {new Date(note.createdAt).toLocaleString()}
+                      </p>
+                      {note.notes ? (
+                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
+                          {note.notes}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">No notes added</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
 
-          <TabsContent value="details" className="mt-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Details</h3>
+            <div className="border rounded-md p-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="clientName"
@@ -355,116 +397,67 @@ export function AddEditClientModal({
               )}
             />
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOpenChange(false)}
-                    disabled={isPending}
-                    data-testid="button-cancel"
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isPending} data-testid="button-submit">
-                    {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </TabsContent>
-
-          <TabsContent value="meeting-notes" className="mt-4">
-            <ScrollArea className="h-[400px] pr-4">
-              {isLoadingMeetingNotes ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Loading meeting notes...
-                </div>
-              ) : meetingNotes.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No meeting notes yet. Update the client with meeting notes to create history.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {meetingNotes.map((note) => (
-                    <div
-                      key={note.id}
-                      className="border rounded-md p-4 bg-card"
-                      data-testid={`meeting-note-${note.id}`}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleOpenChange(false)}
+                      disabled={isPending}
+                      data-testid="button-cancel"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
-                            {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(note.createdAt).toLocaleString()}
-                          </p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteClick(note.id, "meeting-note")}
-                            data-testid={`button-delete-meeting-note-${note.id}`}
-                            className="h-6 w-6"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      {note.notes ? (
-                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
-                          {note.notes}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">No notes added</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isPending} data-testid="button-submit">
+                      {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </div>
 
-          <TabsContent value="touch-comments" className="mt-4">
-            <ScrollArea className="h-[400px] pr-4">
-              {isLoadingSessions ? (
-                <div className="text-center py-8 text-muted-foreground">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">
+              Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+            </h3>
+            <ScrollArea className="h-[500px] pr-4 border rounded-md p-4">
+              {!editingFile ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  Save the client first to view touch comments.
+                </div>
+              ) : isLoadingSessions ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
                   Loading touch comments...
                 </div>
               ) : workSessions.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground text-sm">
                   No touch comments yet. Touch this client to add comments.
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {workSessions.map((session) => (
                     <div
                       key={session.id}
-                      className="border rounded-md p-4 bg-card"
+                      className="border rounded-md p-3 bg-card"
                       data-testid={`touch-comment-${session.id}`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                            {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(session.startedAt).toLocaleString()}
-                          </p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteClick(session.id, "session")}
-                            data-testid={`button-delete-touch-comment-${session.id}`}
-                            className="h-6 w-6"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
+                          {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                        </p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteClick(session.id, "session")}
+                          data-testid={`button-delete-touch-comment-${session.id}`}
+                          className="h-6 w-6"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {new Date(session.startedAt).toLocaleString()}
+                      </p>
                       {session.notes ? (
                         <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
                           {session.notes}
@@ -477,8 +470,8 @@ export function AddEditClientModal({
                 </div>
               )}
             </ScrollArea>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </DialogContent>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
