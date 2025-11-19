@@ -438,11 +438,11 @@ export function AddEditClientModal({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        <DialogHeader className="pl-10 pr-10">
-          <DialogTitle data-testid="text-modal-title">
+        <DialogHeader className="text-center">
+          <DialogTitle data-testid="text-modal-title" className="text-center">
             {editingFile ? "Edit Client File" : "Add New Client"}
           </DialogTitle>
-          <DialogDescription data-testid="text-modal-description">
+          <DialogDescription data-testid="text-modal-description" className="text-center">
             {editingFile
               ? "Update the client details below."
               : "Add a new client to your work queue."}
