@@ -46,12 +46,14 @@ Key features include:
     - **Current Meeting Note**: The `description` field on each client file stores the current/latest meeting note, displayed on client cards for quick reference.
     - **Historical Tracking**: The `meetingNotes` table automatically tracks a complete history of all description changes over time with timestamps.
     - **Smart Deduplication**: Meeting notes are only saved when the description field actually changes (comparison check prevents duplicate entries).
-    - **Collapsible Panel Modal**: Client file modal uses a modern collapsible panel design with a centered Details form (max-w-2xl) and two slide-in side panels:
-      - **Meeting Notes Panel**: Slides in from the left via left edge trigger button (320px wide, z-index 20)
-      - **Touch Comments Panel**: Slides in from the right via right edge trigger button (320px wide, z-index 20)
-      - **Edge Triggers**: Chevron buttons positioned at panel edges (z-index 30) with smooth 300ms transitions, moving to inner edge when panels open (left-[316px] / right-[316px])
-      - **Independent Operation**: Both panels can be open simultaneously without blocking the center Details form
-      - **State Management**: Panels collapse automatically when modal closes, preserving clean UX
+    - **Collapsible Panel Modal**: Client file modal uses a modern collapsible panel design where the Details form is the only visible content, with side panels tucking behind the modal popup:
+      - **Details Form**: Full-width form is the primary/only visible content in the modal
+      - **Meeting Notes Panel**: Tucks behind the left side of the modal popup, slides in on click (320px wide, z-index 20)
+      - **Touch Comments Panel**: Tucks behind the right side of the modal popup, slides in on click (320px wide, z-index 20)
+      - **Edge Triggers**: Chevron buttons positioned at modal edges (z-index 30) with smooth 300ms transitions, moving to inner edge when panels open (left-[316px] / right-[316px])
+      - **Overlay Design**: Panels slide in over the Details form content, not beside it
+      - **Independent Operation**: Both panels can be open simultaneously
+      - **State Management**: Panels collapse automatically when modal closes
     - **Delete Capability**: Users can delete individual meeting notes and touch comments with confirmation dialogs. Delete buttons appear as trash icons next to each entry.
     - **Cache Management**: Frontend query cache properly invalidates meeting notes and touch comments on file updates and deletions to ensure fresh data.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
