@@ -207,11 +207,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(userId: string): Promise<boolean> {
+    // Manually clean up dependent records to work even without CASCADE constraints
+    
+    // 1. Delete user-company relationships
+    await db.delete(userCompanies).where(eq(userCompanies.userId, userId));
+    
+    // 2. Delete work sessions
+    await db.delete(workSessions).where(eq(workSessions.userId, userId));
+    
+    // 3. Set assignedUserId to null in opportunities
+    await db.update(opportunities)
+      .set({ assignedUserId: null })
+      .where(eq(opportunities.assignedUserId, userId));
+    
+    // 4. Finally delete the user
     const result = await db
       .delete(users)
       .where(eq(users.id, userId))
       .returning();
-    return result.length > 0;
+    
+    if (result.length === 0) {
+      throw new Error("User not found or could not be deleted");
+    }
+    
+    return true;
   }
 
   async updateUserRole(userId: string, companyId: number, role: string): Promise<void> {
