@@ -339,13 +339,15 @@ export function AddEditClientModal({
             </ScrollArea>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 flex flex-col">
             <h3 className="text-sm font-semibold">Details</h3>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
-                <div className="border rounded-md p-4">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-3">Contact Information</h4>
-                  <div className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-3 flex-1">
+                <ScrollArea className="h-[500px] border rounded-md">
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-3">Contact Information</h4>
+                      <div className="space-y-4">
                     <FormField
                       control={form.control}
                       name="clientName"
@@ -445,96 +447,98 @@ export function AddEditClientModal({
                         </FormItem>
                       )}
                     />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-3">Dashboard Display</h4>
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Meeting notes</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Add notes from your meeting or work session"
+                                  className="min-h-24 resize-none"
+                                  {...field}
+                                  data-testid="input-description"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="status"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Status</FormLabel>
+                              <Select 
+                                onValueChange={field.onChange} 
+                                value={field.value}
+                                disabled={isLoadingFilters}
+                              >
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-status">
+                                    <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {uniqueStatuses.length > 0 ? (
+                                    uniqueStatuses.map((status) => (
+                                      <SelectItem key={status} value={status}>
+                                        {status}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <SelectItem value="no-status" disabled>
+                                      No statuses available
+                                    </SelectItem>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="pipelineId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Pipeline</FormLabel>
+                              <Select 
+                                onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
+                                value={field.value ? String(field.value) : "none"}
+                              >
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-pipeline">
+                                    <SelectValue placeholder="Select pipeline (optional)" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="none">No Pipeline</SelectItem>
+                                  {pipelines.map((pipeline) => (
+                                    <SelectItem key={pipeline.id} value={String(pipeline.id)}>
+                                      {pipeline.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="border rounded-md p-4">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-3">Dashboard Display</h4>
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Meeting notes</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Add notes from your meeting or work session"
-                              className="min-h-24 resize-none"
-                              {...field}
-                              data-testid="input-description"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            value={field.value}
-                            disabled={isLoadingFilters}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-status">
-                                <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {uniqueStatuses.length > 0 ? (
-                                uniqueStatuses.map((status) => (
-                                  <SelectItem key={status} value={status}>
-                                    {status}
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <SelectItem value="no-status" disabled>
-                                  No statuses available
-                                </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="pipelineId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pipeline</FormLabel>
-                          <Select 
-                            onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
-                            value={field.value ? String(field.value) : "none"}
-                          >
-                            <FormControl>
-                              <SelectTrigger data-testid="select-pipeline">
-                                <SelectValue placeholder="Select pipeline (optional)" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="none">No Pipeline</SelectItem>
-                              {pipelines.map((pipeline) => (
-                                <SelectItem key={pipeline.id} value={String(pipeline.id)}>
-                                  {pipeline.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                </ScrollArea>
 
                 <div className="flex justify-end gap-2">
                   <Button
