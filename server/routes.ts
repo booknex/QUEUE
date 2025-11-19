@@ -74,12 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Verify the requesting user is a member of the company
-      const userRole = await storage.getUserRole(req.user.id, companyId);
-      if (!userRole) {
-        return res.status(403).json({ error: "Access denied: You are not a member of this company" });
-      }
-      
+      // Unrestricted access - any authenticated user can view users for any company
       const users = await storage.getUsersByCompany(companyId);
       res.json(users);
     } catch (error) {

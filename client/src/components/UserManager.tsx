@@ -44,13 +44,14 @@ export function UserManager({ open, onClose, companyId }: UserManagerProps) {
   const { toast } = useToast();
 
   const { data: users = [], isLoading } = useQuery<UserWithoutPassword[]>({
-    queryKey: ["/api/users"],
+    queryKey: ["/api/company-users", companyId?.toString()],
     queryFn: async () => {
-      const response = await fetch(`/api/users`);
-      if (!response.ok) throw new Error("Failed to fetch users");
+      if (!companyId) return [];
+      const response = await fetch(`/api/company-users?companyId=${companyId}`);
+      if (!response.ok) throw new Error("Failed to fetch company users");
       return response.json();
     },
-    enabled: open,
+    enabled: open && !!companyId,
   });
 
   const { data: currentUser } = useQuery<{ id: string }>({
