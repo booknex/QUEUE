@@ -373,6 +373,7 @@ export function AddEditClientModal({
               )}
             </ScrollArea>
           </div>
+        </aside>
 
           {/* Center Panel - Details Form */}
           <div className="col-span-1 border rounded-md p-3 flex flex-col overflow-hidden">
@@ -594,8 +595,14 @@ export function AddEditClientModal({
               </Form>
           </div>
 
-          {/* Right Panel - Touch Comments */}
-          <div className="border rounded-md p-3 overflow-hidden flex flex-col">
+          {/* Right Sliding Panel - Touch Comments */}
+          <aside
+            className={cn(
+              "absolute right-0 top-0 bottom-0 w-80 bg-background border-l shadow-lg transition-transform duration-300 ease-in-out z-20",
+              isTouchesOpen ? "translate-x-0" : "translate-x-full pointer-events-none"
+            )}
+          >
+            <div className="h-full flex flex-col p-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
                 Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
@@ -659,7 +666,7 @@ export function AddEditClientModal({
               )}
             </ScrollArea>
           </div>
-        </div>
+        </aside>
       </DialogContent>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
