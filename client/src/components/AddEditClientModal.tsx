@@ -274,19 +274,17 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="relative max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 max-h-[90vh] overflow-hidden p-0" data-testid="modal-add-edit-client">
-        <div className="p-6 pb-4">
-          <DialogHeader>
-            <DialogTitle data-testid="text-modal-title">
-              {editingFile ? "Edit Client File" : "Add New Client"}
-            </DialogTitle>
-            <DialogDescription data-testid="text-modal-description">
-              {editingFile
-                ? "Update the client details below."
-                : "Add a new client to your work queue."}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+      <DialogContent className="relative max-w-[95vw] w-full sm:top-[5%] sm:translate-y-0 h-[600px] overflow-hidden p-6" data-testid="modal-add-edit-client">
+        <DialogHeader>
+          <DialogTitle data-testid="text-modal-title">
+            {editingFile ? "Edit Client File" : "Add New Client"}
+          </DialogTitle>
+          <DialogDescription data-testid="text-modal-description">
+            {editingFile
+              ? "Update the client details below."
+              : "Add a new client to your work queue."}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Left Edge Trigger Button */}
         <Button
@@ -463,10 +461,10 @@ export function AddEditClientModal({
           </aside>
 
           {/* Details Form */}
-          <div className="px-6 pb-6">
+          <div className="mt-4">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col space-y-3">
-                <div className="space-y-2 max-h-[400px] overflow-auto pr-2">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full space-y-3">
+                <div className="flex-1 space-y-2 overflow-auto pr-2">
                     <div>
                       <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Contact Information</h4>
                       <div className="space-y-2">
