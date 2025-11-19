@@ -25,7 +25,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogPortal,
+  DialogOverlay,
+  DialogClose,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -277,11 +281,13 @@ export function AddEditClientModal({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogPortal>
-        {/* Left Sliding Panel - Above Overlay (z-[51]) */}
+        <DialogOverlay />
+        
+        {/* Left Sliding Panel - Behind Modal but Not Dimmed (z-50) */}
         {open && (
           <aside
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-50 overflow-hidden",
               isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
             )}
           >
@@ -340,11 +346,11 @@ export function AddEditClientModal({
         </aside>
       )}
 
-        {/* Right Sliding Panel - Above Overlay (z-[51]) */}
+        {/* Right Sliding Panel - Behind Modal but Not Dimmed (z-50) */}
         {open && (
           <aside
             className={cn(
-              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden",
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-50 overflow-hidden",
               isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
             )}
           >
@@ -415,8 +421,13 @@ export function AddEditClientModal({
         </aside>
       )}
 
-        {/* Main Modal Dialog Content (z-50 - Above panels) */}
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" data-testid="modal-add-edit-client">
+        {/* Main Modal Dialog Content (z-[52] - Above panels) */}
+        <DialogPrimitive.Content
+          className={cn(
+            "fixed left-[50%] top-[50%] z-[52] grid w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-hidden"
+          )}
+          data-testid="modal-add-edit-client"
+        >
         {/* Edge Trigger Buttons - Aligned with Title */}
         <Button
           size="icon"
@@ -663,7 +674,12 @@ export function AddEditClientModal({
             </form>
           </Form>
         </div>
-        </DialogContent>
+        
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
       </DialogPortal>
       </Dialog>
 
