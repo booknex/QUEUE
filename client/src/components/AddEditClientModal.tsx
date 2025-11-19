@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -48,6 +48,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ClientFile, Pipeline, StatusFilter, WorkSessionWithUser, MeetingNote, Contact } from "@shared/schema";
 
@@ -323,15 +329,32 @@ export function AddEditClientModal({
                         <p className="text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
                           {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
                         </p>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(note.id, "meeting-note")}
-                          data-testid={`button-delete-meeting-note-${note.id}`}
-                          className="h-5 w-5"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              data-testid={`button-menu-meeting-note-${note.id}`}
+                              className="h-5 w-5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteClick(note.id, "meeting-note");
+                              }}
+                              data-testid={`button-delete-meeting-note-${note.id}`}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                       {note.notes && (
                         <p className="text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
@@ -402,15 +425,32 @@ export function AddEditClientModal({
                               {displayName}
                             </p>
                           </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteClick(session.id, "session")}
-                            data-testid={`button-delete-touch-comment-${session.id}`}
-                            className="h-5 w-5"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                data-testid={`button-menu-touch-comment-${session.id}`}
+                                className="h-5 w-5"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(session.id, "session");
+                                }}
+                                data-testid={`button-delete-touch-comment-${session.id}`}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                         {session.notes && (
                           <p className="text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
