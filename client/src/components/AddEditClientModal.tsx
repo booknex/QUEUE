@@ -273,56 +273,17 @@ export function AddEditClientModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden" data-testid="modal-add-edit-client">
-        <div className="relative h-full p-6">
-          <DialogHeader>
-            <DialogTitle data-testid="text-modal-title">
-              {editingFile ? "Edit Client File" : "Add New Client"}
-            </DialogTitle>
-            <DialogDescription data-testid="text-modal-description">
-              {editingFile
-                ? "Update the client details below."
-                : "Add a new client to your work queue."}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Left Edge Trigger Button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setIsNotesOpen(!isNotesOpen)}
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
-              isNotesOpen ? "left-[316px]" : "left-0"
-            )}
-            data-testid="button-toggle-meeting-notes"
-          >
-            {isNotesOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-
-          {/* Right Edge Trigger Button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
-              isTouchesOpen ? "right-[316px]" : "right-0"
-            )}
-            data-testid="button-toggle-touch-comments"
-          >
-            {isTouchesOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
-
-          {/* Left Sliding Panel - Meeting Notes */}
-          <aside
-            className={cn(
-              "absolute left-0 top-0 bottom-0 w-80 bg-background border-r shadow-lg transition-transform duration-300 ease-in-out z-20",
-              isNotesOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-            )}
-          >
-            <div className="h-full flex flex-col p-4 overflow-hidden">
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      {/* Left Sliding Panel - Behind Modal (z-30) */}
+      {open && (
+        <aside
+          className={cn(
+            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-30 overflow-hidden",
+            isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
+          )}
+        >
+          <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
                 Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
@@ -375,13 +336,123 @@ export function AddEditClientModal({
             </ScrollArea>
           </div>
         </aside>
+      )}
 
-          {/* Center Panel - Details Form */}
-          <div className="col-span-1 border rounded-md p-3 flex flex-col overflow-hidden">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
-                <div className="flex-1 space-y-2 overflow-auto pr-2">
-                    <div>
+      {/* Right Sliding Panel - Behind Modal (z-30) */}
+      {open && (
+        <aside
+          className={cn(
+            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-30 overflow-hidden",
+            isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
+          )}
+        >
+          <div className="h-full flex flex-col p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold">
+                Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+              </h3>
+            </div>
+            <ScrollArea className="flex-1">
+              {!editingFile ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Save first to view comments.
+                </div>
+              ) : isLoadingSessions ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Loading...
+                </div>
+              ) : workSessions.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  No comments yet.
+                </div>
+              ) : (
+                <div className="space-y-2 pr-2">
+                  {workSessions.map((session) => {
+                    const displayName = session.userFirstName && session.userLastName
+                      ? `${session.userFirstName} ${session.userLastName}`
+                      : session.userName || "Unknown User";
+                    
+                    return (
+                      <div
+                        key={session.id}
+                        className="border rounded-md p-2 bg-card text-xs"
+                        data-testid={`touch-comment-${session.id}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <p className="text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
+                              {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                            </p>
+                            <span>•</span>
+                            <p className="font-medium" data-testid={`touch-comment-user-${session.id}`}>
+                              {displayName}
+                            </p>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(session.id, "session")}
+                            data-testid={`button-delete-touch-comment-${session.id}`}
+                            className="h-5 w-5"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {session.notes && (
+                          <p className="text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
+                            {session.notes}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </aside>
+      )}
+
+      {/* Main Modal Dialog Content (z-40 - Above panels) */}
+      <DialogContent className="max-w-4xl max-h-[90vh] z-40 overflow-hidden" data-testid="modal-add-edit-client">
+        <DialogHeader>
+          <DialogTitle data-testid="text-modal-title">
+            {editingFile ? "Edit Client File" : "Add New Client"}
+          </DialogTitle>
+          <DialogDescription data-testid="text-modal-description">
+            {editingFile
+              ? "Update the client details below."
+              : "Add a new client to your work queue."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Edge Trigger Buttons */}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setIsNotesOpen(!isNotesOpen)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-50"
+          data-testid="button-toggle-meeting-notes"
+        >
+          {isNotesOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setIsTouchesOpen(!isTouchesOpen)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-50"
+          data-testid="button-toggle-touch-comments"
+        >
+          {isTouchesOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </Button>
+
+        {/* Details Form */}
+        <div className="mt-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
+              <div className="space-y-2 max-h-[calc(90vh-12rem)] overflow-auto pr-2">
+                <div>
                       <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Contact Information</h4>
                       <div className="space-y-2">
                         <FormField
@@ -576,100 +647,27 @@ export function AddEditClientModal({
                         />
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-end gap-2 mt-2 pt-2 border-t">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleOpenChange(false)}
-                      disabled={isPending}
-                      data-testid="button-cancel"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isPending} data-testid="button-submit">
-                      {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-          </div>
-
-          {/* Right Sliding Panel - Touch Comments */}
-          <aside
-            className={cn(
-              "absolute right-0 top-0 bottom-0 w-80 bg-background border-l shadow-lg transition-transform duration-300 ease-in-out z-20",
-              isTouchesOpen ? "translate-x-0" : "translate-x-full pointer-events-none"
-            )}
-          >
-            <div className="h-full flex flex-col p-4 overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold">
-                Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
-              </h3>
-            </div>
-            <ScrollArea className="flex-1">
-              {!editingFile ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  Save first to view comments.
+                <div className="flex justify-end gap-2 mt-2 pt-2 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenChange(false)}
+                    disabled={isPending}
+                    data-testid="button-cancel"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isPending} data-testid="button-submit">
+                    {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
+                  </Button>
                 </div>
-              ) : isLoadingSessions ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  Loading...
-                </div>
-              ) : workSessions.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  No comments yet.
-                </div>
-              ) : (
-                <div className="space-y-2 pr-2">
-                  {workSessions.map((session) => {
-                    const displayName = session.userFirstName && session.userLastName
-                      ? `${session.userFirstName} ${session.userLastName}`
-                      : session.userName || "Unknown User";
-                    
-                    return (
-                      <div
-                        key={session.id}
-                        className="border rounded-md p-2 bg-card text-xs"
-                        data-testid={`touch-comment-${session.id}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <p className="text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                              {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-                            </p>
-                            <span>•</span>
-                            <p className="font-medium" data-testid={`touch-comment-user-${session.id}`}>
-                              {displayName}
-                            </p>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteClick(session.id, "session")}
-                            data-testid={`button-delete-touch-comment-${session.id}`}
-                            className="h-5 w-5"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        {session.notes && (
-                          <p className="text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </ScrollArea>
-          </div>
-        </aside>
+              </div>
+            </form>
+          </Form>
         </div>
       </DialogContent>
+      </Dialog>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
@@ -692,6 +690,6 @@ export function AddEditClientModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </>
   );
 }
