@@ -341,13 +341,13 @@ export function AddEditClientModal({
 
           <div className="space-y-3 flex flex-col">
             <h3 className="text-sm font-semibold">Details</h3>
-            <div className="h-[500px] border rounded-md p-4 flex flex-col">
+            <div className="h-[500px] border rounded-md p-3 flex flex-col">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
-                  <div className="flex-1 space-y-3 overflow-hidden">
+                  <div className="flex-1 space-y-2 overflow-auto">
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">Contact Information</h4>
-                      <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Contact Information</h4>
+                      <div className="space-y-2">
                         <FormField
                           control={form.control}
                           name="clientName"
@@ -454,8 +454,8 @@ export function AddEditClientModal({
                     </div>
 
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">Dashboard Display</h4>
-                      <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Dashboard Display</h4>
+                      <div className="space-y-2">
                         <FormField
                           control={form.control}
                           name="description"
@@ -465,7 +465,7 @@ export function AddEditClientModal({
                               <FormControl>
                                 <Textarea
                                   placeholder="Add notes from your meeting or work session"
-                                  className="min-h-16 resize-none text-sm"
+                                  className="min-h-14 resize-none text-sm"
                                   {...field}
                                   data-testid="input-description"
                                 />
@@ -542,7 +542,7 @@ export function AddEditClientModal({
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 mt-3">
+                  <div className="flex justify-end gap-2 mt-2 pt-2 border-t">
                     <Button
                       type="button"
                       variant="outline"
