@@ -341,128 +341,131 @@ export function AddEditClientModal({
 
           <div className="space-y-3 flex flex-col">
             <h3 className="text-sm font-semibold">Details</h3>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col gap-3 flex-1">
-                <ScrollArea className="h-[500px] border rounded-md">
-                  <div className="p-4 space-y-3">
+            <div className="h-[500px] border rounded-md p-4 flex flex-col">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
+                  <div className="flex-1 space-y-3 overflow-hidden">
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground mb-3">Contact Information</h4>
-                      <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="clientName"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col relative" ref={dropdownRef}>
-                          <FormLabel>Client Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Start typing client name..."
-                              data-testid="input-client-name"
-                              onFocus={() => {
-                                if (field.value && companyContacts.length > 0) {
-                                  setContactSearchOpen(true);
-                                }
-                              }}
-                              onChange={(e) => {
-                                field.onChange(e.target.value);
-                                setSelectedContactId(null);
-                                setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
-                              }}
-                            />
-                          </FormControl>
-                          {contactSearchOpen && companyContacts.filter(contact => 
-                            contact.name.toLowerCase().includes((field.value || "").toLowerCase())
-                          ).length > 0 && (
-                            <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
-                              {companyContacts
-                                .filter(contact => 
-                                  contact.name.toLowerCase().includes((field.value || "").toLowerCase())
-                                )
-                                .map((contact) => (
-                                  <div
-                                    key={contact.id}
-                                    className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
-                                    onClick={() => handleContactSelect(contact)}
-                                    data-testid={`contact-option-${contact.id}`}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "h-4 w-4 mt-0.5 shrink-0",
-                                        selectedContactId === contact.id ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                                      <span className="font-medium text-sm">{contact.name}</span>
-                                      {(contact.phone || contact.email) && (
-                                        <span className="text-xs text-muted-foreground">
-                                          {[contact.phone, contact.email].filter(Boolean).join(" • ")}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">Contact Information</h4>
+                      <div className="space-y-3">
+                        <FormField
+                          control={form.control}
+                          name="clientName"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col relative" ref={dropdownRef}>
+                              <FormLabel className="text-xs">Client Name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="Start typing client name..."
+                                  data-testid="input-client-name"
+                                  className="h-8"
+                                  onFocus={() => {
+                                    if (field.value && companyContacts.length > 0) {
+                                      setContactSearchOpen(true);
+                                    }
+                                  }}
+                                  onChange={(e) => {
+                                    field.onChange(e.target.value);
+                                    setSelectedContactId(null);
+                                    setContactSearchOpen(e.target.value.length > 0 && companyContacts.length > 0);
+                                  }}
+                                />
+                              </FormControl>
+                              {contactSearchOpen && companyContacts.filter(contact => 
+                                contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                              ).length > 0 && (
+                                <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                                  {companyContacts
+                                    .filter(contact => 
+                                      contact.name.toLowerCase().includes((field.value || "").toLowerCase())
+                                    )
+                                    .map((contact) => (
+                                      <div
+                                        key={contact.id}
+                                        className="relative flex cursor-pointer select-none items-start gap-2 px-3 py-2.5 hover-elevate"
+                                        onClick={() => handleContactSelect(contact)}
+                                        data-testid={`contact-option-${contact.id}`}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "h-4 w-4 mt-0.5 shrink-0",
+                                            selectedContactId === contact.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                                          <span className="font-medium text-sm">{contact.name}</span>
+                                          {(contact.phone || contact.email) && (
+                                            <span className="text-xs text-muted-foreground">
+                                              {[contact.phone, contact.email].filter(Boolean).join(" • ")}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                              <FormMessage />
+                            </FormItem>
                           )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              value={field.value || ""}
-                              placeholder="Enter phone number..."
-                              data-testid="input-phone"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Phone Number</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  value={field.value || ""}
+                                  placeholder="Enter phone number..."
+                                  data-testid="input-phone"
+                                  className="h-8"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              value={field.value || ""}
-                              type="email"
-                              placeholder="Enter email address..."
-                              data-testid="input-email"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  value={field.value || ""}
+                                  type="email"
+                                  placeholder="Enter email address..."
+                                  data-testid="input-email"
+                                  className="h-8"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="text-xs font-semibold text-muted-foreground mb-3">Dashboard Display</h4>
-                      <div className="space-y-4">
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-2">Dashboard Display</h4>
+                      <div className="space-y-3">
                         <FormField
                           control={form.control}
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Meeting notes</FormLabel>
+                              <FormLabel className="text-xs">Meeting notes</FormLabel>
                               <FormControl>
                                 <Textarea
                                   placeholder="Add notes from your meeting or work session"
-                                  className="min-h-24 resize-none"
+                                  className="min-h-16 resize-none text-sm"
                                   {...field}
                                   data-testid="input-description"
                                 />
@@ -477,14 +480,14 @@ export function AddEditClientModal({
                           name="status"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Status</FormLabel>
+                              <FormLabel className="text-xs">Status</FormLabel>
                               <Select 
                                 onValueChange={field.onChange} 
                                 value={field.value}
                                 disabled={isLoadingFilters}
                               >
                                 <FormControl>
-                                  <SelectTrigger data-testid="select-status">
+                                  <SelectTrigger data-testid="select-status" className="h-8">
                                     <SelectValue placeholder={isLoadingFilters ? "Loading statuses..." : "Select status"} />
                                   </SelectTrigger>
                                 </FormControl>
@@ -512,13 +515,13 @@ export function AddEditClientModal({
                           name="pipelineId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Pipeline</FormLabel>
+                              <FormLabel className="text-xs">Pipeline</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
                                 value={field.value ? String(field.value) : "none"}
                               >
                                 <FormControl>
-                                  <SelectTrigger data-testid="select-pipeline">
+                                  <SelectTrigger data-testid="select-pipeline" className="h-8">
                                     <SelectValue placeholder="Select pipeline (optional)" />
                                   </SelectTrigger>
                                 </FormControl>
@@ -538,24 +541,24 @@ export function AddEditClientModal({
                       </div>
                     </div>
                   </div>
-                </ScrollArea>
 
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOpenChange(false)}
-                    disabled={isPending}
-                    data-testid="button-cancel"
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isPending} data-testid="button-submit">
-                    {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                  <div className="flex justify-end gap-2 mt-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleOpenChange(false)}
+                      disabled={isPending}
+                      data-testid="button-cancel"
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isPending} data-testid="button-submit">
+                      {isPending ? "Saving..." : editingFile ? "Update" : "Add Client"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </div>
 
           <div className="space-y-3">
