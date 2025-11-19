@@ -438,19 +438,8 @@ export function AddEditClientModal({
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        <DialogHeader className="text-center">
-          <DialogTitle data-testid="text-modal-title" className="text-center">
-            {editingFile ? "Edit Client File" : "Add New Client"}
-          </DialogTitle>
-          <DialogDescription data-testid="text-modal-description" className="text-center">
-            {editingFile
-              ? "Update the client details below."
-              : "Add a new client to your work queue."}
-          </DialogDescription>
-        </DialogHeader>
-
         {/* Details Form */}
-        <div className="mt-4">
+        <div className="mt-2">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
               <div className="space-y-2 max-h-[calc(90vh-12rem)] overflow-auto pr-2">
