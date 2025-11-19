@@ -361,7 +361,7 @@ export function AddEditClientModal({
           data-testid="panel-touch-comments"
         >
             <div className="h-full flex flex-col p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-end mb-2">
               <h3 className="text-sm font-semibold">
                 Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
               </h3>
