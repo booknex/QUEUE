@@ -556,7 +556,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validated = touchFileSchema.parse(req.body);
       
-      const file = await storage.touchFile(id, validated.notes);
+      if (!req.user?.id) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const file = await storage.touchFile(id, req.user.id, validated.notes);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }

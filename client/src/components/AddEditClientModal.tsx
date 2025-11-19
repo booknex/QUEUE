@@ -43,7 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ClientFile, Pipeline, StatusFilter, WorkSession, MeetingNote } from "@shared/schema";
+import type { ClientFile, Pipeline, StatusFilter, WorkSessionWithUser, MeetingNote } from "@shared/schema";
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
@@ -89,7 +89,7 @@ export function AddEditClientModal({
     enabled: companyId !== null,
   });
 
-  const { data: workSessions = [], isLoading: isLoadingSessions } = useQuery<WorkSession[]>({
+  const { data: workSessions = [], isLoading: isLoadingSessions } = useQuery<WorkSessionWithUser[]>({
     queryKey: ["/api/files", editingFile?.id, "sessions"],
     queryFn: async () => {
       if (!editingFile?.id) return [];
@@ -435,38 +435,50 @@ export function AddEditClientModal({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {workSessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className="border rounded-md p-3 bg-card"
-                      data-testid={`touch-comment-${session.id}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                          {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                  {workSessions.map((session) => {
+                    const displayName = session.userFirstName && session.userLastName
+                      ? `${session.userFirstName} ${session.userLastName}`
+                      : session.userName || "Unknown User";
+                    
+                    return (
+                      <div
+                        key={session.id}
+                        className="border rounded-md p-3 bg-card"
+                        data-testid={`touch-comment-${session.id}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
+                              {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                            </p>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <p className="text-xs font-medium text-foreground" data-testid={`touch-comment-user-${session.id}`}>
+                              {displayName}
+                            </p>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(session.id, "session")}
+                            data-testid={`button-delete-touch-comment-${session.id}`}
+                            className="h-6 w-6"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {new Date(session.startedAt).toLocaleString()}
                         </p>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(session.id, "session")}
-                          data-testid={`button-delete-touch-comment-${session.id}`}
-                          className="h-6 w-6"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        {session.notes ? (
+                          <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
+                            {session.notes}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">No comment added</p>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {new Date(session.startedAt).toLocaleString()}
-                      </p>
-                      {session.notes ? (
-                        <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
-                          {session.notes}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">No comment added</p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>

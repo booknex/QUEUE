@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type UserWithRole, type InsertUserCompany, type UpdateUserProfile, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type WorkSessionWithUser, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type UserWithRole, type InsertUserCompany, type UpdateUserProfile, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -31,10 +31,10 @@ export interface IStorage {
   createFile(file: InsertClientFile): Promise<ClientFile>;
   updateFile(id: number, updates: UpdateClientFile): Promise<ClientFile | undefined>;
   deleteFile(id: number): Promise<boolean>;
-  touchFile(id: number, notes?: string | null): Promise<ClientFile | undefined>;
+  touchFile(id: number, userId: string, notes?: string | null): Promise<ClientFile | undefined>;
   
   createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
-  getWorkSessionsByFile(fileId: number): Promise<WorkSession[]>;
+  getWorkSessionsByFile(fileId: number): Promise<WorkSessionWithUser[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
   deleteWorkSession(id: number): Promise<boolean>;
 
@@ -337,7 +337,7 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async touchFile(id: number, notes?: string | null): Promise<ClientFile | undefined> {
+  async touchFile(id: number, userId: string, notes?: string | null): Promise<ClientFile | undefined> {
     return await db.transaction(async (tx) => {
       const [file] = await tx
         .update(clientFiles)
@@ -353,7 +353,7 @@ export class DatabaseStorage implements IStorage {
       
       await tx
         .insert(workSessions)
-        .values({ fileId: id, notes: notes || null });
+        .values({ fileId: id, userId, notes: notes || null });
       
       return file;
     });
@@ -367,12 +367,29 @@ export class DatabaseStorage implements IStorage {
     return session;
   }
 
-  async getWorkSessionsByFile(fileId: number): Promise<WorkSession[]> {
-    return await db
-      .select()
+  async getWorkSessionsByFile(fileId: number): Promise<WorkSessionWithUser[]> {
+    const sessions = await db
+      .select({
+        id: workSessions.id,
+        fileId: workSessions.fileId,
+        userId: workSessions.userId,
+        startedAt: workSessions.startedAt,
+        notes: workSessions.notes,
+        userName: users.username,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+      })
       .from(workSessions)
+      .leftJoin(users, eq(workSessions.userId, users.id))
       .where(eq(workSessions.fileId, fileId))
       .orderBy(desc(workSessions.startedAt));
+    
+    return sessions.map(s => ({
+      ...s,
+      userName: s.userName ?? undefined,
+      userFirstName: s.userFirstName ?? undefined,
+      userLastName: s.userLastName ?? undefined,
+    }));
   }
 
   async getAllWorkSessions(): Promise<WorkSession[]> {

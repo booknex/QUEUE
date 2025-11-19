@@ -98,6 +98,7 @@ export const clientFiles = pgTable("client_files", {
 export const workSessions = pgTable("work_sessions", {
   id: serial("id").primaryKey(),
   fileId: integer("file_id").notNull().references(() => clientFiles.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
   startedAt: timestamp("started_at").notNull().defaultNow(),
   notes: text("notes"),
 });
@@ -176,6 +177,11 @@ export const insertWorkSessionSchema = createInsertSchema(workSessions).omit({
 
 export type InsertWorkSession = z.infer<typeof insertWorkSessionSchema>;
 export type WorkSession = typeof workSessions.$inferSelect;
+export type WorkSessionWithUser = WorkSession & {
+  userName?: string;
+  userFirstName?: string;
+  userLastName?: string;
+};
 
 export const touchFileSchema = z.object({
   notes: z.string().optional(),
