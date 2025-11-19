@@ -462,7 +462,7 @@ export function AddEditClientModal({
 
           {/* Details Form */}
           <div className="mt-4">
-            <div className="border rounded-md p-4 flex flex-col">
+            <div className="h-[500px] border rounded-md p-3 flex flex-col">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
                   <div className="flex-1 space-y-2 overflow-auto">
