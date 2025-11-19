@@ -287,7 +287,7 @@ export function AddEditClientModal({
             setIsNotesOpen(!isNotesOpen);
           }}
           className={cn(
-            "fixed top-1/2 -translate-y-1/2 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isNotesOpen ? "left-[calc(50%-58.25rem)]" : "left-[calc(50%-38rem)]"
           )}
           data-testid="panel-meeting-notes"
@@ -355,7 +355,7 @@ export function AddEditClientModal({
             setIsTouchesOpen(!isTouchesOpen);
           }}
           className={cn(
-            "fixed top-1/2 -translate-y-1/2 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
           data-testid="panel-touch-comments"
@@ -436,7 +436,7 @@ export function AddEditClientModal({
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
           className={cn(
-            "fixed left-[50%] top-[50%] z-[52] grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-hidden pointer-events-auto"
+            "fixed left-[50%] top-8 z-[52] grid w-full max-w-2xl translate-x-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[8] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[8] sm:rounded-lg max-h-[90vh] overflow-hidden pointer-events-auto"
           )}
           data-testid="modal-add-edit-client"
         >
