@@ -331,17 +331,18 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
               control={form.control}
               name="assignedUserId"
               render={({ field }) => {
-                // Convert null to empty string and check if value is valid
-                const currentValue = field.value || "";
-                const isValueValid = currentValue && companyUsers.some(u => u.id === currentValue);
-                const selectValue = isValueValid ? currentValue : "";
+                // Use special sentinel value for unassigned instead of empty string
+                const UNASSIGNED = "__unassigned__";
+                const currentValue = field.value || UNASSIGNED;
+                const isValueValid = currentValue !== UNASSIGNED && companyUsers.some(u => u.id === currentValue);
+                const selectValue = isValueValid ? currentValue : UNASSIGNED;
                 
                 return (
                   <FormItem>
                     <FormLabel>Assigned To</FormLabel>
                     <Select
                       value={selectValue}
-                      onValueChange={(value) => field.onChange(value === "" ? null : value)}
+                      onValueChange={(value) => field.onChange(value === UNASSIGNED ? null : value)}
                       disabled={isLoadingUsers}
                     >
                       <FormControl>
@@ -350,7 +351,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Unassigned</SelectItem>
+                        <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
                         {companyUsers.map((user) => {
                           const displayName = user.firstName && user.lastName
                             ? `${user.firstName} ${user.lastName}`
