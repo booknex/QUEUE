@@ -274,7 +274,7 @@ export function AddEditClientModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="relative max-w-4xl w-full max-h-[85vh] flex flex-col p-6" data-testid="modal-add-edit-client">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -286,182 +286,63 @@ export function AddEditClientModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Left Edge Trigger Button */}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsNotesOpen(!isNotesOpen)}
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
-            isNotesOpen ? "left-[316px]" : "left-0"
-          )}
-          aria-controls="meeting-notes-panel"
-          aria-expanded={isNotesOpen}
-          data-testid="button-toggle-meeting-notes"
-        >
-          {isNotesOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </Button>
-
-        {/* Right Edge Trigger Button */}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-          className={cn(
-            "absolute top-1/2 -translate-y-1/2 z-30 transition-all duration-300",
-            isTouchesOpen ? "right-[316px]" : "right-0"
-          )}
-          aria-controls="touch-comments-panel"
-          aria-expanded={isTouchesOpen}
-          data-testid="button-toggle-touch-comments"
-        >
-          {isTouchesOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-
-        {/* Left Sliding Panel - Meeting Notes */}
-        <aside
-          id="meeting-notes-panel"
-          className={cn(
-            "absolute left-0 top-0 bottom-0 w-80 bg-background border-r shadow-lg transition-transform duration-300 ease-in-out z-20",
-            isNotesOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-          )}
-        >
-            <div className="h-full flex flex-col p-4">
-              <h3 className="text-sm font-semibold mb-3">
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          {/* Left Panel - Meeting Notes */}
+          <div className="border rounded-md p-3 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold">
                 Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
               </h3>
-              <ScrollArea className="flex-1">
-                {!editingFile ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Save the client first to view meeting notes.
-                  </div>
-                ) : isLoadingMeetingNotes ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Loading meeting notes...
-                  </div>
-                ) : meetingNotes.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No meeting notes yet. Update the client with meeting notes to create history.
-                  </div>
-                ) : (
-                  <div className="space-y-3 pr-4">
-                    {meetingNotes.map((note) => (
-                      <div
-                        key={note.id}
-                        className="border rounded-md p-3 bg-card"
-                        data-testid={`meeting-note-${note.id}`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-xs font-medium text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
-                            {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
-                          </p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteClick(note.id, "meeting-note")}
-                            data-testid={`button-delete-meeting-note-${note.id}`}
-                            className="h-6 w-6"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {new Date(note.createdAt).toLocaleString()}
+            </div>
+            <ScrollArea className="flex-1">
+              {!editingFile ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Save first to view notes.
+                </div>
+              ) : isLoadingMeetingNotes ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Loading...
+                </div>
+              ) : meetingNotes.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  No notes yet.
+                </div>
+              ) : (
+                <div className="space-y-2 pr-2">
+                  {meetingNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="border rounded-md p-2 bg-card text-xs"
+                      data-testid={`meeting-note-${note.id}`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
+                          {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
                         </p>
-                        {note.notes ? (
-                          <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
-                            {note.notes}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground italic">No notes added</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </aside>
-
-          {/* Right Sliding Panel - Touch Comments */}
-          <aside
-            id="touch-comments-panel"
-            className={cn(
-              "absolute right-0 top-0 bottom-0 w-80 bg-background border-l shadow-lg transition-transform duration-300 ease-in-out z-20",
-              isTouchesOpen ? "translate-x-0" : "translate-x-full pointer-events-none"
-            )}
-          >
-            <div className="h-full flex flex-col p-4">
-              <h3 className="text-sm font-semibold mb-3">
-                Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
-              </h3>
-              <ScrollArea className="flex-1">
-                {!editingFile ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Save the client first to view touch comments.
-                  </div>
-                ) : isLoadingSessions ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Loading touch comments...
-                  </div>
-                ) : workSessions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    No touch comments yet. Touch this client to add comments.
-                  </div>
-                ) : (
-                  <div className="space-y-3 pr-4">
-                    {workSessions.map((session) => {
-                      const displayName = session.userFirstName && session.userLastName
-                        ? `${session.userFirstName} ${session.userLastName}`
-                        : session.userName || "Unknown User";
-                      
-                      return (
-                        <div
-                          key={session.id}
-                          className="border rounded-md p-3 bg-card"
-                          data-testid={`touch-comment-${session.id}`}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteClick(note.id, "meeting-note")}
+                          data-testid={`button-delete-meeting-note-${note.id}`}
+                          className="h-5 w-5"
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <p className="text-xs font-medium text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                                {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-                              </p>
-                              <span className="text-xs text-muted-foreground">•</span>
-                              <p className="text-xs font-medium text-foreground" data-testid={`touch-comment-user-${session.id}`}>
-                                {displayName}
-                              </p>
-                            </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDeleteClick(session.id, "session")}
-                              data-testid={`button-delete-touch-comment-${session.id}`}
-                              className="h-6 w-6"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {new Date(session.startedAt).toLocaleString()}
-                          </p>
-                          {session.notes ? (
-                            <p className="text-sm text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
-                              {session.notes}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground italic">No comment added</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </aside>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      {note.notes && (
+                        <p className="text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
+                          {note.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
 
-          {/* Details Form */}
-          <div className="flex-1 flex flex-col overflow-hidden mt-4">
+          {/* Center Panel - Details Form */}
+          <div className="col-span-1 border rounded-md p-3 flex flex-col overflow-hidden">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col h-full">
                 <div className="flex-1 space-y-2 overflow-auto pr-2">
@@ -679,6 +560,73 @@ export function AddEditClientModal({
                 </form>
               </Form>
           </div>
+
+          {/* Right Panel - Touch Comments */}
+          <div className="border rounded-md p-3 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold">
+                Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+              </h3>
+            </div>
+            <ScrollArea className="flex-1">
+              {!editingFile ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Save first to view comments.
+                </div>
+              ) : isLoadingSessions ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  Loading...
+                </div>
+              ) : workSessions.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground text-xs">
+                  No comments yet.
+                </div>
+              ) : (
+                <div className="space-y-2 pr-2">
+                  {workSessions.map((session) => {
+                    const displayName = session.userFirstName && session.userLastName
+                      ? `${session.userFirstName} ${session.userLastName}`
+                      : session.userName || "Unknown User";
+                    
+                    return (
+                      <div
+                        key={session.id}
+                        className="border rounded-md p-2 bg-card text-xs"
+                        data-testid={`touch-comment-${session.id}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <p className="text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
+                              {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
+                            </p>
+                            <span>•</span>
+                            <p className="font-medium" data-testid={`touch-comment-user-${session.id}`}>
+                              {displayName}
+                            </p>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(session.id, "session")}
+                            data-testid={`button-delete-touch-comment-${session.id}`}
+                            className="h-5 w-5"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {session.notes && (
+                          <p className="text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
+                            {session.notes}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </div>
       </DialogContent>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
