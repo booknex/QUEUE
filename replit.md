@@ -46,7 +46,12 @@ Key features include:
     - **Current Meeting Note**: The `description` field on each client file stores the current/latest meeting note, displayed on client cards for quick reference.
     - **Historical Tracking**: The `meetingNotes` table automatically tracks a complete history of all description changes over time with timestamps.
     - **Smart Deduplication**: Meeting notes are only saved when the description field actually changes (comparison check prevents duplicate entries).
-    - **Three-Tab Modal**: Client file modal includes separate tabs for "Details" (edit form), "Meeting Notes" (historical timeline), and "Touch Comments" (work session notes).
+    - **Collapsible Panel Modal**: Client file modal uses a modern collapsible panel design with a centered Details form (max-w-2xl) and two slide-in side panels:
+      - **Meeting Notes Panel**: Slides in from the left via left edge trigger button (320px wide, z-index 20)
+      - **Touch Comments Panel**: Slides in from the right via right edge trigger button (320px wide, z-index 20)
+      - **Edge Triggers**: Chevron buttons positioned at panel edges (z-index 30) with smooth 300ms transitions, moving to inner edge when panels open (left-[316px] / right-[316px])
+      - **Independent Operation**: Both panels can be open simultaneously without blocking the center Details form
+      - **State Management**: Panels collapse automatically when modal closes, preserving clean UX
     - **Delete Capability**: Users can delete individual meeting notes and touch comments with confirmation dialogs. Delete buttons appear as trash icons next to each entry.
     - **Cache Management**: Frontend query cache properly invalidates meeting notes and touch comments on file updates and deletions to ensure fresh data.
 -   **Dynamic Pipeline Management**: Full CRUD operations for pipelines, each with a dedicated kanban board.
