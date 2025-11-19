@@ -118,7 +118,7 @@ export function AddOpportunityModal({ open, onClose, selectedPipelineId, selecte
         assignedUserId: null,
       });
     }
-  }, [opportunity, form]);
+  }, [opportunity]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
