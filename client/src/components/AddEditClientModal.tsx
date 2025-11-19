@@ -417,23 +417,12 @@ export function AddEditClientModal({
 
         {/* Main Modal Dialog Content (z-50 - Above panels) */}
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" data-testid="modal-add-edit-client">
-        <DialogHeader>
-          <DialogTitle data-testid="text-modal-title">
-            {editingFile ? "Edit Client File" : "Add New Client"}
-          </DialogTitle>
-          <DialogDescription data-testid="text-modal-description">
-            {editingFile
-              ? "Update the client details below."
-              : "Add a new client to your work queue."}
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Edge Trigger Buttons - Top Corners */}
+        {/* Edge Trigger Buttons - Aligned with Title */}
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setIsNotesOpen(!isNotesOpen)}
-          className="absolute left-2 top-2 z-50"
+          className="absolute left-6 top-6 z-50"
           data-testid="button-toggle-meeting-notes"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -443,11 +432,22 @@ export function AddEditClientModal({
           size="icon"
           variant="ghost"
           onClick={() => setIsTouchesOpen(!isTouchesOpen)}
-          className="absolute right-12 top-2 z-50"
+          className="absolute right-16 top-6 z-50"
           data-testid="button-toggle-touch-comments"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
+
+        <DialogHeader className="pl-10 pr-10">
+          <DialogTitle data-testid="text-modal-title">
+            {editingFile ? "Edit Client File" : "Add New Client"}
+          </DialogTitle>
+          <DialogDescription data-testid="text-modal-description">
+            {editingFile
+              ? "Update the client details below."
+              : "Add a new client to your work queue."}
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Details Form */}
         <div className="mt-4">
