@@ -16,6 +16,18 @@ const isAuthenticated: RequestHandler = (req, res, next) => {
   next();
 };
 
+// Helper function to check if user has access to a company
+async function checkCompanyAccess(userId: string, companyId: number): Promise<boolean> {
+  const role = await storage.getUserRole(userId, companyId);
+  return role !== undefined;
+}
+
+// Helper function to check if user is admin or owner of a company
+async function checkAdminAccess(userId: string, companyId: number): Promise<boolean> {
+  const role = await storage.getUserRole(userId, companyId);
+  return role === 'admin' || role === 'owner';
+}
+
 function serializeFile(file: ClientFile) {
   return {
     ...file,
@@ -50,22 +62,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (sets up /api/register, /api/login, /api/logout, /api/user)
   setupAuth(app);
 
-  // Get all users in the system (unrestricted access)
+  // Get all users that the requester can manage (admin/owner access required)
   app.get("/api/users", isAuthenticated, async (req: any, res) => {
     try {
+      const currentUserId = req.user.id;
+      
+      // Get all companies where current user is admin/owner
+      const allCompanies = await storage.getAllCompanies();
+      const adminCompanyIds = [];
+      for (const company of allCompanies) {
+        const isAdmin = await checkAdminAccess(currentUserId, company.id);
+        if (isAdmin) {
+          adminCompanyIds.push(company.id);
+        }
+      }
+      
+      // If not admin/owner of any company, deny access
+      if (adminCompanyIds.length === 0) {
+        return res.status(403).json({ error: "Only admins and owners can view user list" });
+      }
+      
+      // Get all users
       const allUsers = await storage.getAllUsers();
-      // Remove password from response
-      const sanitizedUsers = allUsers.map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+      
+      // Filter to only users we can manage
+      const manageableUsers = [];
+      for (const user of allUsers) {
+        const userCompanyIds = await storage.getUserCompanies(user.id);
+        
+        // Include if user has no companies (can be assigned)
+        if (userCompanyIds.length === 0) {
+          manageableUsers.push(user);
+          continue;
+        }
+        
+        // Include if user is in at least one company we administer
+        const hasCommonCompany = userCompanyIds.some(cid => adminCompanyIds.includes(cid));
+        if (hasCommonCompany) {
+          manageableUsers.push(user);
+        }
+      }
+      
+      // Remove passwords and return
+      const sanitized = manageableUsers.map(u => {
+        const { password, ...safe } = u;
+        return safe;
       });
-      res.json(sanitizedUsers);
+      res.json(sanitized);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch users" });
     }
   });
 
-  // Company user management routes (any authenticated user can manage any company)
+  // Company user management routes (requires admin/owner access)
   app.get("/api/company-users", isAuthenticated, async (req: any, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
@@ -74,7 +123,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
-      // Unrestricted access - any authenticated user can view users for any company
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, companyId);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can view company users" });
+      }
+      
       const users = await storage.getUsersByCompany(companyId);
       res.json(users);
     } catch (error) {
@@ -92,6 +146,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validated = schema.parse(req.body);
       const { companyId, email, role } = validated;
+      
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, companyId);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can add users to this company" });
+      }
       
       // Find user by email or username
       let targetUser = await storage.getUserByEmail(email);
@@ -137,6 +197,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validated = schema.parse(req.body);
       const { role, companyId } = validated;
       
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, companyId);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can modify user roles" });
+      }
+      
       // Check if demoting the last owner
       if (role !== 'owner') {
         const targetUserCurrentRole = await storage.getUserRole(targetUserId, companyId);
@@ -172,6 +238,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "companyId is required" });
       }
       
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, companyId);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can remove users from this company" });
+      }
+      
       // Check if removing the last owner
       const targetUserRole = await storage.getUserRole(targetUserId, companyId);
       if (targetUserRole === 'owner') {
@@ -189,10 +261,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user profile (any authenticated user can edit any user)
+  // Update user profile (self-service only)
   app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
+      
+      // Self-service check: users can only modify their own account
+      if (req.user.id !== targetUserId) {
+        return res.status(403).json({ error: "You can only modify your own account" });
+      }
       
       // Validate request body
       const validated = updateUserProfileSchema.parse(req.body);
@@ -216,10 +293,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset user password (any authenticated user can change any password)
+  // Reset user password (self-service only)
   app.post("/api/users/:id/password", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
+      
+      // Self-service check: users can only change their own password
+      if (req.user.id !== targetUserId) {
+        return res.status(403).json({ error: "You can only modify your own account" });
+      }
       
       // Validate request body
       const validated = updateUserPasswordSchema.parse(req.body);
@@ -243,10 +325,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete user (any authenticated user can delete any account)
+  // Delete user (self-service only)
   app.delete("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
+      
+      // Self-service check: users can only delete their own account
+      if (req.user.id !== targetUserId) {
+        return res.status(403).json({ error: "You can only modify your own account" });
+      }
       
       // Delete user
       const deleted = await storage.deleteUser(targetUserId);
@@ -263,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get companies for a specific user (any authenticated user can view)
+  // Get companies for a specific user (self or admin/owner access only)
   app.get("/api/users/:userId/companies", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.userId;
@@ -274,6 +361,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Resource not found" });
       }
       
+      // Authorization check: Allow if viewing own companies OR if user is admin/owner of at least one company
+      if (req.user.id !== targetUserId) {
+        // Check if requesting user is admin/owner of any company
+        const requestingUserCompanyIds = await storage.getUserCompanies(req.user.id);
+        let isAdminOfAnyCompany = false;
+        
+        for (const companyId of requestingUserCompanyIds) {
+          const role = await storage.getUserRole(req.user.id, companyId);
+          if (role === 'admin' || role === 'owner') {
+            isAdminOfAnyCompany = true;
+            break;
+          }
+        }
+        
+        if (!isAdminOfAnyCompany) {
+          return res.status(403).json({ error: "Access denied: Only admins and owners can view other users' company assignments" });
+        }
+      }
+      
       // Get target user's company IDs
       const targetUserCompanyIds = await storage.getUserCompanies(targetUserId);
       res.json(targetUserCompanyIds);
@@ -282,22 +388,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Company routes (any authenticated user can view all companies)
+  // Company routes (only return companies the user is a member of)
   app.get("/api/companies", isAuthenticated, async (req: any, res) => {
     try {
-      const companies = await storage.getAllCompanies();
+      const userId = req.user.id;
+      const companies = await storage.getAllCompanies(userId);
       res.json(companies.map(serializeCompany));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch companies" });
     }
   });
 
-  app.get("/api/companies/:id", isAuthenticated, async (req, res) => {
+  // Get all companies where user is admin/owner (for user management purposes)
+  app.get("/api/all-companies", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get all companies the user is a member of
+      const userCompanyIds = await storage.getUserCompanies(userId);
+      
+      // Filter to only companies where user is admin or owner
+      const adminCompanies: Company[] = [];
+      for (const companyId of userCompanyIds) {
+        const role = await storage.getUserRole(userId, companyId);
+        if (role === 'admin' || role === 'owner') {
+          const company = await storage.getCompany(companyId);
+          if (company) {
+            adminCompanies.push(company);
+          }
+        }
+      }
+      
+      res.json(adminCompanies.map(serializeCompany));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch all companies" });
+    }
+  });
+
+  app.get("/api/companies/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid company ID" });
       }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, id);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const company = await storage.getCompany(id);
       if (!company) {
         return res.status(404).json({ error: "Company not found" });
@@ -323,12 +463,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/companies/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/companies/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid company ID" });
       }
+      
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, id);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can update this company" });
+      }
+      
       const validated = updateCompanySchema.parse(req.body);
       const company = await storage.updateCompany(id, validated);
       if (!company) {
@@ -344,12 +491,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/companies/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/companies/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid company ID" });
       }
+      
+      // Verify user is admin/owner of this company
+      const isAdmin = await checkAdminAccess(req.user.id, id);
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Access denied: Only admins and owners can delete this company" });
+      }
+      
       const deleted = await storage.deleteCompany(id);
       if (!deleted) {
         return res.status(404).json({ error: "Company not found" });
@@ -362,9 +516,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Status filter routes
-  app.get("/api/filters", isAuthenticated, async (req, res) => {
+  app.get("/api/filters", isAuthenticated, async (req: any, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      // Verify user has access to this company
+      if (companyId) {
+        const hasAccess = await checkCompanyAccess(req.user.id, companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const filters = await storage.getAllFilters(companyId);
       res.json(filters);
     } catch (error) {
@@ -372,9 +535,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/filters", isAuthenticated, async (req, res) => {
+  app.post("/api/filters", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertStatusFilterSchema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const filter = await storage.createFilter(validated);
       broadcast({ type: "filter:created", companyId: filter.companyId });
       res.status(201).json(filter);
@@ -386,13 +556,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/filters/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/filters/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid filter ID" });
       }
       const validated = updateStatusFilterSchema.parse(req.body);
+      
+      // Get existing filter to check company access
+      const existingFilter = await storage.getFilter(id);
+      if (!existingFilter) {
+        return res.status(404).json({ error: "Filter not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, existingFilter.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const filter = await storage.updateFilter(id, validated);
       if (!filter) {
         return res.status(404).json({ error: "Filter not found" });
@@ -410,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/filters/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/filters/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -420,6 +603,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!filter) {
         return res.status(404).json({ error: "Filter not found" });
       }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, filter.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       await storage.deleteFilter(id);
       broadcast({ type: "filter:deleted", companyId: filter.companyId });
       res.status(204).send();
@@ -431,13 +621,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/filters/reorder", isAuthenticated, async (req, res) => {
+  app.post("/api/filters/reorder", isAuthenticated, async (req: any, res) => {
     try {
       const schema = z.object({
         filterIds: z.array(z.number()),
         companyId: z.number(),
       });
       const validated = schema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
       
       await storage.reorderFilters(validated.filterIds);
       broadcast({ type: "filter:updated", companyId: validated.companyId });
@@ -451,9 +647,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File routes
-  app.get("/api/files", isAuthenticated, async (req, res) => {
+  app.get("/api/files", isAuthenticated, async (req: any, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      // Verify user has access to this company
+      if (companyId) {
+        const hasAccess = await checkCompanyAccess(req.user.id, companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const files = await storage.getAllFiles(companyId);
       res.json(files.map(serializeFile));
     } catch (error) {
@@ -461,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -471,15 +676,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       res.json(serializeFile(file));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch file" });
     }
   });
 
-  app.post("/api/files", isAuthenticated, async (req, res) => {
+  app.post("/api/files", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertClientFileSchema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const file = await storage.createFile(validated);
       broadcast({ type: "file:created", companyId: file.companyId });
       res.status(201).json(serializeFile(file));
@@ -491,7 +710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/files/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -503,6 +722,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentFile = await storage.getFile(id);
       if (!currentFile) {
         return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, currentFile.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
       
       // If description is being updated and it changed, save it as a meeting note
@@ -530,27 +755,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/files/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid file ID" });
       }
       const file = await storage.getFile(id);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const success = await storage.deleteFile(id);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
       }
-      if (file) {
-        broadcast({ type: "file:deleted", companyId: file.companyId });
-      }
+      broadcast({ type: "file:deleted", companyId: file.companyId });
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete file" });
     }
   });
 
-  app.post("/api/files/:id/touch", isAuthenticated, async (req, res) => {
+  app.post("/api/files/:id/touch", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -561,6 +794,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!req.user?.id) {
         return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      // Fetch file to check company access
+      const existingFile = await storage.getFile(id);
+      if (!existingFile) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, existingFile.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
       
       const file = await storage.touchFile(id, req.user.id, validated.notes);
@@ -578,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files/:id/close", isAuthenticated, async (req, res) => {
+  app.post("/api/files/:id/close", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -586,6 +831,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validated = closeFileSchema.parse(req.body);
+      
+      // Fetch file to check company access
+      const existingFile = await storage.getFile(id);
+      if (!existingFile) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, existingFile.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
       
       const file = await storage.updateFile(id, { 
         closedAt: validated.closedAt,
@@ -605,12 +862,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id/sessions", isAuthenticated, async (req, res) => {
+  app.get("/api/files/:id/sessions", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid file ID" });
       }
+      
+      // Fetch file to check company access
+      const file = await storage.getFile(id);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const sessions = await storage.getWorkSessionsByFile(id);
       res.json(sessions.map(serializeSession));
     } catch (error) {
@@ -618,12 +888,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/sessions/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/sessions/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid session ID" });
       }
+      
+      // Fetch session to get fileId
+      const sessions = await storage.getAllWorkSessions();
+      const session = sessions.find(s => s.id === id);
+      if (!session) {
+        return res.status(404).json({ error: "Work session not found" });
+      }
+      
+      // Fetch file to check company access
+      const file = await storage.getFile(session.fileId);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const success = await storage.deleteWorkSession(id);
       if (!success) {
         return res.status(404).json({ error: "Work session not found" });
@@ -634,12 +924,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:id/meeting-notes", isAuthenticated, async (req, res) => {
+  app.get("/api/files/:id/meeting-notes", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid file ID" });
       }
+      
+      // Fetch file to check company access
+      const file = await storage.getFile(id);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const notes = await storage.getMeetingNotesByFile(id);
       res.json(notes.map(serializeMeetingNote));
     } catch (error) {
@@ -647,12 +950,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/meeting-notes/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/meeting-notes/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid meeting note ID" });
       }
+      
+      // Fetch note to get fileId - need to add getMeetingNote method to storage
+      const allNotes: MeetingNote[] = [];
+      const allFiles = await storage.getAllFiles();
+      for (const file of allFiles) {
+        const notes = await storage.getMeetingNotesByFile(file.id);
+        allNotes.push(...notes);
+      }
+      const note = allNotes.find(n => n.id === id);
+      if (!note) {
+        return res.status(404).json({ error: "Meeting note not found" });
+      }
+      
+      // Fetch file to check company access
+      const file = await storage.getFile(note.fileId);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const success = await storage.deleteMeetingNote(id);
       if (!success) {
         return res.status(404).json({ error: "Meeting note not found" });
@@ -675,9 +1003,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/pipelines", isAuthenticated, async (req, res) => {
+  app.get("/api/pipelines", isAuthenticated, async (req: any, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      // Verify user has access to this company
+      if (companyId) {
+        const hasAccess = await checkCompanyAccess(req.user.id, companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const pipelines = await storage.getAllPipelines(companyId);
       res.json(pipelines);
     } catch (error) {
@@ -685,7 +1022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/pipelines/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/pipelines/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -695,15 +1032,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pipeline) {
         return res.status(404).json({ error: "Pipeline not found" });
       }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       res.json(pipeline);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch pipeline" });
     }
   });
 
-  app.post("/api/pipelines", isAuthenticated, async (req, res) => {
+  app.post("/api/pipelines", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertPipelineSchema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const pipeline = await storage.createPipeline(validated);
       broadcast({ type: "pipeline:created", companyId: pipeline.companyId });
       res.status(201).json(pipeline);
@@ -715,13 +1066,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/pipelines/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/pipelines/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid pipeline ID" });
       }
       const validated = updatePipelineSchema.parse(req.body);
+      
+      // Get existing pipeline to check company access
+      const existingPipeline = await storage.getPipeline(id);
+      if (!existingPipeline) {
+        return res.status(404).json({ error: "Pipeline not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, existingPipeline.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const pipeline = await storage.updatePipeline(id, validated);
       if (!pipeline) {
         return res.status(404).json({ error: "Pipeline not found" });
@@ -736,20 +1100,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/pipelines/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/pipelines/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid pipeline ID" });
       }
       const pipeline = await storage.getPipeline(id);
+      if (!pipeline) {
+        return res.status(404).json({ error: "Pipeline not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const success = await storage.deletePipeline(id);
       if (!success) {
         return res.status(404).json({ error: "Pipeline not found" });
       }
-      if (pipeline) {
-        broadcast({ type: "pipeline:deleted", companyId: pipeline.companyId });
-      }
+      broadcast({ type: "pipeline:deleted", companyId: pipeline.companyId });
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete pipeline" });
@@ -763,10 +1135,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/columns", isAuthenticated, async (req, res) => {
+  app.get("/api/columns", isAuthenticated, async (req: any, res) => {
     try {
       const pipelineIdParam = req.query.pipelineId as string | undefined;
       const pipelineId = pipelineIdParam === "null" ? null : pipelineIdParam ? parseInt(pipelineIdParam) : undefined;
+      
+      // If requesting columns for a specific pipeline, verify access
+      if (pipelineId !== null && pipelineId !== undefined) {
+        const pipeline = await storage.getPipeline(pipelineId);
+        if (!pipeline) {
+          return res.status(404).json({ error: "Pipeline not found" });
+        }
+        
+        // Verify user has access to this company
+        const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
       
       const columns = await storage.getAllKanbanColumns(pipelineId);
       res.json(columns.map(serializeKanbanColumn));
@@ -775,7 +1161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/columns/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/columns/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -785,15 +1171,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!column) {
         return res.status(404).json({ error: "Column not found" });
       }
+      
+      // Verify user has access if column belongs to a pipeline
+      if (column.pipelineId !== null) {
+        const pipeline = await storage.getPipeline(column.pipelineId);
+        if (!pipeline) {
+          return res.status(404).json({ error: "Pipeline not found" });
+        }
+        
+        // Verify user has access to this company
+        const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       res.json(serializeKanbanColumn(column));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch column" });
     }
   });
 
-  app.post("/api/columns", isAuthenticated, async (req, res) => {
+  app.post("/api/columns", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertKanbanColumnSchema.parse(req.body);
+      
+      // Verify user has access if column is for a pipeline
+      if (validated.pipelineId !== null && validated.pipelineId !== undefined) {
+        const pipeline = await storage.getPipeline(validated.pipelineId);
+        if (!pipeline) {
+          return res.status(404).json({ error: "Pipeline not found" });
+        }
+        
+        // Verify user has access to this company
+        const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const column = await storage.createKanbanColumn(validated);
       if (column.pipelineId !== null) {
         broadcast({ type: "column:created", pipelineId: column.pipelineId });
@@ -807,13 +1223,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/columns/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/columns/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid column ID" });
       }
       const validated = updateKanbanColumnSchema.parse(req.body);
+      
+      // Get existing column to check pipeline access
+      const existingColumn = await storage.getKanbanColumn(id);
+      if (!existingColumn) {
+        return res.status(404).json({ error: "Column not found" });
+      }
+      
+      // Verify user has access if column belongs to a pipeline
+      if (existingColumn.pipelineId !== null) {
+        const pipeline = await storage.getPipeline(existingColumn.pipelineId);
+        if (!pipeline) {
+          return res.status(404).json({ error: "Pipeline not found" });
+        }
+        
+        // Verify user has access to this company
+        const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const column = await storage.updateKanbanColumn(id, validated);
       if (!column) {
         return res.status(404).json({ error: "Column not found" });
@@ -830,13 +1267,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/columns/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/columns/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid column ID" });
       }
       const column = await storage.getKanbanColumn(id);
+      if (!column) {
+        return res.status(404).json({ error: "Column not found" });
+      }
+      
+      // Verify user has access if column belongs to a pipeline
+      if (column.pipelineId !== null) {
+        const pipeline = await storage.getPipeline(column.pipelineId);
+        if (!pipeline) {
+          return res.status(404).json({ error: "Pipeline not found" });
+        }
+        
+        // Verify user has access to this company
+        const hasAccess = await checkCompanyAccess(req.user.id, pipeline.companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const success = await storage.deleteKanbanColumn(id);
       if (!success) {
         return res.status(404).json({ error: "Column not found" });
@@ -857,9 +1312,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/contacts", isAuthenticated, async (req, res) => {
+  app.get("/api/contacts", isAuthenticated, async (req: any, res) => {
     try {
       const companyId = req.query.companyId ? parseInt(req.query.companyId as string) : undefined;
+      
+      // Verify user has access to this company
+      if (companyId) {
+        const hasAccess = await checkCompanyAccess(req.user.id, companyId);
+        if (!hasAccess) {
+          return res.status(403).json({ error: "Access denied to this company" });
+        }
+      }
+      
       const contacts = await storage.getAllContacts(companyId);
       res.json(contacts.map(serializeContact));
     } catch (error) {
@@ -867,7 +1331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/contacts/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/contacts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -877,15 +1341,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!contact) {
         return res.status(404).json({ error: "Contact not found" });
       }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       res.json(serializeContact(contact));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch contact" });
     }
   });
 
-  app.post("/api/contacts", isAuthenticated, async (req, res) => {
+  app.post("/api/contacts", isAuthenticated, async (req: any, res) => {
     try {
       const validated = insertContactSchema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
       
       const duplicate = await storage.findDuplicateContact(
         validated.companyId,
@@ -921,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/contacts/bulk-import", isAuthenticated, async (req, res) => {
+  app.post("/api/contacts/bulk-import", isAuthenticated, async (req: any, res) => {
     try {
       const schema = z.object({
         contacts: z.array(z.object({
@@ -933,6 +1410,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const validated = schema.parse(req.body);
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, validated.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const results = {
         success: 0,
         failed: 0,
@@ -990,13 +1474,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/contacts/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/contacts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid contact ID" });
       }
       const validated = updateContactSchema.parse(req.body);
+      
+      // Get existing contact to check company access
+      const existingContact = await storage.getContact(id);
+      if (!existingContact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, existingContact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const contact = await storage.updateContact(id, validated);
       if (!contact) {
         return res.status(404).json({ error: "Contact not found" });
@@ -1011,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/contacts/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/contacts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -1021,6 +1518,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contact = await storage.getContact(id);
       if (!contact) {
         return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
       
       const companyId = contact.companyId;
@@ -1039,16 +1542,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   }
 
-  app.get("/api/opportunities", isAuthenticated, async (req, res) => {
+  app.get("/api/opportunities", isAuthenticated, async (req: any, res) => {
     try {
       const opportunities = await storage.getAllOpportunities();
-      res.json(opportunities.map(serializeOpportunity));
+      
+      // Filter opportunities to only those where the user has access to the contact's company
+      const filteredOpportunities = [];
+      for (const opp of opportunities) {
+        const contact = await storage.getContact(opp.contactId);
+        if (contact) {
+          const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+          if (hasAccess) {
+            filteredOpportunities.push(opp);
+          }
+        }
+      }
+      
+      res.json(filteredOpportunities.map(serializeOpportunity));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch opportunities" });
     }
   });
 
-  app.get("/api/opportunities/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -1058,6 +1574,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!opportunity) {
         return res.status(404).json({ error: "Opportunity not found" });
       }
+      
+      // Get the contact to determine the company
+      const contact = await storage.getContact(opportunity.contactId);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       res.json(serializeOpportunity(opportunity));
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch opportunity" });
@@ -1147,23 +1676,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/opportunities/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/opportunities/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid opportunity ID" });
       }
       const opportunity = await storage.getOpportunity(id);
+      if (!opportunity) {
+        return res.status(404).json({ error: "Opportunity not found" });
+      }
+      
+      // Get the contact to determine the company
+      const contact = await storage.getContact(opportunity.contactId);
+      if (!contact) {
+        return res.status(400).json({ error: "Contact not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
       const success = await storage.deleteOpportunity(id);
       if (!success) {
         return res.status(404).json({ error: "Opportunity not found" });
       }
-      if (opportunity) {
-        const contact = await storage.getContact(opportunity.contactId);
-        if (contact) {
-          broadcast({ type: "opportunity:deleted", companyId: contact.companyId });
-        }
-      }
+      broadcast({ type: "opportunity:deleted", companyId: contact.companyId });
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Failed to delete opportunity" });
@@ -1408,7 +1948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get call logs for a specific contact
-  app.get("/api/twilio/calls/:phoneNumber", isAuthenticated, async (req, res) => {
+  app.get("/api/twilio/calls/:phoneNumber", isAuthenticated, async (req: any, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -1417,6 +1957,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!accountSid || !authToken || !twilioNumber) {
         return res.status(500).json({ error: "Missing Twilio credentials" });
+      }
+      
+      // Verify user has access to this phone number via a contact in their company
+      const allContacts = await storage.getAllContacts();
+      const contact = allContacts.find(c => c.phone === phoneNumber);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact with this phone number not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
 
       const client = twilio(accountSid, authToken);
@@ -1450,7 +2003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get SMS messages for a specific contact
-  app.get("/api/twilio/messages/:phoneNumber", isAuthenticated, async (req, res) => {
+  app.get("/api/twilio/messages/:phoneNumber", isAuthenticated, async (req: any, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -1459,6 +2012,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!accountSid || !authToken || !twilioNumber) {
         return res.status(500).json({ error: "Missing Twilio credentials" });
+      }
+      
+      // Verify user has access to this phone number via a contact in their company
+      const allContacts = await storage.getAllContacts();
+      const contact = allContacts.find(c => c.phone === phoneNumber);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact with this phone number not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
       }
 
       const client = twilio(accountSid, authToken);
@@ -1492,17 +2058,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get recordings for a specific call
-  app.get("/api/twilio/recordings/:callSid", isAuthenticated, async (req, res) => {
+  app.get("/api/twilio/recordings/:callSid", isAuthenticated, async (req: any, res) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
       const callSid = req.params.callSid;
 
-      if (!accountSid || !authToken) {
+      if (!accountSid || !authToken || !twilioNumber) {
         return res.status(500).json({ error: "Missing Twilio credentials" });
       }
 
       const client = twilio(accountSid, authToken);
+      
+      // First, get the call to find which phone number it's associated with
+      const call = await client.calls(callSid).fetch();
+      
+      // Determine the contact's phone number (the one that's not our Twilio number)
+      const contactPhone = call.from === twilioNumber ? call.to : call.from;
+      
+      // Verify user has access to this phone number via a contact in their company
+      const allContacts = await storage.getAllContacts();
+      const contact = allContacts.find(c => c.phone === contactPhone);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact with this phone number not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, contact.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
 
       const recordings = await client.recordings.list({ callSid, limit: 20 });
 

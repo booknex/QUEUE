@@ -35,9 +35,9 @@ export function ManageUserModal({ open, onClose, user }: ManageUserModalProps) {
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<Set<number>>(new Set());
   const prevUserCompanyIdsRef = useRef<string>("");
 
-  // Fetch all companies the current user has access to
+  // Fetch all companies for user assignment (admin function)
   const { data: allCompanies = [], isLoading: loadingCompanies } = useQuery<Company[]>({
-    queryKey: ["/api/companies"],
+    queryKey: ["/api/all-companies"],
     enabled: open && !!user,
   });
 
