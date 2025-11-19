@@ -28,6 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Plus, ChevronDown, Settings, Trash2, X, MoreVertical, Edit2, Briefcase, UserCircle } from "lucide-react";
 import { PipelineManager } from "./PipelineManager";
 import { AddOpportunityModal } from "./AddOpportunityModal";
@@ -582,15 +587,38 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                       {...provided.dragHandleProps}
                                       data-testid={`opportunity-card-${opportunity.id}`}
                                       onClick={() => handleOpportunityClick(opportunity)}
-                                      className={`cursor-grab active:cursor-grabbing border-l-4 border-l-primary/60 hover-elevate ${
+                                      className={`cursor-grab active:cursor-grabbing border-l-4 border-l-primary/60 hover-elevate relative ${
                                         snapshot.isDragging ? "opacity-50 shadow-lg" : ""
                                       }`}
                                       style={{
                                         ...provided.draggableProps.style,
                                       }}
                                     >
+                                      {opportunity.assignedUserName && (() => {
+                                        const nameParts = opportunity.assignedUserName.split(' ');
+                                        const firstInitial = nameParts[0]?.[0]?.toUpperCase() || '';
+                                        const lastInitial = nameParts[1]?.[0]?.toUpperCase() || '';
+                                        const initials = firstInitial + lastInitial;
+                                        
+                                        return (
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <div
+                                                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold"
+                                                data-testid={`assigned-user-${opportunity.id}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                              >
+                                                {initials}
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Assigned to: {opportunity.assignedUserName}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        );
+                                      })()}
                                       <CardHeader className="pb-2 pt-3 px-3">
-                                        <CardTitle className="text-sm">
+                                        <CardTitle className="text-sm pr-10">
                                           <span 
                                             className="cursor-pointer hover:underline text-primary"
                                             onClick={(e) => handleContactClick(e, opportunity)}
@@ -599,11 +627,6 @@ export function KanbanView({ selectedPipelineId, onPipelineChange, selectedCompa
                                             {opportunity.contactName || opportunity.title}
                                           </span>
                                         </CardTitle>
-                                        {opportunity.assignedUserName && (
-                                          <p className="text-xs text-muted-foreground mt-1" data-testid={`assigned-user-${opportunity.id}`}>
-                                            Assigned to: {opportunity.assignedUserName}
-                                          </p>
-                                        )}
                                       </CardHeader>
                                       {opportunity.description && (
                                         <CardContent className="pt-0 pb-3 px-3">
