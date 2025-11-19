@@ -24,6 +24,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -275,15 +276,16 @@ export function AddEditClientModal({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      {/* Left Sliding Panel - Behind Modal (z-30) */}
-      {open && (
-        <aside
-          className={cn(
-            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-30 overflow-hidden",
-            isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
-          )}
-        >
-          <div className="h-full flex flex-col p-4">
+      <DialogPortal>
+        {/* Left Sliding Panel - Behind Modal (z-[45]) */}
+        {open && (
+          <aside
+            className={cn(
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[45] overflow-hidden",
+              isNotesOpen ? "left-[calc(50%-32rem-1.25rem)]" : "left-[calc(50%-32rem-21rem)]"
+            )}
+          >
+            <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
                 Meeting Notes {editingFile && meetingNotes.length > 0 && `(${meetingNotes.length})`}
@@ -338,15 +340,15 @@ export function AddEditClientModal({
         </aside>
       )}
 
-      {/* Right Sliding Panel - Behind Modal (z-30) */}
-      {open && (
-        <aside
-          className={cn(
-            "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-30 overflow-hidden",
-            isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
-          )}
-        >
-          <div className="h-full flex flex-col p-4">
+        {/* Right Sliding Panel - Behind Modal (z-[45]) */}
+        {open && (
+          <aside
+            className={cn(
+              "fixed top-1/2 -translate-y-1/2 w-80 max-h-[90vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[45] overflow-hidden",
+              isTouchesOpen ? "right-[calc(50%-32rem-1.25rem)]" : "right-[calc(50%-32rem-21rem)]"
+            )}
+          >
+            <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">
                 Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
@@ -413,8 +415,8 @@ export function AddEditClientModal({
         </aside>
       )}
 
-      {/* Main Modal Dialog Content (z-40 - Above panels) */}
-      <DialogContent className="max-w-4xl max-h-[90vh] z-40 overflow-hidden" data-testid="modal-add-edit-client">
+        {/* Main Modal Dialog Content (z-50 - Above panels) */}
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" data-testid="modal-add-edit-client">
         <DialogHeader>
           <DialogTitle data-testid="text-modal-title">
             {editingFile ? "Edit Client File" : "Add New Client"}
@@ -666,7 +668,8 @@ export function AddEditClientModal({
             </form>
           </Form>
         </div>
-      </DialogContent>
+        </DialogContent>
+      </DialogPortal>
       </Dialog>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
