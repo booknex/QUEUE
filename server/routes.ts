@@ -286,10 +286,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...safeUser } = updated;
       res.json(safeUser);
     } catch (error) {
+      console.error("Error updating user profile:", error);
       if (error instanceof Error && error.message.includes('already exists')) {
         return res.status(400).json({ error: error.message });
       }
-      res.status(500).json({ error: "Failed to update user" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to update user";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -321,7 +323,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...safeUser } = updated;
       res.json(safeUser);
     } catch (error) {
-      res.status(500).json({ error: "Failed to reset password" });
+      console.error("Error resetting password:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to reset password";
+      res.status(500).json({ error: errorMessage });
     }
   });
 

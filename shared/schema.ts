@@ -35,7 +35,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
 
 export const updateUserProfileSchema = z.object({
   username: z.string().min(1).optional(),
-  email: z.string().email().optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
 });

@@ -107,7 +107,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
-      return apiRequest(`/api/users/${user.id}`, "PATCH", {
+      return apiRequest("PATCH", `/api/users/${user.id}`, {
         username: data.username,
         email: data.email || null,
         firstName: data.firstName || null,
@@ -138,7 +138,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
 
   const resetPasswordMutation = useMutation({
     mutationFn: async (data: PasswordFormData) => {
-      return apiRequest(`/api/users/${user.id}/password`, "POST", {
+      return apiRequest("POST", `/api/users/${user.id}/password`, {
         newPassword: data.newPassword,
       });
     },
@@ -174,7 +174,7 @@ export function EditUserModal({ open, onOpenChange, user }: EditUserModalProps) 
 
   const deleteUserMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest(`/api/users/${user.id}`, "DELETE");
+      return apiRequest("DELETE", `/api/users/${user.id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
