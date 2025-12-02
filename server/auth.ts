@@ -12,7 +12,7 @@ import { broadcast } from "./websocket";
 
 const registerSchema = z.object({
   username: z.string().min(3).max(50),
-  password: z.string().min(6).max(100),
+  password: z.string().min(1),
   email: z.string().email().optional(),
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),

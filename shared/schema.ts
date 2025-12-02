@@ -41,7 +41,7 @@ export const updateUserProfileSchema = z.object({
 });
 
 export const updateUserPasswordSchema = z.object({
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: z.string().min(1),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
