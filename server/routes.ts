@@ -261,15 +261,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user profile (self-service only)
+  // Update user profile (any authenticated user can edit any user - beta mode)
   app.patch("/api/users/:id", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
-      
-      // Self-service check: users can only modify their own account
-      if (req.user.id !== targetUserId) {
-        return res.status(403).json({ error: "You can only modify your own account" });
-      }
       
       // Validate request body
       const validated = updateUserProfileSchema.parse(req.body);
@@ -295,15 +290,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset user password (self-service only)
+  // Reset user password (any authenticated user can change any user's password - beta mode)
   app.post("/api/users/:id/password", isAuthenticated, async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
-      
-      // Self-service check: users can only change their own password
-      if (req.user.id !== targetUserId) {
-        return res.status(403).json({ error: "You can only modify your own account" });
-      }
       
       // Validate request body
       const validated = updateUserPasswordSchema.parse(req.body);

@@ -166,16 +166,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(userId: string, updates: UpdateUserProfile): Promise<User | undefined> {
+    // Convert empty strings to null for email (to avoid unique constraint violations)
+    const sanitizedUpdates = {
+      ...updates,
+      email: updates.email === "" ? null : updates.email,
+    };
+    
     // Check for uniqueness if username or email is being updated
-    if (updates.username) {
-      const existing = await this.getUserByUsername(updates.username);
+    if (sanitizedUpdates.username) {
+      const existing = await this.getUserByUsername(sanitizedUpdates.username);
       if (existing && existing.id !== userId) {
         throw new Error('Username already exists');
       }
     }
     
-    if (updates.email) {
-      const existing = await this.getUserByEmail(updates.email);
+    if (sanitizedUpdates.email) {
+      const existing = await this.getUserByEmail(sanitizedUpdates.email);
       if (existing && existing.id !== userId) {
         throw new Error('Email already exists');
       }
@@ -184,7 +190,7 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db
       .update(users)
       .set({
-        ...updates,
+        ...sanitizedUpdates,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
