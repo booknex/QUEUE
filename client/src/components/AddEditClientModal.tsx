@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
+import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical, Square, CheckSquare } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -185,6 +185,51 @@ export function AddEditClientModal({
     },
   });
 
+  const toggleMeetingNoteMutation = useMutation({
+    mutationFn: async ({ id, completed }: { id: number; completed: number }) => {
+      return await apiRequest("PATCH", `/api/meeting-notes/${id}`, { completed });
+    },
+    onSuccess: () => {
+      if (editingFile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/files", editingFile.id, "meeting-notes"] });
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update meeting note. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleToggleMeetingNote = (note: MeetingNote, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Don't allow toggle while mutation is pending
+    if (toggleMeetingNoteMutation.isPending) return;
+    
+    const newCompleted = note.completed === 1 ? 0 : 1;
+    toggleMeetingNoteMutation.mutate({
+      id: note.id,
+      completed: newCompleted,
+    });
+  };
+
+  // Group work sessions by date for display under meeting notes
+  const getSessionsForDate = (noteCreatedAt: Date) => {
+    const noteDate = new Date(noteCreatedAt);
+    noteDate.setHours(0, 0, 0, 0);
+    const nextDay = new Date(noteDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    return workSessions.filter(session => {
+      const sessionDate = new Date(session.startedAt);
+      return sessionDate >= noteDate && sessionDate < nextDay;
+    });
+  };
+
   const handleDeleteClick = (id: number, type: "meeting-note" | "session") => {
     setDeletingId(id);
     setDeleteType(type);
@@ -318,51 +363,107 @@ export function AddEditClientModal({
                   No notes yet.
                 </div>
               ) : (
-                <div className="space-y-2 pr-2">
-                  {meetingNotes.map((note) => (
-                    <div
-                      key={note.id}
-                      className="border rounded-md p-2 bg-card text-xs"
-                      data-testid={`meeting-note-${note.id}`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
-                          {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
-                        </p>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              data-testid={`button-menu-meeting-note-${note.id}`}
-                              className="h-5 w-5"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreVertical className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(note.id, "meeting-note");
-                              }}
-                              data-testid={`button-delete-meeting-note-${note.id}`}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                <div className="space-y-3 pr-2">
+                  {meetingNotes.map((note) => {
+                    const sessionsForNote = getSessionsForDate(note.createdAt);
+                    const isCompleted = note.completed === 1;
+                    
+                    return (
+                      <div
+                        key={note.id}
+                        className={cn(
+                          "border rounded-md p-2 bg-card text-xs",
+                          isCompleted && "opacity-60"
+                        )}
+                        data-testid={`meeting-note-${note.id}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleMeetingNote(note, e)}
+                            disabled={toggleMeetingNoteMutation.isPending}
+                            className="mt-0.5 flex-shrink-0 text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                            data-testid={`button-toggle-meeting-note-${note.id}`}
+                          >
+                            {isCompleted ? (
+                              <CheckSquare className="h-4 w-4" />
+                            ) : (
+                              <Square className="h-4 w-4" />
+                            )}
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
+                                {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
+                              </p>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    data-testid={`button-menu-meeting-note-${note.id}`}
+                                    className="h-5 w-5"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(note.id, "meeting-note");
+                                    }}
+                                    data-testid={`button-delete-meeting-note-${note.id}`}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                            {note.notes && (
+                              <p 
+                                className={cn(
+                                  "text-foreground whitespace-pre-wrap",
+                                  isCompleted && "line-through"
+                                )} 
+                                data-testid={`meeting-note-content-${note.id}`}
+                              >
+                                {note.notes}
+                              </p>
+                            )}
+                            
+                            {sessionsForNote.length > 0 && (
+                              <div className="mt-2 pl-2 border-l-2 border-muted space-y-1">
+                                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                                  Touches this day ({sessionsForNote.length})
+                                </p>
+                                {sessionsForNote.map((session) => {
+                                  const displayName = session.userFirstName && session.userLastName
+                                    ? `${session.userFirstName} ${session.userLastName}`
+                                    : session.userName || "Unknown";
+                                  return (
+                                    <div 
+                                      key={session.id} 
+                                      className="text-[10px] text-muted-foreground"
+                                      data-testid={`session-under-note-${session.id}`}
+                                    >
+                                      <span className="font-medium">{displayName}</span>
+                                      {session.notes && (
+                                        <span className="ml-1">- {session.notes}</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      {note.notes && (
-                        <p className="text-foreground whitespace-pre-wrap" data-testid={`meeting-note-content-${note.id}`}>
-                          {note.notes}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>
