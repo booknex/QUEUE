@@ -1,7 +1,7 @@
 import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema, updateUserProfileSchema, updateUserPasswordSchema } from "@shared/schema";
+import { insertClientFileSchema, updateClientFileSchema, touchFileSchema, closeFileSchema, insertPipelineSchema, updatePipelineSchema, insertKanbanColumnSchema, updateKanbanColumnSchema, insertContactSchema, updateContactSchema, insertOpportunitySchema, updateOpportunitySchema, insertCompanySchema, updateCompanySchema, insertStatusFilterSchema, updateStatusFilterSchema, updateUserCompanySchema, updateUserProfileSchema, updateUserPasswordSchema, updateMeetingNoteSchema } from "@shared/schema";
 import { z } from "zod";
 import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Contact, Opportunity, OpportunityWithContact, Company, StatusFilter } from "@shared/schema";
 import { broadcast } from "./websocket";
@@ -982,6 +982,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete meeting note" });
+    }
+  });
+
+  // Update meeting note (toggle completion)
+  app.patch("/api/meeting-notes/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid meeting note ID" });
+      }
+      
+      // Validate request body
+      const validated = updateMeetingNoteSchema.parse(req.body);
+      
+      // Fetch note to get fileId for access check
+      const allNotes: MeetingNote[] = [];
+      const allFiles = await storage.getAllFiles();
+      for (const file of allFiles) {
+        const notes = await storage.getMeetingNotesByFile(file.id);
+        allNotes.push(...notes);
+      }
+      const note = allNotes.find(n => n.id === id);
+      if (!note) {
+        return res.status(404).json({ error: "Meeting note not found" });
+      }
+      
+      // Fetch file to check company access
+      const file = await storage.getFile(note.fileId);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
+      const updated = await storage.updateMeetingNote(id, validated);
+      if (!updated) {
+        return res.status(404).json({ error: "Meeting note not found" });
+      }
+      res.json(serializeMeetingNote(updated));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update meeting note" });
     }
   });
 
