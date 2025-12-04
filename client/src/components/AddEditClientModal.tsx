@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical, Square, CheckSquare } from "lucide-react";
+import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical, Square, CheckSquare, Pencil } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -95,6 +95,8 @@ export function AddEditClientModal({
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isTouchesOpen, setIsTouchesOpen] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
+  const [editSessionNotes, setEditSessionNotes] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -185,6 +187,30 @@ export function AddEditClientModal({
     },
   });
 
+  const updateSessionMutation = useMutation({
+    mutationFn: async ({ id, notes }: { id: number; notes: string }) => {
+      return await apiRequest("PATCH", `/api/sessions/${id}`, { notes });
+    },
+    onSuccess: () => {
+      if (editingFile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/files", editingFile.id, "sessions"] });
+      }
+      setEditingSessionId(null);
+      setEditSessionNotes("");
+      toast({
+        title: "Touch updated",
+        description: "The touch notes have been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update touch. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const toggleMeetingNoteMutation = useMutation({
     mutationFn: async ({ id, completed }: { id: number; completed: number }) => {
       return await apiRequest("PATCH", `/api/meeting-notes/${id}`, { completed });
@@ -248,6 +274,30 @@ export function AddEditClientModal({
     setDeleteConfirmOpen(false);
     setDeletingId(null);
     setDeleteType(null);
+  };
+
+  const handleStartEditSession = (session: WorkSessionWithUser, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingSessionId(session.id);
+    setEditSessionNotes(session.notes || "");
+  };
+
+  const handleSaveSessionEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (editingSessionId === null) return;
+    updateSessionMutation.mutate({
+      id: editingSessionId,
+      notes: editSessionNotes,
+    });
+  };
+
+  const handleCancelSessionEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingSessionId(null);
+    setEditSessionNotes("");
   };
 
   // Preserve the order from the API (sorted by position) instead of alphabetically sorting
@@ -444,15 +494,88 @@ export function AddEditClientModal({
                                   const displayName = session.userFirstName && session.userLastName
                                     ? `${session.userFirstName} ${session.userLastName}`
                                     : session.userName || "Unknown";
+                                  const isEditing = editingSessionId === session.id;
+                                  
                                   return (
                                     <div 
                                       key={session.id} 
-                                      className="text-[10px] text-muted-foreground"
+                                      className="text-[10px] text-muted-foreground group"
                                       data-testid={`session-under-note-${session.id}`}
                                     >
-                                      <span className="font-medium">{displayName}</span>
-                                      {session.notes && (
-                                        <span className="ml-1">- {session.notes}</span>
+                                      {isEditing ? (
+                                        <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                                          <Input
+                                            value={editSessionNotes}
+                                            onChange={(e) => setEditSessionNotes(e.target.value)}
+                                            placeholder="Enter notes..."
+                                            className="h-6 text-[10px]"
+                                            data-testid={`input-edit-session-${session.id}`}
+                                            autoFocus
+                                          />
+                                          <div className="flex gap-1">
+                                            <Button
+                                              size="sm"
+                                              variant="default"
+                                              className="h-5 px-2 text-[10px]"
+                                              onClick={handleSaveSessionEdit}
+                                              disabled={updateSessionMutation.isPending}
+                                              data-testid={`button-save-session-${session.id}`}
+                                            >
+                                              Save
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="h-5 px-2 text-[10px]"
+                                              onClick={handleCancelSessionEdit}
+                                              data-testid={`button-cancel-session-${session.id}`}
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-1">
+                                          <div className="flex-1">
+                                            <span className="font-medium">{displayName}</span>
+                                            {session.notes && (
+                                              <span className="ml-1">- {session.notes}</span>
+                                            )}
+                                          </div>
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={(e) => e.stopPropagation()}
+                                                data-testid={`button-menu-session-${session.id}`}
+                                              >
+                                                <MoreVertical className="h-3 w-3" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                              <DropdownMenuItem
+                                                onClick={(e) => handleStartEditSession(session, e)}
+                                                data-testid={`button-edit-session-${session.id}`}
+                                              >
+                                                <Pencil className="h-3 w-3 mr-2" />
+                                                Edit
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteClick(session.id, "session");
+                                                }}
+                                                data-testid={`button-delete-session-${session.id}`}
+                                                className="text-destructive focus:text-destructive"
+                                              >
+                                                <Trash2 className="h-3 w-3 mr-2" />
+                                                Delete
+                                              </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </div>
                                       )}
                                     </div>
                                   );
