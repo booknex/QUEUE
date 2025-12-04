@@ -1,4 +1,4 @@
-import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type WorkSessionWithUser, type InsertWorkSession, type MeetingNote, type InsertMeetingNote, type UpdateMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type UserWithRole, type InsertUserCompany, type UpdateUserProfile, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
+import { type ClientFile, type InsertClientFile, type UpdateClientFile, type WorkSession, type WorkSessionWithUser, type InsertWorkSession, type UpdateWorkSession, type MeetingNote, type InsertMeetingNote, type UpdateMeetingNote, type Pipeline, type InsertPipeline, type Opportunity, type OpportunityWithContact, type InsertOpportunity, type UpdateOpportunity, type Contact, type InsertContact, type UpdateContact, type KanbanColumn, type InsertKanbanColumn, type UpdateKanbanColumn, type Company, type InsertCompany, type UpdateCompany, type StatusFilter, type InsertStatusFilter, type UpdateStatusFilter, type User, type UpsertUser, type UserWithRole, type InsertUserCompany, type UpdateUserProfile, clientFiles, workSessions, meetingNotes, pipelines, opportunities, contacts, kanbanColumns, companies, statusFilters, users, userCompanies } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, sql, isNull, and } from "drizzle-orm";
 
@@ -36,6 +36,7 @@ export interface IStorage {
   createWorkSession(session: InsertWorkSession): Promise<WorkSession>;
   getWorkSessionsByFile(fileId: number): Promise<WorkSessionWithUser[]>;
   getAllWorkSessions(): Promise<WorkSession[]>;
+  updateWorkSession(id: number, updates: UpdateWorkSession): Promise<WorkSession | undefined>;
   deleteWorkSession(id: number): Promise<boolean>;
 
   createMeetingNote(note: InsertMeetingNote): Promise<MeetingNote>;
@@ -428,6 +429,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(workSessions)
       .orderBy(desc(workSessions.startedAt));
+  }
+
+  async updateWorkSession(id: number, updates: UpdateWorkSession): Promise<WorkSession | undefined> {
+    const [updated] = await db
+      .update(workSessions)
+      .set(updates)
+      .where(eq(workSessions.id, id))
+      .returning();
+    return updated;
   }
 
   async deleteWorkSession(id: number): Promise<boolean> {

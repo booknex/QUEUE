@@ -188,6 +188,12 @@ export type WorkSessionWithUser = WorkSession & {
   userLastName?: string;
 };
 
+export const updateWorkSessionSchema = z.object({
+  notes: z.string().optional(),
+});
+
+export type UpdateWorkSession = z.infer<typeof updateWorkSessionSchema>;
+
 export const touchFileSchema = z.object({
   notes: z.string().optional(),
 });
