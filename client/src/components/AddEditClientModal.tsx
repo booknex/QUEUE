@@ -595,12 +595,12 @@ export function AddEditClientModal({
                                       data-testid={`session-under-note-${session.id}`}
                                     >
                                       {isEditing ? (
-                                        <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
-                                          <Input
+                                        <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                                          <Textarea
                                             value={editSessionNotes}
                                             onChange={(e) => setEditSessionNotes(e.target.value)}
-                                            placeholder="Enter notes..."
-                                            className="h-6 text-[10px]"
+                                            placeholder="Enter touch comment..."
+                                            className="text-xs min-h-[80px]"
                                             data-testid={`input-edit-session-${session.id}`}
                                             autoFocus
                                           />
@@ -608,7 +608,7 @@ export function AddEditClientModal({
                                             <Button
                                               size="sm"
                                               variant="default"
-                                              className="h-5 px-2 text-[10px]"
+                                              className="h-6 px-2 text-xs"
                                               onClick={handleSaveSessionEdit}
                                               disabled={updateSessionMutation.isPending}
                                               data-testid={`button-save-session-${session.id}`}
@@ -618,7 +618,7 @@ export function AddEditClientModal({
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="h-5 px-2 text-[10px]"
+                                              className="h-6 px-2 text-xs"
                                               onClick={handleCancelSessionEdit}
                                               data-testid={`button-cancel-session-${session.id}`}
                                             >
