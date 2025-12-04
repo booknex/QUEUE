@@ -97,6 +97,8 @@ export function AddEditClientModal({
   const [isTouchesOpen, setIsTouchesOpen] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
   const [editSessionNotes, setEditSessionNotes] = useState("");
+  const [editingMeetingNoteId, setEditingMeetingNoteId] = useState<number | null>(null);
+  const [editMeetingNoteText, setEditMeetingNoteText] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -229,6 +231,30 @@ export function AddEditClientModal({
     },
   });
 
+  const updateMeetingNoteMutation = useMutation({
+    mutationFn: async ({ id, notes }: { id: number; notes: string }) => {
+      return await apiRequest("PATCH", `/api/meeting-notes/${id}`, { notes });
+    },
+    onSuccess: () => {
+      if (editingFile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/files", editingFile.id, "meeting-notes"] });
+      }
+      setEditingMeetingNoteId(null);
+      setEditMeetingNoteText("");
+      toast({
+        title: "Meeting note updated",
+        description: "The meeting note has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update meeting note. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleToggleMeetingNote = (note: MeetingNote, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -298,6 +324,30 @@ export function AddEditClientModal({
     e.stopPropagation();
     setEditingSessionId(null);
     setEditSessionNotes("");
+  };
+
+  const handleStartEditMeetingNote = (note: MeetingNote, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingMeetingNoteId(note.id);
+    setEditMeetingNoteText(note.notes || "");
+  };
+
+  const handleSaveMeetingNoteEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (editingMeetingNoteId === null) return;
+    updateMeetingNoteMutation.mutate({
+      id: editingMeetingNoteId,
+      notes: editMeetingNoteText,
+    });
+  };
+
+  const handleCancelMeetingNoteEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingMeetingNoteId(null);
+    setEditMeetingNoteText("");
   };
 
   // Preserve the order from the API (sorted by position) instead of alphabetically sorting
@@ -417,6 +467,7 @@ export function AddEditClientModal({
                   {meetingNotes.map((note) => {
                     const sessionsForNote = getSessionsForDate(note.createdAt);
                     const isCompleted = note.completed === 1;
+                    const isEditingNote = editingMeetingNoteId === note.id;
                     
                     return (
                       <div
@@ -431,7 +482,7 @@ export function AddEditClientModal({
                           <button
                             type="button"
                             onClick={(e) => handleToggleMeetingNote(note, e)}
-                            disabled={toggleMeetingNoteMutation.isPending}
+                            disabled={toggleMeetingNoteMutation.isPending || isEditingNote}
                             className="mt-0.5 flex-shrink-0 text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
                             data-testid={`button-toggle-meeting-note-${note.id}`}
                           >
@@ -446,34 +497,75 @@ export function AddEditClientModal({
                               <p className="text-muted-foreground" data-testid={`meeting-note-time-${note.id}`}>
                                 {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
                               </p>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    data-testid={`button-menu-meeting-note-${note.id}`}
-                                    className="h-5 w-5"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreVertical className="h-3 w-3" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteClick(note.id, "meeting-note");
-                                    }}
-                                    data-testid={`button-delete-meeting-note-${note.id}`}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="h-3 w-3 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {!isEditingNote && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      data-testid={`button-menu-meeting-note-${note.id}`}
+                                      className="h-5 w-5"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <MoreVertical className="h-3 w-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={(e) => handleStartEditMeetingNote(note, e)}
+                                      data-testid={`button-edit-meeting-note-${note.id}`}
+                                    >
+                                      <Pencil className="h-3 w-3 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteClick(note.id, "meeting-note");
+                                      }}
+                                      data-testid={`button-delete-meeting-note-${note.id}`}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
                             </div>
-                            {note.notes && (
+                            {isEditingNote ? (
+                              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                                <Textarea
+                                  value={editMeetingNoteText}
+                                  onChange={(e) => setEditMeetingNoteText(e.target.value)}
+                                  placeholder="Enter meeting note..."
+                                  className="text-xs min-h-[60px]"
+                                  data-testid={`input-edit-meeting-note-${note.id}`}
+                                  autoFocus
+                                />
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-6 px-2 text-xs"
+                                    onClick={handleSaveMeetingNoteEdit}
+                                    disabled={updateMeetingNoteMutation.isPending}
+                                    data-testid={`button-save-meeting-note-${note.id}`}
+                                  >
+                                    Save
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-2 text-xs"
+                                    onClick={handleCancelMeetingNoteEdit}
+                                    data-testid={`button-cancel-meeting-note-${note.id}`}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : note.notes ? (
                               <p 
                                 className={cn(
                                   "text-foreground whitespace-pre-wrap",
@@ -483,7 +575,7 @@ export function AddEditClientModal({
                               >
                                 {note.notes}
                               </p>
-                            )}
+                            ) : null}
                             
                             {sessionsForNote.length > 0 && (
                               <div className="mt-2 pl-2 border-l-2 border-muted space-y-1">
