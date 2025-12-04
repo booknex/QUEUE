@@ -109,6 +109,7 @@ export const meetingNotes = pgTable("meeting_notes", {
   id: serial("id").primaryKey(),
   fileId: integer("file_id").notNull().references(() => clientFiles.id, { onDelete: "cascade" }),
   notes: text("notes"),
+  completed: integer("completed").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -194,9 +195,16 @@ export const touchFileSchema = z.object({
 export const insertMeetingNoteSchema = createInsertSchema(meetingNotes).omit({
   id: true,
   createdAt: true,
+  completed: true,
+});
+
+export const updateMeetingNoteSchema = z.object({
+  notes: z.string().optional(),
+  completed: z.number().min(0).max(1).optional(),
 });
 
 export type InsertMeetingNote = z.infer<typeof insertMeetingNoteSchema>;
+export type UpdateMeetingNote = z.infer<typeof updateMeetingNoteSchema>;
 export type MeetingNote = typeof meetingNotes.$inferSelect;
 
 export const insertPipelineSchema = createInsertSchema(pipelines).omit({
