@@ -594,7 +594,7 @@ export function AddEditClientModal({
         </aside>
       )}
 
-      {/* Right Sliding Panel - Outside DialogPortal (z-[51] - Above overlay, behind modal) */}
+      {/* Right Sliding Panel - Reserved for future use */}
       {open && (
         <aside
           onClick={(e) => {
@@ -605,88 +605,19 @@ export function AddEditClientModal({
             "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
-          data-testid="panel-touch-comments"
+          data-testid="panel-right"
         >
-            <div className="h-full flex flex-col p-4">
+          <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-end mb-2">
               <h3 className="text-sm font-semibold">
-                Touch Comments {editingFile && workSessions.length > 0 && `(${workSessions.length})`}
+                Coming Soon
               </h3>
             </div>
-            <ScrollArea className="flex-1">
-              {!editingFile ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  Save first to view comments.
-                </div>
-              ) : isLoadingSessions ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  Loading...
-                </div>
-              ) : workSessions.length === 0 ? (
-                <div className="text-center py-4 text-muted-foreground text-xs">
-                  No comments yet.
-                </div>
-              ) : (
-                <div className="space-y-2 pr-2">
-                  {workSessions.map((session) => {
-                    const displayName = session.userFirstName && session.userLastName
-                      ? `${session.userFirstName} ${session.userLastName}`
-                      : session.userName || "Unknown User";
-                    
-                    return (
-                      <div
-                        key={session.id}
-                        className="border rounded-md p-2 bg-card text-xs"
-                        data-testid={`touch-comment-${session.id}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <p className="text-muted-foreground" data-testid={`touch-comment-time-${session.id}`}>
-                              {formatDistanceToNow(new Date(session.startedAt), { addSuffix: true })}
-                            </p>
-                            <span>•</span>
-                            <p className="font-medium" data-testid={`touch-comment-user-${session.id}`}>
-                              {displayName}
-                            </p>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                data-testid={`button-menu-touch-comment-${session.id}`}
-                                className="h-5 w-5"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteClick(session.id, "session");
-                                }}
-                                data-testid={`button-delete-touch-comment-${session.id}`}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        {session.notes && (
-                          <p className="text-foreground whitespace-pre-wrap" data-testid={`touch-comment-content-${session.id}`}>
-                            {session.notes}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </ScrollArea>
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-center text-muted-foreground text-xs">
+                This panel is reserved for future features.
+              </p>
+            </div>
           </div>
         </aside>
       )}
