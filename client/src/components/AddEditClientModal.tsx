@@ -705,12 +705,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       {/* Right Sliding Panel - Card Display */}
       {open && (
         <aside
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsTouchesOpen(!isTouchesOpen);
-          }}
           className={cn(
-            "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
           data-testid="panel-right"
@@ -721,12 +717,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                 Card Display
               </h3>
             </div>
-            <div 
-              className="flex-1 space-y-4" 
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
+            <div className="flex-1 space-y-4">
               <p className="text-xs text-muted-foreground mb-4">
                 This info will be displayed on the client card in the queue.
               </p>
@@ -739,9 +730,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                     setLoanTypeValue(e.target.value);
                     form.setValue("loanType", e.target.value);
                   }}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onFocus={(e) => e.stopPropagation()}
                   data-testid="input-loan-type"
                 />
               </div>
@@ -754,9 +742,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                     setInterestRateValue(e.target.value);
                     form.setValue("interestRate", e.target.value);
                   }}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onFocus={(e) => e.stopPropagation()}
                   data-testid="input-interest-rate"
                 />
               </div>
