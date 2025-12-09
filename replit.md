@@ -90,9 +90,23 @@ This enhancement is recommended but not required for the current security requir
 
 ### Known Development Environment Limitations
 
-**Text Input Lag in Replit Dev Mode (December 2024):**
-- Text inputs in modals may experience lag/delay in the Replit development environment
-- This does NOT affect the published/production version
-- Caused by Vite HMR, React development mode, and Replit dev plugins
-- **Workaround**: Use the published version for real work; dev environment for code changes only
+**Text Input Lag & Page Refresh in Replit Dev Mode (December 2024):**
+- Text inputs experience lag/delay and pages refresh every 25-35 seconds in dev mode
+- This does NOT affect the published/production version (confirmed working perfectly)
+
+**Root Cause (Confirmed via debugging):**
+- Vite HMR WebSocket attempts to connect to `wss://localhost:undefined/?token=...`
+- The undefined port causes connection failures, triggering full page reloads
+- This is injected by Replit-specific Vite plugins (`cartographer`, `devBanner`, `runtime-error-overlay`)
+- The fix requires modifying `vite.config.ts` which is protected from edits
+
+**Attempted Fixes (All Failed):**
+- React.memo and useCallback optimizations
+- Disabling 30-second data polling
+- Stopping timers when modals are open
+- Updating browserslist dependency
+
+**Workaround:**
+- Use the **published/production version** for real client work
+- Dev environment is only for viewing code changes
 - This is an infrastructure limitation, not an application bug
