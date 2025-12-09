@@ -752,7 +752,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogPortal>
-        <DialogOverlay />
+        <DialogOverlay className="pointer-events-none" />
         
         {/* Main Modal Dialog Content (z-[52] - Above panels) */}
         <DialogPrimitive.Content
