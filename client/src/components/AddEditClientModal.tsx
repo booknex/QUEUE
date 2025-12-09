@@ -101,8 +101,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [editSessionNotes, setEditSessionNotes] = useState("");
   const [editingMeetingNoteId, setEditingMeetingNoteId] = useState<number | null>(null);
   const [editMeetingNoteText, setEditMeetingNoteText] = useState("");
-  const [loanTypeValue, setLoanTypeValue] = useState("");
-  const [interestRateValue, setInterestRateValue] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -385,8 +383,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanType: editingFile.loanType || "",
         interestRate: editingFile.interestRate || "",
       });
-      setLoanTypeValue(editingFile.loanType || "");
-      setInterestRateValue(editingFile.interestRate || "");
     } else {
       form.reset({
         clientName: "",
@@ -398,8 +394,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanType: "",
         interestRate: "",
       });
-      setLoanTypeValue("");
-      setInterestRateValue("");
     }
   }, [editingFile, form, defaultStatus]);
 
@@ -438,8 +432,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setSelectedContactId(null);
       setIsNotesOpen(false);
       setIsTouchesOpen(false);
-      setLoanTypeValue("");
-      setInterestRateValue("");
     }
     onOpenChange(newOpen);
   };
@@ -706,7 +698,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       <DialogPortal>
         <DialogOverlay className="pointer-events-none" />
         
-        {/* Right Sliding Panel - Card Display (inside DialogPortal for proper stacking context) */}
+        {/* Right Sliding Panel - Coming Soon (inside DialogPortal for proper stacking context) */}
         <aside
           className={cn(
             "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
@@ -717,37 +709,13 @@ export const AddEditClientModal = memo(function AddEditClientModal({
           <div className="h-full flex flex-col p-4">
             <div className="flex items-center justify-end mb-4">
               <h3 className="text-sm font-semibold">
-                Card Display
+                Coming Soon
               </h3>
             </div>
-            <div className="flex-1 space-y-4">
-              <p className="text-xs text-muted-foreground mb-4">
-                This info will be displayed on the client card in the queue.
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground text-center">
+                Additional features coming soon.
               </p>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Type of Loan</label>
-                <Input
-                  placeholder="e.g., FHA, Conventional, VA"
-                  value={loanTypeValue}
-                  onChange={(e) => {
-                    setLoanTypeValue(e.target.value);
-                    form.setValue("loanType", e.target.value);
-                  }}
-                  data-testid="input-loan-type"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Interest Rate</label>
-                <Input
-                  placeholder="e.g., 6.5%"
-                  value={interestRateValue}
-                  onChange={(e) => {
-                    setInterestRateValue(e.target.value);
-                    form.setValue("interestRate", e.target.value);
-                  }}
-                  data-testid="input-interest-rate"
-                />
-              </div>
             </div>
           </div>
         </aside>
@@ -980,6 +948,48 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                                   ))}
                                 </SelectContent>
                               </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Card Display Info</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                          control={form.control}
+                          name="loanType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Type of Loan</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., FHA, Conventional, VA"
+                                  className="h-8 text-sm"
+                                  {...field}
+                                  data-testid="input-loan-type"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="interestRate"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Interest Rate</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g., 6.5%"
+                                  className="h-8 text-sm"
+                                  {...field}
+                                  data-testid="input-interest-rate"
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
