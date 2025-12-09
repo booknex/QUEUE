@@ -23,6 +23,7 @@ Key features include:
 -   **Priority Queue Ordering**: Automated sorting of client files, prioritizing untouched clients and ordering others by time since last interaction.
 -   **Real-time Timer Tracking & "Touch" Functionality**: Displays precise wait times. The "Touch" feature resets timers, reorders cards, and logs work session notes.
 -   **Meeting Notes System**: Stores current meeting notes on client cards and maintains a historical log of all changes with smart deduplication. A collapsible panel modal allows access to Meeting Notes and Touch Comments.
+-   **Card Display Panel**: Right-side collapsible panel in the client modal for entering loan type and interest rate info that displays on client cards in the queue.
 -   **Dynamic Pipeline & Kanban Management**: Full CRUD for pipelines and Kanban columns, supporting drag-and-drop for reordering and moving opportunity cards.
 -   **Opportunity Management**: Create, track, edit, and assign opportunities to users within the same company.
 -   **Contact Management**: Dedicated view with CRUD operations, CSV import, duplicate prevention, and search.

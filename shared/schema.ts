@@ -95,6 +95,8 @@ export const clientFiles = pgTable("client_files", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   lastTouchedAt: timestamp("last_touched_at"),
   closedAt: timestamp("closed_at"),
+  loanType: text("loan_type"),
+  interestRate: text("interest_rate"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -167,6 +169,8 @@ export const updateClientFileSchema = z.object({
   pipelineId: z.number().nullable().optional(),
   lastTouchedAt: z.date().optional(),
   closedAt: z.date().optional(),
+  loanType: z.string().optional(),
+  interestRate: z.string().optional(),
 });
 
 export const closeFileSchema = z.object({

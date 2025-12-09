@@ -64,6 +64,8 @@ const formSchema = z.object({
   description: z.string().optional(),
   status: z.string().min(1, "Status is required"),
   pipelineId: z.number().nullable().optional(),
+  loanType: z.string().optional(),
+  interestRate: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -364,6 +366,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       description: "",
       status: defaultStatus,
       pipelineId: null,
+      loanType: "",
+      interestRate: "",
     },
   });
 
@@ -376,6 +380,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         description: editingFile.description || "",
         status: editingFile.status,
         pipelineId: editingFile.pipelineId || null,
+        loanType: editingFile.loanType || "",
+        interestRate: editingFile.interestRate || "",
       });
     } else {
       form.reset({
@@ -385,6 +391,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         description: "",
         status: defaultStatus,
         pipelineId: null,
+        loanType: "",
+        interestRate: "",
       });
     }
   }, [editingFile, form, defaultStatus]);
@@ -686,7 +694,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         </aside>
       )}
 
-      {/* Right Sliding Panel - Reserved for future use */}
+      {/* Right Sliding Panel - Card Display */}
       {open && (
         <aside
           onClick={(e) => {
@@ -700,15 +708,33 @@ export const AddEditClientModal = memo(function AddEditClientModal({
           data-testid="panel-right"
         >
           <div className="h-full flex flex-col p-4">
-            <div className="flex items-center justify-end mb-2">
+            <div className="flex items-center justify-end mb-4">
               <h3 className="text-sm font-semibold">
-                Coming Soon
+                Card Display
               </h3>
             </div>
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-center text-muted-foreground text-xs">
-                This panel is reserved for future features.
+            <div className="flex-1 space-y-4" onClick={(e) => e.stopPropagation()}>
+              <p className="text-xs text-muted-foreground mb-4">
+                This info will be displayed on the client card in the queue.
               </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Type of Loan</label>
+                <Input
+                  placeholder="e.g., FHA, Conventional, VA"
+                  value={form.watch("loanType") || ""}
+                  onChange={(e) => form.setValue("loanType", e.target.value)}
+                  data-testid="input-loan-type"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Interest Rate</label>
+                <Input
+                  placeholder="e.g., 6.5%"
+                  value={form.watch("interestRate") || ""}
+                  onChange={(e) => form.setValue("interestRate", e.target.value)}
+                  data-testid="input-interest-rate"
+                />
+              </div>
             </div>
           </div>
         </aside>
