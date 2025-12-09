@@ -101,6 +101,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [editSessionNotes, setEditSessionNotes] = useState("");
   const [editingMeetingNoteId, setEditingMeetingNoteId] = useState<number | null>(null);
   const [editMeetingNoteText, setEditMeetingNoteText] = useState("");
+  const [loanTypeValue, setLoanTypeValue] = useState("");
+  const [interestRateValue, setInterestRateValue] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -383,6 +385,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanType: editingFile.loanType || "",
         interestRate: editingFile.interestRate || "",
       });
+      setLoanTypeValue(editingFile.loanType || "");
+      setInterestRateValue(editingFile.interestRate || "");
     } else {
       form.reset({
         clientName: "",
@@ -394,6 +398,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanType: "",
         interestRate: "",
       });
+      setLoanTypeValue("");
+      setInterestRateValue("");
     }
   }, [editingFile, form, defaultStatus]);
 
@@ -432,6 +438,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setSelectedContactId(null);
       setIsNotesOpen(false);
       setIsTouchesOpen(false);
+      setLoanTypeValue("");
+      setInterestRateValue("");
     }
     onOpenChange(newOpen);
   };
@@ -726,8 +734,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                 <label className="text-sm font-medium">Type of Loan</label>
                 <Input
                   placeholder="e.g., FHA, Conventional, VA"
-                  value={form.watch("loanType") || ""}
-                  onChange={(e) => form.setValue("loanType", e.target.value)}
+                  value={loanTypeValue}
+                  onChange={(e) => {
+                    setLoanTypeValue(e.target.value);
+                    form.setValue("loanType", e.target.value);
+                  }}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
@@ -738,8 +749,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                 <label className="text-sm font-medium">Interest Rate</label>
                 <Input
                   placeholder="e.g., 6.5%"
-                  value={form.watch("interestRate") || ""}
-                  onChange={(e) => form.setValue("interestRate", e.target.value)}
+                  value={interestRateValue}
+                  onChange={(e) => {
+                    setInterestRateValue(e.target.value);
+                    form.setValue("interestRate", e.target.value);
+                  }}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
