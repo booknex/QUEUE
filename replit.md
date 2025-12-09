@@ -87,3 +87,12 @@ The architect has recommended implementing stricter user visibility controls for
 - May reduce discoverability for adding existing users to new companies
 
 This enhancement is recommended but not required for the current security requirements, which are fully met by the existing implementation.
+
+### Known Development Environment Limitations
+
+**Text Input Lag in Replit Dev Mode (December 2024):**
+- Text inputs in modals may experience lag/delay in the Replit development environment
+- This does NOT affect the published/production version
+- Caused by Vite HMR, React development mode, and Replit dev plugins
+- **Workaround**: Use the published version for real work; dev environment for code changes only
+- This is an infrastructure limitation, not an application bug
