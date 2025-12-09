@@ -702,8 +702,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         </aside>
       )}
 
-      {/* Right Sliding Panel - Card Display */}
-      {open && (
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="pointer-events-none" />
+        
+        {/* Right Sliding Panel - Card Display (inside DialogPortal for proper stacking context) */}
         <aside
           className={cn(
             "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
@@ -748,11 +751,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
             </div>
           </div>
         </aside>
-      )}
-
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogPortal>
-        <DialogOverlay className="pointer-events-none" />
         
         {/* Main Modal Dialog Content (z-[52] - Above panels) */}
         <DialogPrimitive.Content
