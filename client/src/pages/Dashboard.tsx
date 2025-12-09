@@ -514,16 +514,16 @@ export default function Dashboard() {
       setNow(Date.now());
     }, 1000) : null;
 
-    // Only poll for data if we have a valid company selected
-    const dataInterval = selectedCompanyId ? setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
-    }, 30000) : null;
+    // DISABLED: 30-second polling was causing excessive API calls and lag in dev mode
+    // Data will still update via WebSocket events and manual refreshes
+    // const dataInterval = selectedCompanyId ? setInterval(() => {
+    //   queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
+    // }, 30000) : null;
 
     return () => {
       if (timerInterval) clearInterval(timerInterval);
-      if (dataInterval) clearInterval(dataInterval);
     };
-  }, [selectedCompanyId, modalOpen]);
+  }, [modalOpen]);
 
   if (isLoading) {
     return (
