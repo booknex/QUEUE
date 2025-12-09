@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, memo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2, Check, ChevronLeft, ChevronRight, MoreVertical, Square, CheckSquare, Pencil } from "lucide-react";
@@ -78,7 +78,7 @@ interface AddEditClientModalProps {
   companyId: number | null;
 }
 
-export function AddEditClientModal({
+export const AddEditClientModal = memo(function AddEditClientModal({
   open,
   onOpenChange,
   onSubmit,
@@ -1003,4 +1003,4 @@ export function AddEditClientModal({
       </AlertDialog>
     </>
   );
-}
+});

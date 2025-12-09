@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut } from "lucide-react";
@@ -368,23 +368,27 @@ export default function Dashboard() {
     },
   });
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = useCallback((data: any) => {
     if (editingFile) {
       updateMutation.mutate({ id: editingFile.id, data });
     } else {
       createMutation.mutate(data);
     }
-  };
+  }, [editingFile, updateMutation, createMutation]);
 
-  const handleEdit = (file: ClientFile) => {
+  const handleModalOpenChange = useCallback((open: boolean) => {
+    setModalOpen(open);
+  }, []);
+
+  const handleEdit = useCallback((file: ClientFile) => {
     setEditingFile(file);
     setModalOpen(true);
-  };
+  }, []);
 
-  const handleAddNew = () => {
+  const handleAddNew = useCallback(() => {
     setEditingFile(null);
     setModalOpen(true);
-  };
+  }, []);
 
   const handleClose = (file: ClientFile) => {
     setClosingFile(file);
@@ -756,7 +760,7 @@ export default function Dashboard() {
 
       <AddEditClientModal
         open={modalOpen}
-        onOpenChange={setModalOpen}
+        onOpenChange={handleModalOpenChange}
         onSubmit={handleSubmit}
         editingFile={editingFile}
         isPending={createMutation.isPending || updateMutation.isPending}

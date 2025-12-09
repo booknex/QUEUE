@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import type { ClientFile, Pipeline } from "@shared/schema";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { SessionHistory } from "./SessionHistory";
 
 interface QueueItemProps {
