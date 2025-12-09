@@ -509,19 +509,21 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
-    const timerInterval = setInterval(() => {
+    // Only run timer when modal is closed to reduce re-renders during editing
+    const timerInterval = !modalOpen ? setInterval(() => {
       setNow(Date.now());
-    }, 1000);
+    }, 1000) : null;
 
-    const dataInterval = setInterval(() => {
+    // Only poll for data if we have a valid company selected
+    const dataInterval = selectedCompanyId ? setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["/api/files", selectedCompanyId?.toString()] });
-    }, 30000);
+    }, 30000) : null;
 
     return () => {
-      clearInterval(timerInterval);
-      clearInterval(dataInterval);
+      if (timerInterval) clearInterval(timerInterval);
+      if (dataInterval) clearInterval(dataInterval);
     };
-  }, []);
+  }, [selectedCompanyId, modalOpen]);
 
   if (isLoading) {
     return (
