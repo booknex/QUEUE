@@ -968,7 +968,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                                 <Input
                                   placeholder="e.g., FHA, Conventional, VA"
                                   className="h-8 text-sm"
-                                  {...field}
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  name={field.name}
+                                  ref={field.ref}
                                   data-testid="input-loan-type"
                                 />
                               </FormControl>
@@ -986,7 +990,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                                 <Input
                                   placeholder="e.g., 6.5%"
                                   className="h-8 text-sm"
-                                  {...field}
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  name={field.name}
+                                  ref={field.ref}
                                   data-testid="input-interest-rate"
                                 />
                               </FormControl>
