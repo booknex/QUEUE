@@ -713,7 +713,12 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                 Card Display
               </h3>
             </div>
-            <div className="flex-1 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div 
+              className="flex-1 space-y-4" 
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               <p className="text-xs text-muted-foreground mb-4">
                 This info will be displayed on the client card in the queue.
               </p>
@@ -723,6 +728,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                   placeholder="e.g., FHA, Conventional, VA"
                   value={form.watch("loanType") || ""}
                   onChange={(e) => form.setValue("loanType", e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   data-testid="input-loan-type"
                 />
               </div>
@@ -732,6 +740,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                   placeholder="e.g., 6.5%"
                   value={form.watch("interestRate") || ""}
                   onChange={(e) => form.setValue("interestRate", e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
                   data-testid="input-interest-rate"
                 />
               </div>
