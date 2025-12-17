@@ -75,6 +75,16 @@ export interface IStorage {
   updateFilter(id: number, updates: UpdateStatusFilter): Promise<StatusFilter | undefined>;
   deleteFilter(id: number): Promise<boolean>;
   reorderFilters(filterIds: number[]): Promise<void>;
+  
+  // Activity report
+  getActivityReport(companyId: number, startDate: Date, endDate: Date): Promise<{
+    userId: string;
+    username: string;
+    firstName: string | null;
+    lastName: string | null;
+    touchCount: number;
+    clientsTouched: { fileId: number; clientName: string; touchedAt: Date; notes: string | null }[];
+  }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -827,6 +837,74 @@ export class DatabaseStorage implements IStorage {
           .where(eq(statusFilters.id, filterIds[i]));
       }
     });
+  }
+
+  async getActivityReport(companyId: number, startDate: Date, endDate: Date): Promise<{
+    userId: string;
+    username: string;
+    firstName: string | null;
+    lastName: string | null;
+    touchCount: number;
+    clientsTouched: { fileId: number; clientName: string; touchedAt: Date; notes: string | null }[];
+  }[]> {
+    const sessions = await db
+      .select({
+        sessionId: workSessions.id,
+        userId: workSessions.userId,
+        fileId: workSessions.fileId,
+        startedAt: workSessions.startedAt,
+        notes: workSessions.notes,
+        clientName: clientFiles.clientName,
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
+      .from(workSessions)
+      .innerJoin(clientFiles, eq(workSessions.fileId, clientFiles.id))
+      .innerJoin(users, eq(workSessions.userId, users.id))
+      .where(
+        and(
+          eq(clientFiles.companyId, companyId),
+          sql`${workSessions.startedAt} >= ${startDate}`,
+          sql`${workSessions.startedAt} < ${endDate}`
+        )
+      )
+      .orderBy(desc(workSessions.startedAt));
+
+    const userMap = new Map<string, {
+      userId: string;
+      username: string;
+      firstName: string | null;
+      lastName: string | null;
+      touchCount: number;
+      clientsTouched: { fileId: number; clientName: string; touchedAt: Date; notes: string | null }[];
+    }>();
+
+    for (const session of sessions) {
+      if (!session.userId) continue;
+      
+      if (!userMap.has(session.userId)) {
+        userMap.set(session.userId, {
+          userId: session.userId,
+          username: session.username,
+          firstName: session.firstName,
+          lastName: session.lastName,
+          touchCount: 0,
+          clientsTouched: [],
+        });
+      }
+      
+      const userData = userMap.get(session.userId)!;
+      userData.touchCount++;
+      userData.clientsTouched.push({
+        fileId: session.fileId,
+        clientName: session.clientName,
+        touchedAt: session.startedAt,
+        notes: session.notes,
+      });
+    }
+
+    return Array.from(userMap.values()).sort((a, b) => b.touchCount - a.touchCount);
   }
 }
 

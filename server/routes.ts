@@ -640,6 +640,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity report
+  app.get("/api/activity-report", isAuthenticated, async (req: any, res) => {
+    try {
+      const companyId = parseInt(req.query.companyId as string);
+      const period = req.query.period as string || "current_day";
+      
+      if (!companyId || isNaN(companyId)) {
+        return res.status(400).json({ error: "Company ID is required" });
+      }
+      
+      // Verify user has access to this company
+      const hasAccess = await checkCompanyAccess(req.user.id, companyId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied to this company" });
+      }
+      
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate: Date;
+      let endDate: Date;
+      
+      switch (period) {
+        case "current_day":
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 1);
+          break;
+        case "prior_day":
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          startDate = new Date(endDate);
+          startDate.setDate(startDate.getDate() - 1);
+          break;
+        case "current_week":
+          // Start of current week (Sunday)
+          const dayOfWeek = now.getDay();
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+          endDate = new Date(startDate);
+          endDate.setDate(endDate.getDate() + 7);
+          break;
+        case "prior_week":
+          // Prior week (Sunday to Saturday)
+          const priorDayOfWeek = now.getDay();
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - priorDayOfWeek);
+          startDate = new Date(endDate);
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        default:
+          return res.status(400).json({ error: "Invalid period. Use: current_day, prior_day, current_week, prior_week" });
+      }
+      
+      const report = await storage.getActivityReport(companyId, startDate, endDate);
+      res.json({ period, startDate, endDate, users: report });
+    } catch (error) {
+      console.error("Failed to get activity report:", error);
+      res.status(500).json({ error: "Failed to get activity report" });
+    }
+  });
+
   // File routes
   app.get("/api/files", isAuthenticated, async (req: any, res) => {
     try {

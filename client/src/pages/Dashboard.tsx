@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut } from "lucide-react";
+import { Plus, Clock, Users, CheckCircle2, AlertCircle, ChevronDown, Building2, Settings, Phone, Filter, MoreVertical, LogOut, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ import { CloseFileModal } from "@/components/CloseFileModal";
 import { ClosedFilesModal } from "@/components/ClosedFilesModal";
 import { CompanyManager } from "@/components/CompanyManager";
 import { UserManager } from "@/components/UserManager";
+import { ActivityReportModal } from "@/components/ActivityReportModal";
 import { StatsCard } from "@/components/StatsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { TouchNoteModal } from "@/components/TouchNoteModal";
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const [closedFilesModalOpen, setClosedFilesModalOpen] = useState(false);
   const [companyManagerOpen, setCompanyManagerOpen] = useState(false);
   const [userManagerOpen, setUserManagerOpen] = useState(false);
+  const [activityReportOpen, setActivityReportOpen] = useState(false);
   const [touchNoteModalOpen, setTouchNoteModalOpen] = useState(false);
   const [touchingFile, setTouchingFile] = useState<ClientFile | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -616,6 +618,13 @@ export default function Dashboard() {
                     <Users className="w-4 h-4 mr-2" />
                     Users
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setActivityReportOpen(true)}
+                    data-testid="menu-item-activity-report"
+                  >
+                    <Activity className="w-4 h-4 mr-2" />
+                    Activity Report
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={async () => {
@@ -805,6 +814,12 @@ export default function Dashboard() {
       <UserManager
         open={userManagerOpen}
         onClose={() => setUserManagerOpen(false)}
+        companyId={selectedCompanyId}
+      />
+
+      <ActivityReportModal
+        open={activityReportOpen}
+        onOpenChange={setActivityReportOpen}
         companyId={selectedCompanyId}
       />
 
