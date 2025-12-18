@@ -691,7 +691,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const report = await storage.getActivityReport(companyId, startDate, endDate);
-      res.json({ period, startDate, endDate, users: report });
+      
+      // Calculate hours in the period for average calculation
+      const actualEndDate = period === "current_day" || period === "current_week" ? now : endDate;
+      const periodHours = Math.max(1, (actualEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
+      
+      // Add average touches per hour for each user
+      const usersWithAverage = report.map(user => ({
+        ...user,
+        avgTouchesPerHour: Math.round((user.touchCount / periodHours) * 100) / 100,
+      }));
+      
+      res.json({ period, startDate, endDate, periodHours: Math.round(periodHours * 10) / 10, users: usersWithAverage });
     } catch (error) {
       console.error("Failed to get activity report:", error);
       res.status(500).json({ error: "Failed to get activity report" });

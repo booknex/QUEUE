@@ -23,6 +23,7 @@ interface ActivityUser {
   firstName: string | null;
   lastName: string | null;
   touchCount: number;
+  avgTouchesPerHour: number;
   clientsTouched: {
     fileId: number;
     clientName: string;
@@ -35,6 +36,7 @@ interface ActivityReport {
   period: string;
   startDate: string;
   endDate: string;
+  periodHours: number;
   users: ActivityUser[];
 }
 
@@ -177,9 +179,14 @@ export function ActivityReportModal({ open, onOpenChange, companyId }: ActivityR
                           @{user.username}
                         </div>
                       </div>
-                      <Badge variant="secondary" data-testid={`badge-touch-count-${user.userId}`}>
-                        {user.touchCount} {user.touchCount === 1 ? "touch" : "touches"}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant="secondary" data-testid={`badge-touch-count-${user.userId}`}>
+                          {user.touchCount} {user.touchCount === 1 ? "touch" : "touches"}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground" data-testid={`text-avg-per-hour-${user.userId}`}>
+                          {user.avgTouchesPerHour}/hr avg
+                        </span>
+                      </div>
                       {expandedUsers.has(user.userId) ? (
                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
                       ) : (
