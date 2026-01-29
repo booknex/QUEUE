@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import type { ClientFile, Pipeline } from "@shared/schema";
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import { SessionHistory } from "./SessionHistory";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -126,6 +126,12 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
       updateMutation.mutate({ interestRate });
     }
   };
+  
+  // Sync local state when file prop changes (e.g., after modal update)
+  useEffect(() => {
+    setLoanType(file.loanType || "");
+    setInterestRate(file.interestRate || "");
+  }, [file.loanType, file.interestRate]);
   
   const currentPipeline = file.pipelineId 
     ? pipelines.find(p => p.id === file.pipelineId) 
