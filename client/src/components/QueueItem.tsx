@@ -2,6 +2,7 @@ import { Clock, Eye, CheckCircle2, Circle, Loader2, History, MoreVertical, Edit2
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,8 @@ import { formatDistanceToNow } from "date-fns";
 import type { ClientFile, Pipeline } from "@shared/schema";
 import { useState, memo } from "react";
 import { SessionHistory } from "./SessionHistory";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface QueueItemProps {
   file: ClientFile;
@@ -96,9 +99,33 @@ function needsAttention(lastTouchedAt: Date | null, now: number = Date.now()): b
 
 export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose, now = Date.now() }: QueueItemProps) {
   const [sessionHistoryOpen, setSessionHistoryOpen] = useState(false);
+  const [loanType, setLoanType] = useState(file.loanType || "");
+  const [interestRate, setInterestRate] = useState(file.interestRate || "");
   const urgency = getUrgencyLevel(file.createdAt, file.lastTouchedAt, now);
   const waitTime = getWaitTime(file.createdAt, file.lastTouchedAt);
   const statusConfig = getStatusConfig(file.status);
+  
+  const updateMutation = useMutation({
+    mutationFn: async (updates: { loanType?: string; interestRate?: string }) => {
+      const res = await apiRequest("PATCH", `/api/files/${file.id}`, updates);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+    },
+  });
+  
+  const handleLoanTypeBlur = () => {
+    if (loanType !== (file.loanType || "")) {
+      updateMutation.mutate({ loanType });
+    }
+  };
+  
+  const handleInterestRateBlur = () => {
+    if (interestRate !== (file.interestRate || "")) {
+      updateMutation.mutate({ interestRate });
+    }
+  };
   
   const currentPipeline = file.pipelineId 
     ? pipelines.find(p => p.id === file.pipelineId) 
@@ -223,9 +250,36 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
               </p>
             )}
           </div>
+          
+          <div className="grid grid-cols-2 gap-1.5 mt-2">
+            <div>
+              <label className="text-[10px] text-muted-foreground mb-0.5 block">Loan Type</label>
+              <Input
+                value={loanType}
+                onChange={(e) => setLoanType(e.target.value)}
+                onBlur={handleLoanTypeBlur}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="e.g. FHA"
+                className="h-6 text-xs px-1.5"
+                data-testid={`input-loan-type-${file.id}`}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground mb-0.5 block">Rate</label>
+              <Input
+                value={interestRate}
+                onChange={(e) => setInterestRate(e.target.value)}
+                onBlur={handleInterestRateBlur}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="e.g. 6.5%"
+                className="h-6 text-xs px-1.5"
+                data-testid={`input-interest-rate-${file.id}`}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto pt-2">
           <Button
             size="sm"
             variant="outline"
