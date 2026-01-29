@@ -59,7 +59,7 @@ import type { ClientFile, Pipeline, StatusFilter, WorkSessionWithUser, MeetingNo
 
 const formSchema = z.object({
   clientName: z.string().min(1, "Client name is required"),
-  phone: z.string().optional(),
+  phone: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   description: z.string().optional(),
   status: z.string().min(1, "Status is required"),

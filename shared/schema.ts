@@ -153,6 +153,9 @@ export const opportunities = pgTable("opportunities", {
 export const insertClientFileSchema = createInsertSchema(clientFiles).omit({
   id: true,
   createdAt: true,
+}).extend({
+  clientName: z.string().min(1, "Client name is required"),
+  phone: z.string().min(1, "Phone number is required"),
 });
 
 export type InsertClientFile = z.infer<typeof insertClientFileSchema>;
