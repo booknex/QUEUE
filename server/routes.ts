@@ -764,6 +764,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const file = await storage.createFile(validated);
       broadcast({ type: "file:created", companyId: file.companyId });
+      
+      // Auto-create contact if client has a phone number
+      if (validated.phone && validated.clientName) {
+        const existingContact = await storage.findDuplicateContact(
+          validated.companyId,
+          validated.clientName,
+          validated.email,
+          validated.phone
+        );
+        
+        if (!existingContact) {
+          await storage.createContact({
+            companyId: validated.companyId,
+            name: validated.clientName,
+            phone: validated.phone,
+            email: validated.email || undefined,
+          });
+          broadcast({ type: "contact:created", companyId: validated.companyId });
+        }
+      }
+      
       res.status(201).json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -809,6 +830,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "File not found" });
       }
       broadcast({ type: "file:updated", companyId: file.companyId });
+      
+      // Auto-create contact if client has a phone number and contact doesn't exist
+      const clientName = validated.clientName || file.clientName;
+      const phone = validated.phone !== undefined ? validated.phone : file.phone;
+      const email = validated.email !== undefined ? validated.email : file.email;
+      
+      if (phone && clientName) {
+        const existingContact = await storage.findDuplicateContact(
+          file.companyId,
+          clientName,
+          email,
+          phone
+        );
+        
+        if (!existingContact) {
+          await storage.createContact({
+            companyId: file.companyId,
+            name: clientName,
+            phone: phone,
+            email: email || undefined,
+          });
+          broadcast({ type: "contact:created", companyId: file.companyId });
+        }
+      }
+      
       res.json(serializeFile(file));
     } catch (error) {
       if (error instanceof z.ZodError) {
