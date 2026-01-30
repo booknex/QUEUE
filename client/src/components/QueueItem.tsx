@@ -237,15 +237,15 @@ export function QueueItem({ file, pipelines, onTouch, onEdit, onDelete, onClose,
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <Badge variant={statusConfig.variant} className="gap-0.5 text-xs py-0 h-5" data-testid={`badge-status-${file.id}`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant={statusConfig.variant} className="gap-0.5 text-xs py-0 h-5 shrink-0" data-testid={`badge-status-${file.id}`}>
                 {statusConfig.icon}
                 {statusConfig.label}
               </Badge>
               {currentPipeline && (
-                <Badge variant="outline" className="gap-0.5 text-xs py-0 h-5" data-testid={`badge-pipeline-${file.id}`}>
-                  <Tag className="w-3 h-3" />
-                  {currentPipeline.name}
+                <Badge variant="outline" className="gap-0.5 text-xs py-0 h-5 max-w-[120px]" data-testid={`badge-pipeline-${file.id}`}>
+                  <Tag className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{currentPipeline.name}</span>
                 </Badge>
               )}
             </div>
