@@ -924,35 +924,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="pipelineId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs">Pipeline</FormLabel>
-                              <Select 
-                                onValueChange={(value) => field.onChange(value === "none" ? null : parseInt(value))}
-                                value={field.value ? String(field.value) : "none"}
-                              >
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-pipeline" className="h-8">
-                                    <SelectValue placeholder="Select pipeline (optional)" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="none">No Pipeline</SelectItem>
-                                  {pipelines.map((pipeline) => (
-                                    <SelectItem key={pipeline.id} value={String(pipeline.id)}>
-                                      {pipeline.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                                              </div>
                     </div>
 
                     <div>
