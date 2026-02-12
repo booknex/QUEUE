@@ -2,19 +2,15 @@
 -- VPS Data Import Script
 -- Database: client_queue_manager (user: cqm_user)
 -- Generated from Replit development database
--- 
--- This file contains all data for the Client Queue Manager application.
--- It truncates existing data and re-inserts everything within a transaction.
 --
--- Usage: psql -U cqm_user -d client_queue_manager -f vps_data_dump.sql
+-- Usage: psql -U cqm_user -d client_queue_manager -h 127.0.0.1 -f vps_data_dump.sql
 --
 
 SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
+SET standard_conforming_strings = off;
 
 BEGIN;
 
--- Truncate all tables in reverse dependency order (CASCADE handles FKs)
 TRUNCATE TABLE
   meeting_notes,
   work_sessions,
@@ -29,14 +25,13 @@ TRUNCATE TABLE
   companies
 CASCADE;
 
-
--- Data for table: companies
+-- companies
 INSERT INTO public.companies (id, name, created_at) VALUES (1, 'BOOKNEX', '2025-11-05 00:24:16.839211');
 INSERT INTO public.companies (id, name, created_at) VALUES (2, 'THE MORTGAGE BOARD', '2025-11-05 01:58:02.989783');
 INSERT INTO public.companies (id, name, created_at) VALUES (8, 'OPEN HOME SUITES', '2025-11-18 04:23:57.001104');
 INSERT INTO public.companies (id, name, created_at) VALUES (9, 'THE REALTY BOARD', '2025-11-18 04:24:10.545573');
 
--- Data for table: users
+-- users
 INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, created_at, updated_at, username, password) VALUES ('ca473819-21e2-44a3-913e-f1621f5cb49f', NULL, 'austin', 'otero', NULL, '2025-11-12 17:27:12.838204', '2025-11-12 17:27:12.838204', 'austin@inboxplace.com', 'e193b3d95f3244b06c041548f5cbf02d6d4a912b1afd4f24ee5195ca790d00772a6823b83a9684644dff07c5679c994408bd54971c6f862e06dd20b678b0545e.b0feac6025ace95cef8ede3f8445422c');
 INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, created_at, updated_at, username, password) VALUES ('a13f0126-b568-4550-8f29-133d7730c48a', NULL, 'dylan', 'otero', NULL, '2025-11-12 18:56:47.255658', '2025-11-12 18:56:47.255658', 'dylan', '40b4b8cd4860dba1a29346fdd4186f71161fe758e403fb723ade688485fc3806991a0e1a6d31ca8f214980be808f67b95fd3a7c84a550ea3508ca0fcb0340ddb.ed8d49e9106c5116d4b0c16361fcfb7a');
 INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, created_at, updated_at, username, password) VALUES ('791f6235-6886-4c49-9220-fecde6255af4', NULL, 'Hannah', 'Ladin', NULL, '2025-11-13 16:06:38.709203', '2025-11-13 16:06:38.709203', 'hannah@inboxplace.com', '02945287a0e67f50f601af0209f826eae38ce04d3011d34596a05ac6d12e6b8ddb082bb53c94ac28eae7e010cff2c1fb8d2cdd0d4269c9e9113e5e115f7befd1.8a877463c59c0591899f1b8891674f43');
@@ -45,7 +40,7 @@ INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, c
 INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, created_at, updated_at, username, password) VALUES ('8363a3cd-8424-4f1d-9401-00d3d5116cc7', NULL, 'Jaleen', 'Gonzalez', NULL, '2025-11-19 18:42:28.414667', '2025-11-19 18:42:28.414667', 'Jaleen@inboxplace.com', 'd27f58010a8aaeafde6ecd07919c6135742cce171cb7c15164637de44d992706617708372e2f133c510008e5d8da37d23a1ce071bab22f43db7a58fd6d0c076e.aa356af7341a4aaa65d533e3e22735b5');
 INSERT INTO public.users (id, email, first_name, last_name, profile_image_url, created_at, updated_at, username, password) VALUES ('45341f55-578a-4747-aec6-5685225db300', NULL, 'yuli', 'ariza', NULL, '2025-11-12 19:10:35.682071', '2026-01-08 18:10:47.903', 'yuli@inboxplace.com', '0c4ade1f50c7fe33e6bfb536c36e0811d65b4d3b59c8f03b800c829057ea72db25bd55fe36956740513880efacb2e915bd28b3a25dc08dbe68f939f29351c21d.e02cca16c70133f10fade958a87340e9');
 
--- Data for table: user_companies
+-- user_companies
 INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES ('ca473819-21e2-44a3-913e-f1621f5cb49f', 2, 'owner', '2025-11-13 03:15:11.357938');
 INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES ('ca473819-21e2-44a3-913e-f1621f5cb49f', 1, 'admin', '2025-11-13 03:14:57.365167');
 INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES ('ca473819-21e2-44a3-913e-f1621f5cb49f', 8, 'owner', '2025-11-18 04:23:57.027029');
@@ -75,7 +70,7 @@ INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES
 INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES ('45341f55-578a-4747-aec6-5685225db300', 8, 'member', '2025-11-20 16:22:10.503658');
 INSERT INTO public.user_companies (user_id, company_id, role, created_at) VALUES ('45341f55-578a-4747-aec6-5685225db300', 9, 'member', '2025-11-20 16:22:11.970393');
 
--- Data for table: pipelines
+-- pipelines
 INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (1, 'LEADS', '2025-11-05 00:33:38.298559', 1);
 INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (2, '1040 TAX RETURN', '2025-11-05 00:35:59.364778', 1);
 INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (3, 'PAYROLL', '2025-11-05 00:40:30.02734', 1);
@@ -100,7 +95,7 @@ INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (21, '(X)
 INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (22, '(X) EVICTION (PASCO)', '2025-11-18 21:15:02.577065', 9);
 INSERT INTO public.pipelines (id, name, created_at, company_id) VALUES (23, '(X) NEW LEAD', '2025-11-18 21:15:17.874587', 9);
 
--- Data for table: status_filters
+-- status_filters
 INSERT INTO public.status_filters (id, name, company_id, "position", created_at, is_system) VALUES (1, 'APP-INTAKE', 2, 1, '2025-11-11 01:37:00.661988', 0);
 INSERT INTO public.status_filters (id, name, company_id, "position", created_at, is_system) VALUES (2, 'NEEDS LENDER', 2, 0, '2025-11-11 01:37:22.555946', 0);
 INSERT INTO public.status_filters (id, name, company_id, "position", created_at, is_system) VALUES (3, 'PRE-APPROVED', 2, 2, '2025-11-11 01:37:43.842799', 0);
@@ -114,7 +109,7 @@ INSERT INTO public.status_filters (id, name, company_id, "position", created_at,
 INSERT INTO public.status_filters (id, name, company_id, "position", created_at, is_system) VALUES (12, '1', 9, 0, '2025-11-19 15:55:59.558408', 0);
 INSERT INTO public.status_filters (id, name, company_id, "position", created_at, is_system) VALUES (13, 'WAITING', 1, 0, '2025-11-20 16:34:32.018633', 0);
 
--- Data for table: kanban_columns
+-- kanban_columns
 INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at) VALUES (1, 'BACKLOG', 0, 1, '2025-11-05 01:03:25.369168');
 INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at) VALUES (2, 'WARM INTEREST', 1, 1, '2025-11-05 01:03:30.847018');
 INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at) VALUES (3, 'SCHEDULE/ASSIGN', 2, 1, '2025-11-05 01:03:41.210523');
@@ -279,7 +274,7 @@ INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at
 INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at) VALUES (165, 'WALK THROUGH & CLOSING', 8, 17, '2025-11-18 21:22:45.05276');
 INSERT INTO public.kanban_columns (id, name, "position", pipeline_id, created_at) VALUES (166, 'CLOSE FILE', 9, 17, '2025-11-18 21:22:50.836236');
 
--- Data for table: client_files
+-- client_files
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (33, 'DELADIER PAYARES', 'need to make a copy of 2024 return for jaleen', 'completed', '2025-11-14 16:23:58.51028', NULL, '2025-11-17 00:00:00', 1, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (34, 'HANNAH LADIN', 'start scheduling closing & close out the file after we close', 'completed', '2025-11-19 15:56:04.527184', NULL, '2025-12-12 00:00:00', 9, NULL, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (35, 'Maria / Jose Luis', 'Waiting for approval from lender', 'completed', '2025-11-19 15:57:55.507918', NULL, '2026-02-09 00:00:00', 9, NULL, '', '', '', '');
@@ -300,21 +295,21 @@ INSERT INTO public.client_files (id, client_name, description, status, created_a
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (63, 'ANDY GORDON', 'waiting for austin to find a lender', 'WAITING', '2026-01-05 16:23:46.060149', NULL, NULL, 1, NULL, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (64, 'oscar perez', 'need to schedule meeting - email documents for company separation', 'WAITING', '2026-01-05 16:25:56.303512', NULL, NULL, 1, NULL, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (65, 'JASMINE (ANDY)', 'send a final text the credit will expire please let her know', 'REVIEW', '2026-01-05 16:26:57.654938', '2026-01-08 16:25:32.386', NULL, 1, NULL, '', '', '', '');
-INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (68, 'carl richardson', 'process return
+INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (68, 'carl richardson', E'process return\n', 'PROCESSING', '2026-01-08 15:52:27.030678', NULL, NULL, 1, NULL, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (69, 'BO AND JEFF', 'contact and collect docs , follow up on collecting the documents', 'INTAKE', '2026-01-08 15:52:46.880292', NULL, NULL, 1, NULL, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (70, 'adam roza - VALERE', 'disclosures out file submitted', 'NEEDS LENDER', '2026-01-20 17:10:54.187529', '2026-02-11 15:30:32.393', NULL, 2, NULL, '+18134808168', 'rozapropertymanagment@gmail.com', 'NON-QM', '6.990%');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (71, 'austin otero - PALISADE', 'approved with valere pending info on fees and hazard ins', 'NEEDS LENDER', '2026-01-20 17:11:53.880278', '2026-02-11 15:27:34.186', NULL, 2, NULL, '7273648783', 'AUSTIN@INBOXPLACE.COM', 'NON-QM', '6.500%');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (72, 'adam roza - UWM', 'working on conditions appraisal due 2/11', 'APPROVED W/ CONDITIONS', '2026-01-21 21:17:22.149644', '2026-02-11 15:30:07.308', NULL, 2, NULL, '+18134808168', 'rozapropertymanagment@gmail.com', 'CONV', '7.000%');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (74, 'SHIRLEY PEREA PATINO', 'COMING IN 02/11/2026 FOR COMPANY CREATION , TAXES , DPA ASSISTANCE', 'WAITING', '2026-01-28 15:17:19.588857', NULL, NULL, 1, NULL, '8138433438', 'shirley.pp69@gmail.com', '', '');
-INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (75, 'adriane deitemeyer', '12414 Chicago Avenue HUDSON FL 34669-3734
+INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (75, 'adriane deitemeyer', E'12414 Chicago Avenue HUDSON FL 34669-3734\nneed contract from Austin - going with first national bank of america - \nAE (517) 679-6694', 'NEEDS LENDER', '2026-01-29 16:49:19.427812', '2026-02-11 15:28:05.074', NULL, 2, NULL, '5133166346', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (76, 'debra rivas', 'REFI / ON STAND BY TILL DOCS ARE SENT', 'NEEDS LENDER', '2026-01-30 20:00:12.72425', '2026-02-03 19:02:38.907', NULL, 2, NULL, '8139523189', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (77, 'barbara ricabal', 'YULI DOING NUMBERS', 'NEEDS LENDER', '2026-02-10 16:18:36.003763', NULL, NULL, 2, NULL, '8163058647', 'barbararicabal@gmail.com', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (78, 'yanet sago arrebato', 'yuli doing numbers', 'NEEDS LENDER', '2026-02-10 16:19:13.096949', NULL, NULL, 2, NULL, '8133895344', 'islanay@gmail.com', '', '');
-INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (79, 'adam roza', '2805 Mineola Drive
+INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (79, 'adam roza', E'2805 Mineola Drive\nLakeland, FL 33801-2802 - MOBILE HOME', 'NEEDS LENDER', '2026-02-10 17:36:17.848933', NULL, NULL, 2, NULL, '+18134808168', 'rozapropertymanagment@gmail.com', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (80, 'Adriane Deitemeyer', 'GOT CONTRACTSIGNED AND SENT TO MTG TEAM 2/9', '1', '2026-02-10 18:35:19.934071', NULL, NULL, 9, NULL, '513-316-6346', 'adrianeskye@icloud.com', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (81, 'roylis rodriguez', 'APP INTAKE ', 'NEEDS LENDER', '2026-02-11 17:00:52.363395', NULL, NULL, 2, NULL, '8134548062', 'roylisdr@gmail.com', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (2, 'HECTOR FERRER', 'MONDAY the abtement letter SHOULD BE RECEIVED BY IRS', 'completed', '2025-11-05 01:20:15.172571', '2025-11-25 15:40:12.908', '2025-12-23 00:00:00', 1, 2, '', '', '', '');
-INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (5, 'FERNANDO VASQUEZ', 'call today and try to verify identity or schedule a meeting
+INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (5, 'FERNANDO VASQUEZ', E'call today and try to verify identity or schedule a meeting\n', 'PROCESSING', '2025-11-05 01:22:35.38325', '2026-01-08 16:28:14.231', NULL, 1, 2, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (7, 'JOHN APONTE', 'EFILE OPENS January 26, 2026 emma and DYLAN will review letters', 'PROCESSING', '2025-11-05 01:38:14.438373', '2025-12-02 19:07:23.707', NULL, 1, 2, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (9, 'RALPH KIRK', 'WAITING FOR IRS TO OPEN SUBMISSIONS connect payroll act', 'PROCESSING', '2025-11-05 01:40:05.293665', '2026-01-28 23:05:37.448', NULL, 1, 2, '', '', '', '');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (10, 'XADIEL JUSINO', 'Jaleen to make a new file with only Xadiel', 'LOAN SETUP', '2025-11-05 15:35:46.651887', '2026-02-11 15:28:41.781', NULL, 2, NULL, '', '', '', '');
@@ -327,7 +322,7 @@ INSERT INTO public.client_files (id, client_name, description, status, created_a
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (25, 'FRANKY GONZALEZ', '', 'completed', '2025-11-06 15:47:18.44953', '2025-11-10 20:54:27.076', '2025-11-10 00:00:00', 2, NULL, '8133627526', '', 'FHA', '6.625%');
 INSERT INTO public.client_files (id, client_name, description, status, created_at, last_touched_at, closed_at, company_id, pipeline_id, phone, email, loan_type, interest_rate) VALUES (29, 'MANUEL PERLAZA', 'completed and paid.', 'completed', '2025-11-10 16:36:44.737912', '2025-11-20 16:14:50.928', '2025-11-20 00:00:00', 1, 2, '', '', NULL, NULL);
 
--- Data for table: contacts
+-- contacts
 INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VALUES (2, 'RALPH KIRK', '', '', '2025-11-05 03:30:39.463034', 1);
 INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VALUES (3, 'JOHN APONTE', NULL, NULL, '2025-11-05 03:31:20.311163', 1);
 INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VALUES (4, 'MICHAEL LITWIN', NULL, NULL, '2025-11-05 03:31:49.657922', 1);
@@ -2269,7 +2264,7 @@ INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VAL
 INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VALUES (1862, 'timothy wormsely', NULL, 'tacinc99@gmail.com', '2025-11-18 04:42:02.594855', 2);
 INSERT INTO public.contacts (id, name, phone, email, created_at, company_id) VALUES (1863, 'TOM PETRIZZI', '17278092700', 'tpetriz@verizon.net', '2025-11-18 04:42:02.647503', 2);
 
--- Data for table: opportunities
+-- opportunities
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (2, 'RALPH KIRK', NULL, '2025-11-05 03:30:39.545954', 2, 11, 0, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (3, 'JOHN APONTE', NULL, '2025-11-05 03:31:20.390263', 3, 12, 0, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (4, 'MICHAEL LITWIN', NULL, '2025-11-05 03:31:49.73554', 4, 10, 0, NULL);
@@ -2292,43 +2287,43 @@ INSERT INTO public.opportunities (id, title, description, created_at, contact_id
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (26, 'XADIEL JUSINO', NULL, '2025-11-06 17:27:20.757826', 393, 87, 0, 'ca473819-21e2-44a3-913e-f1621f5cb49f');
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (27, 'CAPITAL GOLD', 'waiting on hannahs file before we can work on this', '2025-11-11 16:17:32.897633', 394, 87, 1, 'ca473819-21e2-44a3-913e-f1621f5cb49f');
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (28, 'MISLEYDIS LAZARO', 'HUSBANDS CREDIT IS BAD AND WANTS TO WORK ON IT UNTIL THEN', '2025-11-13 18:56:31.303428', 395, 93, 4, 'ca473819-21e2-44a3-913e-f1621f5cb49f');
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (29, 'DANIEL ARIAS', 'waiting on house
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (29, 'DANIEL ARIAS', E'waiting on house\n\nNEED TO SEND WIFE THE CLIENT NEEDS', '2025-11-19 18:44:42.341851', 384, 79, 0, 'ca473819-21e2-44a3-913e-f1621f5cb49f');
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (53, 'IMANI MOTA', 'waiting on mtg', '2025-11-21 16:27:18.873749', 6, 6, 2, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (54, 'MICHAEL LITWIN', 'waiting on mtg', '2025-11-21 16:28:18.819235', 4, 6, 3, NULL);
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (30, 'Tomas petrizzi', '5502-5506 Miles Blvd
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (31, 'Austin Otero', '10443 Raffia Dr
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (32, 'Austin Otero', 'Quad plex on Cormel units 1,2,3 and 4 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (33, 'Austin Otero', 'quad plex cormell
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (34, 'Austin Otero', 'Raffia 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (35, 'Austin Otero', '8139, 8141, 8147, 8149 Cormel 
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (30, 'Tomas petrizzi', E'5502-5506 Miles Blvd\n\nUNIT 1 Electrical Panel 150amp material included - 1800.00\nUNIT 1 Extra Breakers Arch fault Panel & wire - 600.00\nUNIT 1 all outlets boxes & covers - 1600.00\nUNIT 1 recessed lighting material included - 1000.00\nUNIT 1 Tankless water Heater & material / unit - 1000.00\nUNIT 2 Electrical Panel 150amp material included - 1800.00\nUNIT 2 Extra Breakers Arch fault Panel & wire - 600.00\nUNIT 2 all outlets boxes & covers - 1600.00\nUNIT 2 recessed lighting material included - 1000.00\nUNIT 2 Tankless water Heater & material / unit - 1000.00\nOpportunity Value $12,000.00', '2025-11-20 17:00:01.134263', 1923, 110, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (31, 'Austin Otero', E'10443 Raffia Dr\n\ntues Fasten all returns & patch air handling opening / caulk returns - 300.00\nMud Work - 300.00\nPendant lighting x3 installed - 225.00\n3gang box/pendant lights wiring - 225.00\nFix pipe in front yard - 200.00\nOpportunity Value $1,250.00', '2025-11-20 17:04:13.845928', 1924, 113, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (32, 'Austin Otero', E'Quad plex on Cormel units 1,2,3 and 4 \n\nunits 1,2,3 and 4 base cabinets placement and island installed 500ea - $2000\nunits 1,2,3 and 4 removed hood and installed new microwave and outlet in above cabinet 150ea - $600\nunits 1,2,3 and 4 changed stove wire with 3 prong cord and set in place for countertops 25ea - $100\nunits 1 and 3 replaced stove breaker in electric panel from 30amp to 40amp - 125ea - $250\nunit #4 installed baseboards ( 300 lin. ft - 0$\n4 Sinks w/ disposals 200 ea - $800\nOpportunity Value $3,750.00\nOpportunity Source 10/10 2015 \nStage Inspection / Photos', '2025-11-20 17:08:35.250068', 1924, 114, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (33, 'Austin Otero', E'quad plex cormell\n\nunit #2 - installed junction box and outlet for exposed wires\nunit #3 installed junction box and outlet for exposed wires \nunit #4 installed junction box and outlet for exposed wires\nOpportunity Value $360.00\nStatus open \nStage Inspection / Photos \n', '2025-11-20 17:13:11.882752', 1924, 114, 1, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (34, 'Austin Otero', E'Raffia \nliving rm tv& mount installed and install outlet. $150\nmaster bedrm installed tv outlet and mounted tv $150\nmaster bedrm installed tv outlet and mounted tv $150\nrear bedrm installed tv outlet and mounted tv $150\nkitchen island tiled front $300\ninstalled 8 window blinds at $50. each = $400\none can of penetrol for paint = $20\nadditional money for painting cabinets $200\nInstalled handles on all cabinets and drawers in kitchen # 26 × 10 = $260\nOpportunity Value $1,780.00\nStatus Open \nStage Complete & Collected', '2025-11-20 17:18:31.211755', 1924, 115, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (35, 'Austin Otero', E'8139, 8141, 8147, 8149 Cormel \n\n8139 installed new whip outside and changed breaker in electric panel\n8141 installed new wire in pvc to new disconnect box an added whip and changed breaker in electric panel\n8147 installed new wire in pvc to new disconnect box and added whip and changed breaker in electric panel\n8149 installed new wire in pvc to unit\nOpportunity Value $850.00\nStatus open \nStage Complete & Collected ', '2025-11-20 17:20:34.803388', 1924, 115, 1, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (77, 'ATAHUALPA ZUNZUNEGUI (RUBEN)', 'CLIENT SHOPPING FOR A HOUSE', '2026-01-14 18:03:50.557811', 1931, 83, 2, NULL);
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (36, 'Austin Otero', '10443 Raffia dr
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (37, 'Austin Otero', '10443 Raffia Dr 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (38, 'Tony Cont ', 'Tony Contto 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (39, 'Austin Otero', '10443 RAFFIA DR 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (40, 'Austin Otero', '10443 RAFFIA DR
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (41, 'Dylan Otero ', 'Passaic Right Unit
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (42, 'Austin Otero', '7026 Palisade Dr
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (43, 'Austin Otero', 'snyder jones (9/29/25)-10/8/25)
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (44, 'Dylan Otero ', 'passaic apt 1 09/20/25-10/10/25 Wendy 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (45, 'Austin Otero', '2/2 6140 warren 09/06/25-09/20/25 Armando damges 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (46, 'Austin Otero', '1/2 6140 warren 9/6/25-9/20/25(Armando) pet 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (47, 'Austin Otero', 'Carlos Marcelo (6140 warren)-9/1/25-9/6/25
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (48, 'Austin Otero', '8/16/25-8/19/25 jay 6323 delaware 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (49, 'Austin Otero', '8/10/25-8/22/25 Maggie paez 7026 palisde 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (50, 'Austin Otero', '7/12/25-7/31/25 beth-7026 palisade 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (55, 'Austin Otero', '5853 sunglo front unit 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (56, 'Austin Otero', 'Rockey n point Tampa
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (57, 'Emma Aponte', 'Main st 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (58, 'Austin Otero', '6140 Warren 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (59, 'Austin Otero', '7026 palisade DR Port Richey
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (60, 'Austin Otero', '7026 Palisades
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (61, 'Austin Otero', '6140 Warren Ave.
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (62, 'Austin Otero', '6327 Delaware back unit 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (63, 'Austin Otero', '6323 Delaware front unit 
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (64, 'Austin Otero', '5853 sunglo front unit
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (65, 'Austin Otero', '6323 Delaware
-INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (66, 'Austin Otero', '6140 warren Ave New Port Richey 
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (36, 'Austin Otero', E'10443 Raffia dr\nShower Valve - 1,000.00\nOpportunity Value 1,000.00\nStage Complete & Collected \nStatus Open \n', '2025-11-20 17:24:22.78677', 1924, 115, 2, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (37, 'Austin Otero', E'10443 Raffia Dr \nRing Doorbell - 150.00\nBathroom Ceilings - 200.00\ntues kitchen sink / faucet plumbing & Garbage disposal - $350.00\nOpportunity Value $700.00\nStage Complete & Collected \nStatus Open ', '2025-11-20 17:26:38.194551', 1924, 115, 3, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (38, 'Tony Cont ', E'Tony Contto \nINSTALL OUTLET FOR R/V AND CONNECT TO MAIN  ELECTRICAL PANEL WITH 30 AMP BREAKER\nrepaired dryer outlet from a short\nremoved old stove wire from house panel and connected new wire to panel\nOpportunity Value $300.00\nStage Complete & collected \nStatus Open \nOwner AL WALDEN ', '2025-11-20 17:29:53.823394', 1925, 115, 4, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (39, 'Austin Otero', E'10443 RAFFIA DR \ninterior paint walls doors baseboards ceilings - 2500.00\nOpportunity Value $2,500.00\nStatus open \nOwner AUSTIN OTERO \n', '2025-11-20 17:32:11.347156', 1924, 115, 5, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (40, 'Austin Otero', E'10443 RAFFIA DR\nCabinets Build Install - $500.00\nPaint Cabinets - $500.00\ntues Existing washer room valves open wall & replace leaking - $200.00\nmicrowave install $125.00\nadditional work for washer and dryer plumbing and venting for dryer $500\nOpportunity Value $1,825.00\nStatus Open \nStage Complete & Collected ', '2025-11-20 17:34:24.375338', 1924, 115, 6, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (41, 'Dylan Otero ', E'Passaic Right Unit\nfaucet sink & drain - $150\nKick Plate Install - $50\ncurtains x 3 - $100\nBack door painting caulking & concrete - $150\nScreening panels & metal door repair - $250\n2 epoxy floors both rear units - $750\nSub panel & Dryer - $500\nReplumb all hot & cold water lines & drain lines washer box plumbing drains & slop sink - $500\nReplace Hot Water heater - $250\nscrape floors ( Paint ) - $100\nTravel surcharge / fuel - $150\nkitchen shelf - $125\nfinish base kitchen entry door - included with kick plate\nOpportunity Value $3,075.00\nStatus open \nStage Complete & Collected ', '2025-11-20 17:39:30.81959', 1926, 115, 7, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (42, 'Austin Otero', E'7026 Palisade Dr\nToilet Handle - $100.00\nOpportunity Value $100.00\nStatus open\nStage Complete & Collected \nOwner AL WALDEN \n', '2025-11-20 17:41:59.861014', 1924, 115, 8, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (43, 'Austin Otero', E'snyder jones (9/29/25)-10/8/25)\nextra cleaning fee \npet fee\nOpportunity Value $399.00\n', '2025-11-20 17:44:25.567274', 1924, 100, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (44, 'Dylan Otero ', E'passaic apt 1 09/20/25-10/10/25 Wendy \ntoilet plumbing promblems \nOpportunity Value $769.00\n', '2025-11-20 17:45:26.739816', 1926, 100, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (45, 'Austin Otero', E'2/2 6140 warren 09/06/25-09/20/25 Armando damges \ndamages to the blinds \nOpportunity Value $329.00', '2025-11-20 17:46:59.788992', 1924, 100, 1, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (46, 'Austin Otero', E'1/2 6140 warren 9/6/25-9/20/25(Armando) pet \ndamage to blinds \nall 4 carpets took out \nOpportunity Value $200.00', '2025-11-20 17:48:24.386329', 1924, 100, 1, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (47, 'Austin Otero', E'Carlos Marcelo (6140 warren)-9/1/25-9/6/25\nExtra cleaning charged stinky residue left on kitchen floor \nOpportunity Value $ 149.00', '2025-11-20 17:49:16.268997', 1924, 100, 2, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (48, 'Austin Otero', E'8/16/25-8/19/25 jay 6323 delaware \n6 missing towels Opportunity Value $ 35.99', '2025-11-20 17:50:23.537369', 1924, 100, 4, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (49, 'Austin Otero', E'8/10/25-8/22/25 Maggie paez 7026 palisde \ntrash house guest payed full amount just waiting on payment to come through \n1` broken chair \nOpportunity Value $338.00\n', '2025-11-20 17:51:58.032244', 1924, 100, 4, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (50, 'Austin Otero', E'7/12/25-7/31/25 beth-7026 palisade \nbroken bed room mirror \nblinds broken \nstained sheets \nreplace mirror \nOpportunity Value $ 460.52', '2025-11-20 17:53:39.027129', 1924, 100, 6, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (55, 'Austin Otero', E'5853 sunglo front unit \nwater leaking through the roof above couch ', '2025-11-21 16:51:03.548644', 1924, 102, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (56, 'Austin Otero', E'Rockey n point Tampa\nFloors peeling up through out the house ', '2025-11-21 16:52:36.409978', 1924, 102, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (57, 'Emma Aponte', E'Main st \nBed in the left room bed board kind of broken on the right side on the bottom ', '2025-11-21 16:55:16.26717', 1927, 102, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (58, 'Austin Otero', E'6140 Warren \n1 bed board didn''t get fixed bed board on the left side at the bottom bedroom next to bathroom\nblinds in back room off and in the closet \n', '2025-11-21 16:56:27.621206', 1924, 102, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (59, 'Austin Otero', E'7026 palisade DR Port Richey\nbed room closest to bathroom closet door off the hinge back room closet also off hinge \nbottom drawer in fridge glass broken off and gone \none of the side holders in fridge peace is broken off \nsmall hole in wall next to 2 bed rooms in the middle \ndoor nob peace for closet in bed room missing\nqueen bed to bed bored peace''s broke off the bottom bed lop sloped in middle ', '2025-11-21 16:57:42.955702', 1924, 102, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (60, 'Austin Otero', E'7026 Palisades\nRoof service and repairs --- $100\nBathroom -- repaired loose toilet tank and toilet seat cover, also fixed toilet paper holder and small round towel holder. -- $75\nrepaired hole in wall from curtain rod bracket and reinstalled bracket and curtain rod and curtains -- $100\nremoved pavers to fix drain and raised it to paver hight, added dirt and reinstalled pavers -- $350\nrear bedrm door to patio rescrewed loose hinges and redid lock holes for both locks. -- $50\nrepaired 3 closet doors handles and bottom hardware. labor and material -- $175\nOpportunity Value $850 \n', '2025-11-21 17:06:57.40645', 1924, 108, 0, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (61, 'Austin Otero', E'6140 Warren Ave.\nchecked out hot water heater, tested for hot water, system is working.\nchecked out A/C ducts and adjusted the dampers in vents also the vent in the kitchen redid and sprayed kilz on and around vent in ceiling\nOpportunity Value $150 ', '2025-11-21 17:08:35.472166', 1924, 108, 1, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (62, 'Austin Otero', E'6327 Delaware back unit \nside bottom left base board broken off\nrepaired bottom left board\nOpportunity Value $ 75 ', '2025-11-21 17:09:40.265974', 1924, 108, 2, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (63, 'Austin Otero', E'6323 Delaware front unit \nbed on the left side still broken and, on the floor,\nrepaired the bed frame with new wood supports\nput rubber cushions on glass top table frame by couch\nreplaced door knob on bedroom bifold\nreplaced air filter for A/C\nrepaired mail boxes to post\nOpportunity Value $200', '2025-11-21 17:13:40.607566', 1924, 108, 3, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (64, 'Austin Otero', E'5853 sunglo front unit\npeace in front of sink cracked/broken\nrepaired with epoxy and caulking\nrepaired with epoxy and caulking\nOpportunity Value $125', '2025-11-21 17:14:54.982922', 1924, 108, 4, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (65, 'Austin Otero', E'6323 Delaware\nqueen bed room one closet door off other door is on half way 100\nto drawer in fridge broken off plastic peace hanging 50\nOpportunity Value $150', '2025-11-21 17:16:02.314912', 1924, 108, 5, NULL);
+INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (66, 'Austin Otero', E'6140 warren Ave New Port Richey \nbed board bottom peace broken off (fixed)  2 beds  $50.00\nremoved temp door for a/c access and cleaned a/c filter and opening  [ done ]  $100.00\n2 bedroom closet doors come off the tracks when opening and closing (fixed)  \n2 bedroom closet doors come off the tracks when opening and closing (fixed)  \nOpportunity Value $200\n', '2025-11-21 17:17:37.646107', 1924, 102, 0, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (70, 'HENDRIX FUENTES DIAZ', '(english speaking) needs conventional DPA to move forward credit score 630', '2025-12-04 15:53:12.164592', 1930, 93, 0, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (71, 'YASSLER BERNIA MARTINEZ', 'WAITING ON CO BORROWER', '2025-12-04 16:05:22.110108', 1928, 93, 5, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (74, 'hermis linares', 'WAITING ON COBORROWER should be ready in 2026', '2026-01-05 15:42:41.77675', 1932, 93, 0, NULL);
@@ -2343,7 +2338,7 @@ INSERT INTO public.opportunities (id, title, description, created_at, contact_id
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (85, 'yanet sago arrebato', 'yuli doing numbers', '2026-02-11 16:52:50.032374', 1876, 78, 0, NULL);
 INSERT INTO public.opportunities (id, title, description, created_at, contact_id, column_id, "position", assigned_user_id) VALUES (86, 'roylis rodriguez', 'potential client might want a house', '2026-02-11 16:53:21.771185', 1825, 78, 0, NULL);
 
--- Data for table: work_sessions
+-- work_sessions
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (3, 2, '2025-11-05 01:22:45.203703', NULL, NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (4, 5, '2025-11-05 01:23:26.745368', NULL, NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (5, 5, '2025-11-05 01:23:57.200835', NULL, NULL);
@@ -2372,8 +2367,8 @@ INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUE
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (39, 20, '2025-11-10 20:55:38.282368', 'pedro coming tmr for client needs', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (40, 19, '2025-11-10 20:56:01.241091', 'sent updated docs that are needed', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (41, 10, '2025-11-10 20:56:24.901609', 'pulling credit at 4:30', NULL);
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (42, 2, '2025-11-10 21:51:36.549161', 'faxed authentication form to IRS waiting for it to be processed
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (43, 5, '2025-11-10 21:51:57.545054', 'sent him instructions to verify identity will follow up 24 hrs
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (42, 2, '2025-11-10 21:51:36.549161', E'faxed authentication form to IRS waiting for it to be processed\n', NULL);
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (43, 5, '2025-11-10 21:51:57.545054', E'sent him instructions to verify identity will follow up 24 hrs\n', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (44, 21, '2025-11-11 16:15:41.179003', 'WAIT FOR ISLEIDYS TO CLOSE', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (46, 10, '2025-11-11 16:32:28.36757', 'JUST NEED FOR CLIENT TO SEND 2023 W2', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (47, 21, '2025-11-11 16:46:48.40865', 'COMING TMR TO MOVE ON WITH THE REFI', NULL);
@@ -2396,12 +2391,12 @@ INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUE
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (77, 10, '2025-11-17 16:38:22.881638', 'sent scope of work to rene (AE) waiting for a response from constructive construction', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (78, 21, '2025-11-17 17:06:40.561456', 'NOHORA COMING TODAY', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (79, 20, '2025-11-17 18:28:43.015551', 'CONTACTED INSURANCE COMPANY THEY WILL NEED TO UPGRADE INSURANCE TO PREMUIM', NULL);
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (81, 24, '2025-11-17 20:33:53.685898', 'JUST SENT COPY OF TAX RETURNS
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (82, 9, '2025-11-17 20:37:12.310965', 'waiting for ralph, he said he is talking about selling his business so wants to wait till he knows what hes going to do before proceeding w the loan
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (81, 24, '2025-11-17 20:33:53.685898', E'JUST SENT COPY OF TAX RETURNS\n', NULL);
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (82, 9, '2025-11-17 20:37:12.310965', E'waiting for ralph, he said he is talking about selling his business so wants to wait till he knows what hes going to do before proceeding w the loan\n', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (83, 5, '2025-11-17 21:25:39.28341', 'meeting wednesday', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (84, 16, '2025-11-18 15:20:01.928861', 'REACHED OUT TO ISLEIDYS REGARDS ABOUT THE TAXES WAITING ON A RESPONSE ', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (86, 22, '2025-11-18 15:54:23.985378', 'FOLLOWED UP ON DOCS AND RECIEVED DOCS', NULL);
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (87, 2, '2025-11-18 16:13:22.546374', 'talked with hector OTP yesterday at 5 touched base with the progress and will call IRS 1/18/25
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (87, 2, '2025-11-18 16:13:22.546374', E'talked with hector OTP yesterday at 5 touched base with the progress and will call IRS 1/18/25\n', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (89, 21, '2025-11-18 18:33:23.287957', 'NOHORA CAME AND BROUGHT MISSING DOCS', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (92, 24, '2025-11-18 20:34:57.496555', 'JUST UPDATED EMAIL', NULL);
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (94, 20, '2025-11-18 21:30:14.854533', 'PEDNIUNG UPDATED POLICY , ORDERED SURVEY', NULL);
@@ -2502,7 +2497,7 @@ INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUE
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (246, 76, '2026-02-03 19:02:38.900512', 'SPOKE WITH HER SHE SAID SHE WILL GET THOSE DOCS WHEN SHES ABLE TO', '8363a3cd-8424-4f1d-9401-00d3d5116cc7');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (247, 10, '2026-02-03 20:25:42.185073', 'DID SEPARATE FILE ', '8363a3cd-8424-4f1d-9401-00d3d5116cc7');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (248, 58, '2026-02-05 15:51:48.298989', 'working on conditions with borrower need to lock loan ', '791f6235-6886-4c49-9220-fecde6255af4');
-INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (249, 10, '2026-02-05 15:52:28.03451', 'sent email to follow up if QCD can be done at closing
+INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (249, 10, '2026-02-05 15:52:28.03451', E'sent email to follow up if QCD can be done at closing\nIRS letter on the way in mail', '791f6235-6886-4c49-9220-fecde6255af4');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (251, 58, '2026-02-09 18:16:26.367023', 'spoke w brwr to explain cic credit will call for sps supplement and to fololw up on water will. Appraiser is going out at 3 today 2/9', '791f6235-6886-4c49-9220-fecde6255af4');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (252, 72, '2026-02-09 19:14:35.257631', 'sent list of conditions to Mia in email as a follow up', '791f6235-6886-4c49-9220-fecde6255af4');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (253, 70, '2026-02-09 19:15:03.474656', 'borrower signed disclosures fule is in uw', '791f6235-6886-4c49-9220-fecde6255af4');
@@ -2516,12 +2511,12 @@ INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUE
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (261, 70, '2026-02-11 15:30:32.381866', 'need to send ocnditions out and need to update loan amount to make sure enough for solar', '791f6235-6886-4c49-9220-fecde6255af4');
 INSERT INTO public.work_sessions (id, file_id, started_at, notes, user_id) VALUES (262, 43, '2026-02-11 15:31:16.906013', 'pending work done on brwr end and other conditions will call him and follow up', '791f6235-6886-4c49-9220-fecde6255af4');
 
--- Data for table: meeting_notes
+-- meeting_notes
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (4, 16, 'confirm taxes were paid to get CTC', '2025-11-12 17:33:50.632959', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (5, 22, 'follow up on VOE', '2025-11-12 17:36:21.024106', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (6, 24, 'do paystubs and start paying hannah from buildnex we need4 paychecks to go out ', '2025-11-12 17:37:56.267726', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (7, 24, 'do paystubs and start paying hannah from buildnex we need4 paychecks to go out & submit', '2025-11-12 17:38:23.558881', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (8, 20, 'cash out refinance we got conditions already. complete conditions
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (8, 20, E'cash out refinance we got conditions already. complete conditions\n', '2025-11-12 17:45:53.881808', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (9, 10, 'waiting on scope of work from john', '2025-11-12 17:51:30.650232', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (10, 21, 'Borrow is coming in to discuss details of loan', '2025-11-12 17:58:46.762088', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (11, 21, 'Borrower is coming in to discuss details of loan', '2025-11-12 17:58:52.068518', 0);
@@ -2530,17 +2525,17 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (16, 24, 'do paystubs and start paying hannah from buildnex we need 2 paychecks to go out & submit', '2025-11-13 15:48:59.793017', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (17, 24, 'do paystubs and start paying hannah from buildnex we need 2 paychecks to go out & submit and disclose with uwm', '2025-11-13 15:49:22.43111', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (18, 24, 'do paystubs and start paying hannah from buildnex we need 2 paychecks to go out & submit and disclose with uwm. Dylan is going to add kalis daycare expense and finalize the return.', '2025-11-13 15:53:10.691135', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (19, 20, 'cash out refinance we got conditions already. complete conditions , coming in today to work on conditions 
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (19, 20, E'cash out refinance we got conditions already. complete conditions , coming in today to work on conditions \n', '2025-11-13 15:56:35.218907', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (20, 19, 'we got docs & need to review docs , need CC to order appraisal', '2025-11-13 15:57:31.943699', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (21, 19, 'we got docs & need to review docs , need CC to order appraisal , hannah needs to send email to dylan for the client needs', '2025-11-13 15:58:22.977386', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (22, 19, 'we got docs & need to review whats missing , need CC to order appraisal , hannah needs to send email to dylan for the client needs', '2025-11-13 16:02:17.000989', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (24, 21, 'Borrower is coming in to discuss details of loan 11/13/2025', '2025-11-13 16:05:04.161416', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (25, 10, 'emma is going to email curtis and call him to get final scope of work', '2025-11-13 16:06:27.296468', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (30, 20, 'cash out refinance we got conditions already. complete conditions , coming in today to work on conditions ,emma is going to email curtis and call him to get final scope of work
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (35, 2, 'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (36, 5, 'Fernando needs to create an IDME and verify his identity.
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (30, 20, E'cash out refinance we got conditions already. complete conditions , coming in today to work on conditions ,emma is going to email curtis and call him to get final scope of work\n', '2025-11-13 16:35:29.17614', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (35, 2, E'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.\n\nALSO NEED TO ACCESS IDME CREATE PAYMENT PLAN\n', '2025-11-13 16:43:49.690651', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (36, 5, E'Fernando needs to create an IDME and verify his identity.\n\nhe also needs to get his 1095-A information ( see kali office for more details )', '2025-11-13 16:45:03.719579', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (38, 29, 'GET THE INVOICE PAID', '2025-11-13 16:49:26.930412', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (39, 29, 'GET THE INVOICE PAID
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (39, 29, E'GET THE INVOICE PAID\nREVIEW 1099 WITH YULI AND SUBMIT', '2025-11-13 16:50:05.543003', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (40, 9, '23 + 24 RETURNS NEED TO BE FINALIZED AND INCLUDE THE PAYROLL TAX AMOUNTS', '2025-11-13 16:51:17.967874', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (41, 7, '2024 RETURN NEEDS TO BE COMPLETED', '2025-11-13 16:51:48.59525', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (42, 24, 'we got paystubs , finalize 23+24 add kalis daycare , 22 ready to submit', '2025-11-14 15:45:14.804037', 0);
@@ -2551,23 +2546,23 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (48, 22, 'in line for reinstatement , got the voe', '2025-11-14 15:53:29.269687', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (49, 20, 'requested insurance update , ordered appraisal ', '2025-11-14 15:53:56.203918', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (51, 21, 'need to price her + send disclosures , bringing docs ', '2025-11-14 15:56:48.32595', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (56, 7, '2024 RETURN NEEDS TO BE COMPLETED
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (57, 2, 'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (58, 5, 'Fernando needs to create an IDME and verify his identity.
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (56, 7, E'2024 RETURN NEEDS TO BE COMPLETED\n\nrecollect and review 2024 documents.', '2025-11-14 16:19:28.436357', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (57, 2, E'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.\n\nneed to get authorization for 2848 for business\n\nALSO NEED TO ACCESS IDME CREATE PAYMENT PLAN\n', '2025-11-14 16:21:20.590343', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (58, 5, E'Fernando needs to create an IDME and verify his identity.\n\nhe also needs to get his 1095-A information ( see kali office for more details )\n\ntouch base again 11/14/25', '2025-11-14 16:21:46.792355', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (61, 16, 'WE CANT CLOSE UNTIL TAXES ARE PAID , WILL COST HER MORE TO CLOSE', '2025-11-17 15:36:27.78505', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (62, 24, 'NEED TO DISCLOSE , HANNAH NEEDS COPIES OF TAX RETURNS', '2025-11-17 15:37:50.109521', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (63, 22, 'FOLLOW UP ON CONDITIONS', '2025-11-17 15:51:19.23729', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (64, 10, 'FIND LENDER , SCOPE OF WORK DONE', '2025-11-17 15:51:44.386275', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (66, 20, 'NEED UPDATED INSURANCE ', '2025-11-17 15:54:05.925876', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (69, 2, 'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (71, 29, 'GET THE INVOICE PAID
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (72, 7, '2024 RETURN NEEDS TO BE COMPLETED
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (69, 2, E'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.\ngot 2848 for business completed\n\n\nALSO NEED TO ACCESS IDME CREATE PAYMENT PLAN\n', '2025-11-17 16:07:22.380859', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (71, 29, E'GET THE INVOICE PAID\nREVIEW 1099 WITH YULI AND SUBMIT 11/17 !!!!!!', '2025-11-17 16:07:54.745036', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (72, 7, E'2024 RETURN NEEDS TO BE COMPLETED\n\nrecollect and review 2024 documents.\n\nprint 2024 transcript', '2025-11-17 16:08:46.927605', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (74, 22, 'hannah needs to review docs and needs to follow up with MY on 4/point and wind mit', '2025-11-18 15:38:54.0021', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (75, 19, 'waiting for ralph', '2025-11-18 15:39:48.487961', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (76, 20, 'hannah will call the insurance to follow up and will call the client to follow up', '2025-11-18 15:46:55.288081', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (77, 24, 'pending review of 23 + 24 ', '2025-11-18 15:47:34.241198', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (82, 7, 'restart workflow pipeline with app intake', '2025-11-18 16:35:57.792334', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (83, 29, 'GET THE INVOICE PAID - invoice was sent
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (83, 29, E'GET THE INVOICE PAID - invoice was sent\nREVIEW 1099 WITH YULI AND SUBMIT 11/17 !!!!!!', '2025-11-18 16:37:31.713095', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (85, 22, 'pending updated quotes from insurance ', '2025-11-19 15:44:36.558659', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (86, 21, 'need to price her ', '2025-11-19 15:45:29.906027', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (89, 24, 'wait for approval ', '2025-11-19 15:47:21.575588', 0);
@@ -2575,7 +2570,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (92, 16, 'Follow up with client 11/21', '2025-11-19 15:53:08.812962', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (93, 34, 'escrow deposit due 11/19', '2025-11-19 15:56:49.463832', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (94, 7, 'collect all docs that are on the transcript', '2025-11-19 16:03:43.015946', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (95, 29, 'GET THE INVOICE PAID - invoice was sent
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (95, 29, E'GET THE INVOICE PAID - invoice was sent\nREVIEW 1099 WITH YULI AND SUBMIT 11/17 !!!!!!\ncheck on invoice and get with yuli after meeting', '2025-11-19 16:04:22.468235', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (100, 24, 'NEED TO ORDER APPRAISAL , REVIEW CONDITIONS', '2025-11-20 15:50:29.566901', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (103, 16, 'JALEEN NEEDS TO CHECK ON THE COUNTY APP', '2025-11-20 15:56:00.95368', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (104, 22, 'PENDING BANKSTATEMENTS FROM MOM , AND UPDATED INSURANCE', '2025-11-20 15:59:34.934949', 0);
@@ -2586,15 +2581,15 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (109, 29, 'completed and paid.', '2025-11-20 16:14:23.767085', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (110, 5, 'need to call and schedule meeting', '2025-11-20 16:15:23.404308', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (112, 19, 'will follow up on tuesday', '2025-11-21 15:34:12.480501', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (116, 22, 'go through bankstatements, and follow up with insurance quote.
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (116, 22, E'go through bankstatements, and follow up with insurance quote.\nshould be getting conditons after bankstatements', '2025-11-21 15:40:47.572357', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (117, 20, 'file is clear to close pending coc to be done lender', '2025-11-21 15:48:16.449619', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (118, 16, 'hannah NEEDS TO CHECK ON THE COUNTY APP', '2025-11-21 15:49:05.634371', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (119, 24, 'still working on conditions', '2025-11-21 15:49:49.603272', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (120, 24, 'still working on conditions - need solution for checks', '2025-11-21 16:00:23.218251', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (121, 10, 'waiting on final scope of work and land value to move forward
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (122, 34, 'waiting on repairs to get final 4 point and wind
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (121, 10, E'waiting on final scope of work and land value to move forward\n\nneed to move forward with the granite approval process. + app intake needs to be complete', '2025-11-21 16:13:10.634588', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (122, 34, E'waiting on repairs to get final 4 point and wind\n\nemma needs to send addendums to hannah', '2025-11-21 16:21:36.079993', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (123, 35, 'waiting to get signed contract from agent', '2025-11-21 16:22:12.658454', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (124, 35, 'waiting to get signed contract from agent
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (124, 35, E'waiting to get signed contract from agent\n\nlooking for lead based paint inspector', '2025-11-21 16:23:31.842088', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (125, 9, 'meeting tuesday with bob fedor to finalize ralph returns', '2025-11-21 16:24:19.826954', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (126, 9, 'meeting tuesday with bob fedor to review returns. prep the returns for review', '2025-11-21 16:25:15.269557', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (129, 10, 'FOLLOW UP WITH JOHN ON SCOPE OF WORK', '2025-11-24 15:32:54.789522', 0);
@@ -2604,7 +2599,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (135, 24, 'APPRAISAL IS GETTING DONE TODAY AND CONDITIONS', '2025-11-24 15:36:25.31403', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (136, 7, 'collect all docs that are on the transcript GET WITH EMMA', '2025-11-24 15:37:07.747887', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (137, 5, 'need to call and schedule meeting - dylan will call TODAY', '2025-11-24 15:37:28.751274', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (138, 2, 'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (138, 2, E'NEED TO CALL IRS AND CORRECT 23 AMENDMENT.\ngot 2848 for business completed - TRY TO COMPLETE PAYMENT PLAN TODAY\n\n\nALSO NEED TO ACCESS IDME CREATE PAYMENT PLAN\n', '2025-11-24 15:37:47.765251', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (139, 9, 'meeting tuesday with bob fedor to review returns. prep the returns for review - WILL COMPLETE RETURN PREP TODAY', '2025-11-24 15:38:05.851237', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (140, 34, 'waiting on repairs to get final 4 point and wind', '2025-11-24 15:39:15.84366', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (141, 35, 'Waiting on Inspections back. Scheduled for Wednesday at 11am', '2025-11-24 15:39:51.506218', 0);
@@ -2613,7 +2608,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (144, 24, 'APPRAILS DONE WORKING ON CONDITIONS', '2025-11-25 15:19:30.905481', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (145, 10, 'FOLLOW UP WITH JOHN ON SCOPE OF WORK TODAY', '2025-11-25 15:20:59.457268', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (150, 10, 'AUSTIN AND JOHN NEED TO GET TOGEHER FOR GRANITE', '2025-11-25 15:49:38.40193', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (151, 34, 'waiting on repairs to get final 4 point and wind
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (151, 34, E'waiting on repairs to get final 4 point and wind\nDo rebuttal', '2025-11-25 15:55:47.57826', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (152, 19, 'still waiting', '2025-11-26 15:31:44.90842', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (154, 22, 'pending signature for mom', '2025-11-26 15:33:39.911183', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (156, 20, 'CLOSED NEEDS TO BE FINALIZED', '2025-11-26 15:34:44.663212', 0);
@@ -2634,19 +2629,19 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (178, 2, 'SUBMIT HIS RETURN', '2025-12-01 16:01:14.647651', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (179, 9, 'RETURNS ARE READY FOR SUBMISSION', '2025-12-01 16:01:30.123861', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (180, 2, 'REPROCESS RETURN AMENDMENT ON OLTPRO AND SUBMIT', '2025-12-01 16:01:51.648017', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (182, 34, 'Do rebuttal - get with hannah to get what they need for rebuttal
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (182, 34, E'Do rebuttal - get with hannah to get what they need for rebuttal\nGet updated inspection from inspector - send photos of repairs', '2025-12-01 16:10:54.700184', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (183, 35, 'Review Inspections, go over repairs needed with yuli and submit request for repairs to realtor', '2025-12-01 16:11:35.056245', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (184, 35, 'Review Inspections, go over repairs needed with Yuli and submit request for repairs to realtor. LBP & Home Inspection', '2025-12-01 16:12:06.032586', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (186, 22, 'ctc need to extend lock closing monday', '2025-12-02 15:49:56.911496', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (187, 24, 'reinspection is done , waiting on cairvers ', '2025-12-02 15:54:06.582241', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (188, 24, 'reinspection is done , waiting on cairvers , assets and insurance', '2025-12-02 15:55:37.332131', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (190, 16, 'get bankstatements ', '2025-12-02 16:00:19.689846', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (191, 34, 'Do rebuttal - get with Hannah to get what they need for rebuttal
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (192, 35, 'Submitted request for repairs waiting on agent to get back to us.
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (191, 34, E'Do rebuttal - get with Hannah to get what they need for rebuttal\nGet updated inspection from inspector - send photos of repairs', '2025-12-02 16:12:02.709182', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (192, 35, E'Submitted request for repairs waiting on agent to get back to us.\nWaiting for LBP Inspection back on Friday', '2025-12-02 16:13:15.281102', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (193, 2, 'abatement for 2024 return.', '2025-12-02 16:18:49.007228', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (194, 9, 'call ralph to review returns', '2025-12-02 16:19:14.461471', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (197, 10, 'emma will complete sign up application with uwm today  should be green after 12/3', '2025-12-03 15:46:13.37628', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (200, 16, 'need payoff hannah will follow up on this
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (200, 16, E'need payoff hannah will follow up on this\n', '2025-12-03 15:49:10.576687', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (201, 22, 'closing monday', '2025-12-03 15:49:22.452013', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (202, 24, 'assets and insurance need survey and fix inspection', '2025-12-03 15:50:02.391445', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (203, 2, 'still need abatement for 2024 return.', '2025-12-03 15:56:16.569476', 0);
@@ -2654,9 +2649,9 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (206, 5, 'hes coming in today to do the identity verification on id me ', '2025-12-03 15:58:15.669427', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (207, 7, 'process return ', '2025-12-03 15:59:21.314722', 1);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (208, 34, 'Get updated inspection from inspector - send photos of repairs', '2025-12-03 15:59:59.040857', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (209, 35, 'Submitted request for repairs waiting on agent to get back to us. (find out when they will be done)
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (209, 35, E'Submitted request for repairs waiting on agent to get back to us. (find out when they will be done)\nWaiting for LBP Inspection back on Friday', '2025-12-03 16:00:43.080675', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (212, 10, 'EMMA AND AUSTIN AND JOHN NEED TO SIT TOGETHER FOR THE FILE', '2025-12-04 15:51:22.850873', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (213, 16, 'FOLLOW UP AGAIN ON PAYOFF AND RELOCK
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (213, 16, E'FOLLOW UP AGAIN ON PAYOFF AND RELOCK\n', '2025-12-04 15:54:55.541124', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (214, 24, 'WE JUST NEED INSURANCE AND ASSESTS', '2025-12-04 15:55:30.023129', 1);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (218, 34, 'NEED TO REQUEST INSURANCE QUOTES , NEED TO RQUEST UPDATED INSPECTION', '2025-12-04 16:09:14.15607', 1);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (219, 35, 'Submitted request for repairs waiting on agent to get back to us. (find out when they will be done)', '2025-12-04 16:09:53.084272', 1);
@@ -2689,16 +2684,16 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (253, 40, 'waiting for lender sign up going with valerie', '2025-12-11 15:38:15.350446', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (254, 16, 'waiting for ctc', '2025-12-11 15:40:20.034733', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (255, 34, 'start scheduling closing & close out the file after we close', '2025-12-11 15:42:52.904976', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (256, 35, 'follow up on 4point for insurance
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (256, 35, E'follow up on 4point for insurance\n\nfind out when repairs will be done', '2025-12-11 15:44:23.684259', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (258, 19, 'call the rep , if restructure is needed ', '2025-12-15 16:19:11.123279', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (259, 10, 'move to new lender
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (259, 10, E'move to new lender\n', '2025-12-15 16:20:05.629501', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (261, 24, 'closed , need to finalize', '2025-12-15 16:22:34.683592', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (262, 16, 'call carl and get lock extension', '2025-12-15 16:23:09.333479', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (264, 9, 'MEETING TODAY WITH RALPH, EXPECTING SUBMISSION FOR RETURN TODAY.', '2025-12-15 16:33:19.977486', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (265, 41, 'UPDATE RETURN, MEET WITH MICHAEL, AND MOST LIKELY FILE TODAY. 12:00pm.', '2025-12-15 16:34:14.657364', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (266, 44, 'SUBMIT AN EFIN APPLICATION', '2025-12-15 16:34:37.446404', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (267, 7, 'REVIEW JOHN AND SUBMIT.', '2025-12-15 16:39:22.279364', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (268, 44, 'SUBMIT AN EFIN APPLICATION
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (268, 44, E'SUBMIT AN EFIN APPLICATION\n', '2025-12-15 16:43:03.719625', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (269, 10, 'got lender need sign up packet', '2025-12-16 16:06:52.137097', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (271, 16, 'give wire instructions to client ', '2025-12-16 16:11:54.002791', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (272, 50, 'complete 2023 and 2024 return', '2025-12-16 16:41:42.737772', 0);
@@ -2707,7 +2702,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (276, 19, 'restart the appraisal', '2025-12-17 15:41:05.931796', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (278, 16, 'give wire instructions to client , closing monday , hannah will read instructions for closing', '2025-12-17 15:50:42.241357', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (281, 39, 'waiting for dcr lender', '2025-12-17 15:54:59.168978', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (282, 35, 'follow up on 4point for insurance
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (282, 35, E'follow up on 4point for insurance\n\nfind out when repairs will be done\nwaiting for appraisal to be ordered', '2025-12-17 16:03:18.430347', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (284, 48, 'bookkept sales and use tax need to submit filings and ', '2025-12-17 16:12:46.641236', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (285, 48, 'bookkept sales and use tax need to submit filings and follow up with the client', '2025-12-17 16:17:37.849943', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (286, 9, 'MEETING RALPH 12/17/25', '2025-12-17 16:18:28.788225', 0);
@@ -2752,7 +2747,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (343, 49, '12/29 FOLLOW UP - JALEEN', '2025-12-29 16:17:18.82933', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (345, 58, 'NEEDS DSCR LENDER / CASHOUT REFI / wait until approval - shop around for lower rate ', '2025-12-30 16:01:58.236823', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (349, 19, 'approved , send client conditions , appraisal got pushed back a day 31st', '2025-12-30 16:11:57.139488', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (352, 35, 'follow up on 4point for insurance
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (352, 35, E'follow up on 4point for insurance\n\nfind out when repairs will be done\nwaiting for appraisal to be ordered , needs to contacted', '2025-12-30 16:25:21.206557', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (353, 40, 'ON HOLD UNTIL PROPERTY IS COMEPLETE', '2026-01-05 15:50:56.17881', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (354, 40, 'ON HOLD UNTIL PROPERTY IS COMEPLETE (currently under construction)', '2026-01-05 15:51:15.895429', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (355, 39, 'PRICE LOAN WITH VALARE ITS READY TO GO', '2026-01-05 16:01:18.541956', 0);
@@ -2764,9 +2759,9 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (369, 5, 'SCHEDULE MEETING TO COME IN', '2026-01-05 16:22:21.146728', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (370, 44, 'CHECK OLT EFIN #', '2026-01-05 16:22:39.971012', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (371, 49, '01/05/26  FOLLOW UP - JALEEN', '2026-01-05 16:23:06.969363', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (372, 35, 'Upload warranties to arive
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (372, 35, E'Upload warranties to arive\nGet updated Inspections\nGet Extension date from Hannah', '2026-01-05 16:36:56.976951', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (373, 19, 'need to review docs need to send list of repairs for appraisal', '2026-01-06 15:53:16.32653', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (376, 35, 'Upload warranties to arive
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (376, 35, E'Upload warranties to arive\nGet Extension date from Hannah\nSend Compensation Agreement to Hannah and Sinkhole warranties', '2026-01-06 16:24:38.652117', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (377, 9, 'WAITING FOR IRS TO OPEN SUBMISSIONS', '2026-01-06 16:29:56.547471', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (378, 7, 'WAITING FOR IRS TO OPEN SUBMISSIONS IRS LETTERS NEED TO BE PUT IN ORDER', '2026-01-06 16:31:50.73326', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (379, 63, 'PROCESS RETURN FOR 2024 NEED TO REVIEW DOCS THAT WERE BROUGHT IN ', '2026-01-06 16:33:37.331643', 0);
@@ -2792,7 +2787,7 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (419, 43, 'getting docs from co borrower today/ on hold for another week - austin reaching out ', '2026-01-12 16:17:49.00733', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (421, 19, 'WAITING FOR ADU TO   BE COMPLETED - STAYING WITH UWM', '2026-01-12 16:20:56.428571', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (422, 58, 'Being submitted today to valare - WAITING FOR DISCLOSURES', '2026-01-12 16:23:15.845403', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (426, 35, 'Upload warranties to arive
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (426, 35, E'Upload warranties to arive\nGet Extension date from Hannah\nREVIEW Sinkhole warranties\nUTILITIES INFO', '2026-01-12 16:27:17.704516', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (427, 7, 'EFILE OPENS January 26, 2026 emma and yuli will review letters', '2026-01-12 16:31:55.397734', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (428, 64, 'just need to complete buyout agreement', '2026-01-12 16:32:17.686711', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (429, 68, 'contact and collect docs', '2026-01-12 16:32:31.581536', 0);
@@ -2811,15 +2806,15 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (456, 41, 'CONTACT MICHAEL TO SEE IF HE RECEIVED ANY INCOME DOCUMENTS FOR 2025 AND ANY OTHER TAX RELATED INFO OR DOCUMENTS. WE NEED 1099, W2, BANK STATEMENTS, ANY RENTAL INCOME? , 1095 - A ', '2026-01-20 17:38:10.145917', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (457, 7, 'EFILE OPENS January 26, 2026 emma and DYLAN will review letters', '2026-01-20 17:54:59.600164', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (458, 63, 'waiting for austin to find a lender', '2026-01-20 17:55:26.692104', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (459, 64, 'need to schedule meeting
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (460, 68, 'process return
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (461, 5, 'call today and try to verify identity or schedule a meeting
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (459, 64, E'need to schedule meeting\n', '2026-01-20 17:55:36.572024', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (460, 68, E'process return\n', '2026-01-20 17:55:53.069284', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (461, 5, E'call today and try to verify identity or schedule a meeting\n', '2026-01-20 17:56:45.999227', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (462, 64, 'need to schedule meeting - email documents for company separation', '2026-01-20 17:57:13.617973', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (463, 69, 'contact and collect docs , follow up on collecting the documents', '2026-01-20 17:58:53.161379', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (464, 65, 'send a final text', '2026-01-20 17:59:21.169702', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (465, 65, 'send a final text the credit will expire please let her know', '2026-01-20 18:01:16.514624', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (466, 35, 'Find out from Listing Agent how to transfer the  sinkhole warranty to buyer.', '2026-01-20 18:14:35.117806', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (467, 36, 'GRAYTON - Upload new photos and the rest of the listing info; Make Listing Live
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (467, 36, E'GRAYTON - Upload new photos and the rest of the listing info; Make Listing Live\nPERMITS - Inspections scheduled 1/21/26 7:30am-3:30pm', '2026-01-20 18:18:34.916495', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (468, 71, 'SET UP NEEDED', '2026-01-21 19:12:52.752222', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (471, 71, 'palisade SET UP NEEDED', '2026-01-21 19:15:41.170318', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (472, 39, 'need to order hazard and flood quotes today, need  mtg statement for grayton ', '2026-01-23 15:37:45.806976', 0);
@@ -2844,12 +2839,12 @@ INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VAL
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (498, 75, '12414 Chicago Avenue HUDSON FL 34669-3734', '2026-02-04 16:06:05.270611', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (499, 43, 'Need current lease for ADU on primary and leases for miles  from austin', '2026-02-05 15:39:27.562596', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (500, 43, 'Need current lease for ADU on primary and leases for miles starting 3/1  from Austin', '2026-02-05 15:40:16.505342', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (501, 75, '12414 Chicago Avenue HUDSON FL 34669-3734
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (501, 75, E'12414 Chicago Avenue HUDSON FL 34669-3734\nneed contract from Austin', '2026-02-05 15:42:25.023002', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (503, 71, 'approved with valere pending info on fees and hazard ins', '2026-02-05 17:12:05.549883', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (504, 72, 'working on conditions appraisal due 2/11', '2026-02-09 19:14:19.136853', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (505, 70, 'disclosures out file submitted', '2026-02-09 19:14:50.552533', 0);
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (506, 75, '12414 Chicago Avenue HUDSON FL 34669-3734
-INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (507, 75, '12414 Chicago Avenue HUDSON FL 34669-3734
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (506, 75, E'12414 Chicago Avenue HUDSON FL 34669-3734\nneed contract from Austin - going with first national bank of america', '2026-02-09 19:45:01.223914', 0);
+INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (507, 75, E'12414 Chicago Avenue HUDSON FL 34669-3734\nneed contract from Austin - going with first national bank of america - \nAE (517) 679-6694', '2026-02-09 20:05:38.071415', 0);
 INSERT INTO public.meeting_notes (id, file_id, notes, created_at, completed) VALUES (508, 80, 'GOT CONTRACTSIGNED AND SENT TO MTG TEAM 2/9', '2026-02-10 18:35:45.665772', 0);
 
 -- Reset sequences
