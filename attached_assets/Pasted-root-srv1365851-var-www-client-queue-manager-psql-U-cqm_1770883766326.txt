@@ -1,0 +1,33 @@
+root@srv1365851:/var/www/client-queue-manager# psql -U cqm_user -h localhost -d client_queue_manager -c "SELECT id, username, email FROM users LIMIT 10;"
+Password for user cqm_user: 
+                  id                  |       username        |         email         
+--------------------------------------+-----------------------+-----------------------
+ c6e48136-b2e8-4921-a70b-4a13c02864ae | SKlS3y@example.com    | 
+ dfdb3e62-1b7a-44d6-9744-99c987797700 | testusereyFyCk        | testuser@example.com
+ 13d892f2-3ba0-4624-b3ef-04023157a455 | 6asotC@example.com    | 6asotC@example.com
+ beff76a2-9473-4333-bdf8-66a005693417 | newuser@test.com      | newuser@test.com
+ 502ed2eb-4540-4ce6-b660-6a77a851a77b | austin@inboxplace.com | austin@inboxplace.com
+ 849e178d-c8f5-4358-8d20-cbb50e487aef | novology3@gmail.com   | 
+ 3a644b02-5eab-4081-b0b1-62740008f61b | testuser_4VVIqH       | 
+ d6c57189-06d5-47ab-84e7-e6c03cdef4f9 | testuser1_UBzTtr      | user1_CHw9bb@test.com
+ 32d8aa48-8ea7-44de-bf83-ecd9478c3ed0 | testuser2_GUvY06      | user2_ZSQpkk@test.com
+ 1ada374e-c608-4c2c-a94e-e6ac5a0b4055 | testuser1__bT5yy      | user1_69g6Pz@test.com
+(10 rows)
+
+root@srv1365851:/var/www/client-queue-manager# psql -U cqm_user -h localhost -d client_queue_manager -c "SELECT u.username, uc.company_id, c.name, uc.role FROM user_companies uc JOIN users u ON u.id = uc.user_id JOIN companies c ON c.id = uc.company_id WHERE uc.role = 'owner' LIMIT 10;"
+Password for user cqm_user: 
+       username        | company_id |             name             | role  
+-----------------------+------------+------------------------------+-------
+ testusereyFyCk        |         11 | Test Company - No Membership | owner
+ testusereyFyCk        |          9 | Test's Company               | owner
+ testusereyFyCk        |         11 | Test Company - No Membership | owner
+ testusereyFyCk        |          9 | Test's Company               | owner
+ austin@inboxplace.com |          1 | Acme Corp                    | owner
+ austin@inboxplace.com |         10 | austin's Company             | owner
+ austin@inboxplace.com |          1 | Acme Corp                    | owner
+ austin@inboxplace.com |         10 | austin's Company             | owner
+ novology3@gmail.com   |         12 | austin's Company             | owner
+ novology3@gmail.com   |         12 | austin's Company             | owner
+(10 rows)
+
+root@srv1365851:/var/www/client-queue-manager# 

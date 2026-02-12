@@ -1,0 +1,42 @@
+root@srv1365851:/var/www/client-queue-manager# cd /var/www/client-queue-manager && npm install drizzle-orm pg && npm uninstall @neondatabase/serverless && pm2 restart client-queue-manager --update-env
+
+changed 1 package, and audited 556 packages in 28s
+
+73 packages are looking for funding
+  run `npm fund` for details
+
+5 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+removed 1 package, and audited 555 packages in 1s
+
+73 packages are looking for funding
+  run `npm fund` for details
+
+5 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+[PM2] Applying action restartProcessId on app [client-queue-manager](ids: [ 3 ])
+[PM2] [client-queue-manager](3) ✓
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 3  │ client-queue-manager    │ default     │ 1.0.0   │ fork    │ 23944    │ 0s     │ 5    │ online    │ 0%       │ 10.8mb   │ root     │ disabled │
+│ 0  │ meetingroadmap          │ default     │ N/A     │ fork    │ 21024    │ 2h     │ 16   │ online    │ 0%       │ 74.6mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 5 --err
+[TAILING] Tailing last 5 lines for [client-queue-manager] process (change the value with --lines option)
+/var/www/client-queue-manager/logs/client-queue-error.log last 5 lines:
+3|client-q | 2026-02-12 07:46:43:     at file:///var/www/client-queue-manager/node_modules/@neondatabase/serverless/index.mjs:1345:74
+3|client-q | 2026-02-12 07:46:43:     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+3|client-q | 2026-02-12 07:46:43:     at async NeonPreparedQuery.execute (file:///var/www/client-queue-manager/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+3|client-q | 2026-02-12 07:46:43:     at async DatabaseStorage.getUserByUsername (file:///var/www/client-queue-manager/dist/index.js:312:20)
+3|client-q | 2026-02-12 07:46:43:     at async Strategy._verify (file:///var/www/client-queue-manager/dist/index.js:892:22)
+
