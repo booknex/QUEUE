@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'client-queue-manager',
-    script: 'dist/index.js',
+    script: 'start.mjs',
     instances: 1,
     exec_mode: 'fork',
     env: {
@@ -13,8 +13,8 @@ module.exports = {
     max_restarts: 10,
     watch: false,
     log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    error_file: '/var/log/pm2/client-queue-error.log',
-    out_file: '/var/log/pm2/client-queue-out.log',
+    error_file: './logs/client-queue-error.log',
+    out_file: './logs/client-queue-out.log',
     merge_logs: true
   }]
 };
