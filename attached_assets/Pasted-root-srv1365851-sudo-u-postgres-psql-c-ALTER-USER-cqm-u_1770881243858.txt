@@ -1,0 +1,561 @@
+root@srv1365851:~# sudo -u postgres psql -c "ALTER USER cqm_user WITH PASSWORD 'calc';"
+ALTER ROLE
+root@srv1365851:~# psql -U cqm_user -h localhost -d client_queue_manager -f /var/www/client-queue-manager/database_export.sql
+Password for user cqm_user: 
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+SET
+SET
+psql:/var/www/client-queue-manager/database_export.sql:43: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.client_files (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:56: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:63: ERROR:  relation "public.client_files_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:74: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.companies (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:87: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:94: ERROR:  relation "public.companies_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:108: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.contacts (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:121: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:128: ERROR:  relation "public.contacts_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:141: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.kanban_columns (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:154: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:161: ERROR:  relation "public.kanban_columns_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:174: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.meeting_notes (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:187: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:194: ERROR:  relation "public.meeting_notes_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:210: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.opportunities (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:223: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:230: ERROR:  relation "public.opportunities_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:242: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.pipelines (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:255: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:262: ERROR:  relation "public.pipelines_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:273: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.sessions (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:287: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.status_filters (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:300: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:307: ERROR:  relation "public.status_filters_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:319: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.user_companies (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:336: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.users (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:349: ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.work_sessions (
+                     ^
+psql:/var/www/client-queue-manager/database_export.sql:362: ERROR:  permission denied for schema public
+psql:/var/www/client-queue-manager/database_export.sql:369: ERROR:  relation "public.work_sessions_id_seq" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:376: ERROR:  relation "public.client_files" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:383: ERROR:  relation "public.companies" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:390: ERROR:  relation "public.contacts" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:397: ERROR:  relation "public.kanban_columns" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:404: ERROR:  relation "public.meeting_notes" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:411: ERROR:  relation "public.opportunities" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:418: ERROR:  relation "public.pipelines" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:425: ERROR:  relation "public.status_filters" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:432: ERROR:  relation "public.work_sessions" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:439: ERROR:  relation "public.client_files" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:440: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:441: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:442: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:443: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:444: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:445: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:446: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:447: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:448: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:449: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:450: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:451: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:452: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:453: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:454: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:455: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:456: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:457: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:458: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:459: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:460: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:461: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:462: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:463: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:464: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:465: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:466: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:467: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:468: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:469: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:470: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:477: ERROR:  syntax error at or near "19"
+LINE 1: 19 Client from User A Testing real-time updates APP-INTAKE 2...
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:502: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:509: ERROR:  syntax error at or near "1"
+LINE 1: 1 Acme Corp 2025-11-04 06:31:58.692371
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:515: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:516: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:517: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:518: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:519: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:520: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:521: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:523: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:524: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:525: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:527: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:529: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:530: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:531: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:532: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:533: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:534: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:535: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:536: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:537: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:538: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:539: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:540: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:541: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:542: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:543: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:544: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:545: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:546: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:547: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:548: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:549: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:550: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:551: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:552: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:553: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:554: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:556: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:557: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:558: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:560: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:561: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:562: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:563: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:564: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:565: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:566: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:567: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:568: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:569: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:570: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:571: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:572: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:573: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:574: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:575: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:576: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:577: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:578: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:579: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:580: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:581: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:582: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:583: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:584: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:585: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:586: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:587: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:588: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:589: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:590: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:591: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:592: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:593: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:594: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:595: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:596: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:597: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:598: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:599: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:600: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:601: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:602: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:603: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:604: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:605: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:606: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:607: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:608: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:609: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:610: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:611: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:612: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:613: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:614: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:615: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:616: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:617: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:619: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:620: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:621: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:622: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:623: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:624: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:626: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:627: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:628: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:629: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:630: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:631: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:632: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:633: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:634: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:636: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:637: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:638: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:639: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:641: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:642: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:644: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:645: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:646: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:647: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:648: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:649: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:650: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:651: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:652: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:653: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:654: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:655: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:656: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:657: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:658: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:659: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:660: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:661: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:662: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:663: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:664: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:665: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:666: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:667: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:668: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:669: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:670: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:671: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:672: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:673: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:674: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:675: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:676: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:677: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:678: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:679: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:680: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:681: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:682: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:683: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:684: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:685: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:686: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:687: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:688: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:689: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:690: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:692: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:693: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:694: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:695: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:696: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:698: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:699: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:700: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:701: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:702: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:703: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:704: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:705: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:706: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:707: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:708: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:709: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:710: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:711: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:712: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:713: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:714: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:720: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:721: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:722: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:723: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:724: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:725: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:726: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:727: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:728: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:729: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:730: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:731: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:732: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:733: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:734: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:736: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:737: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:739: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:740: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:741: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:742: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:744: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:746: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:747: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:748: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:749: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:750: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:752: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:753: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:754: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:755: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:757: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:758: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:759: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:761: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:762: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:763: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:766: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:767: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:774: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:777: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:779: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:795: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:808: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:815: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:818: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:823: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:834: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:835: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:836: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:837: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:839: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:841: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:842: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:843: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:845: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:846: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:847: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:848: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:849: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:850: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:851: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:852: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:853: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:855: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:856: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:857: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:858: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:859: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:860: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:861: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:862: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:863: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:864: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:865: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:866: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:867: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:868: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:869: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:870: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:871: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:872: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:873: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:874: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:875: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:876: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:879: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:880: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:882: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:885: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:896: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:897: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:898: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:905: ERROR:  syntax error at or near "17"
+LINE 1: 17 Duplicate Test Contact 555-1234 duplicate@test.com 2025-1...
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:907: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:915: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:922: ERROR:  syntax error at or near "57"
+LINE 1: 57 Test Col A 1 6 2025-11-10 18:07:16.745426
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:927: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:934: ERROR:  syntax error at or near "2"
+LINE 1: 2 34 Test meeting note 1 2025-11-12 04:32:46.596294 0
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:937: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:944: ERROR:  syntax error at or near "30"
+LINE 1: 30 testddaf test 2025-11-18 04:59:57.11646 398 57 0 502ed2eb...
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:948: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:955: ERROR:  syntax error at or near "6"
+LINE 1: 6 Acme Sales Pipeline 2025-11-04 06:35:54.247755 1
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:958: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:965: ERROR:  syntax error at or near "y_27zT"
+LINE 1: y_27zT-YYI_sAdUgbr2LEZ1xDjb0kx0i {"cookie": {"path": "/", "s...
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:998: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1005: ERROR:  syntax error at or near "33"
+LINE 1: 33 CHECKLIST STATUS 24 0 2025-12-04 17:02:13.489091 0
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:1033: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1040: ERROR:  syntax error at or near "dfdb3e62"
+LINE 1: dfdb3e62-1b7a-44d6-9744-99c987797700 9 owner 2025-11-12 16:3...
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:1041: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1042: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1043: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1044: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1045: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1046: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1047: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1048: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1049: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1050: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1051: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1052: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1053: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1054: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1055: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1056: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1057: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1058: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1059: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1060: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1061: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1062: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1063: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1064: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1065: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1066: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1067: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1068: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1069: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1070: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1071: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1072: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1073: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1074: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1075: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1076: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1077: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1078: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1079: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1080: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1081: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1088: ERROR:  syntax error at or near "c6e48136"
+LINE 1: c6e48136-b2e8-4921-a70b-4a13c02864ae 
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:1089: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1090: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1091: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1092: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1093: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1094: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1095: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1096: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1097: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1098: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1099: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1100: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1101: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1102: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1103: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1104: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1105: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1106: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1107: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1108: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1109: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1110: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1111: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1112: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1113: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1114: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1116: error: backslash commands are restricted; only \unrestrict is allowed
+psql:/var/www/client-queue-manager/database_export.sql:1123: ERROR:  syntax error at or near "109"
+LINE 1: 109 19 2025-11-05 01:19:48.577002 
+        ^
+psql:/var/www/client-queue-manager/database_export.sql:1130: ERROR:  relation "public.companies_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.companies_id_seq', 24, true...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1137: ERROR:  relation "public.contacts_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.contacts_id_seq', 404, true...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1144: ERROR:  relation "public.kanban_columns_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.kanban_columns_id_seq', 67,...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1151: ERROR:  relation "public.meeting_notes_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.meeting_notes_id_seq', 8, t...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1158: ERROR:  relation "public.opportunities_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.opportunities_id_seq', 33, ...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1165: ERROR:  relation "public.pipelines_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.pipelines_id_seq', 8, true)...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1172: ERROR:  relation "public.status_filters_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.status_filters_id_seq', 33,...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1179: ERROR:  relation "public.work_sessions_id_seq" does not exist
+LINE 1: SELECT pg_catalog.setval('public.work_sessions_id_seq', 144,...
+                                 ^
+psql:/var/www/client-queue-manager/database_export.sql:1187: ERROR:  relation "public.client_files" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1195: ERROR:  relation "public.companies" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1203: ERROR:  relation "public.contacts" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1211: ERROR:  relation "public.kanban_columns" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1219: ERROR:  relation "public.meeting_notes" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1227: ERROR:  relation "public.opportunities" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1235: ERROR:  relation "public.pipelines" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1243: ERROR:  relation "public.sessions" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1251: ERROR:  relation "public.status_filters" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1259: ERROR:  relation "public.users" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1267: ERROR:  relation "public.users" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1275: ERROR:  relation "public.users" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1283: ERROR:  relation "public.work_sessions" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1290: ERROR:  relation "public.sessions" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1298: ERROR:  relation "public.client_files" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1306: ERROR:  relation "public.client_files" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1314: ERROR:  relation "public.contacts" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1322: ERROR:  relation "public.kanban_columns" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1330: ERROR:  relation "public.meeting_notes" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1338: ERROR:  relation "public.opportunities" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1346: ERROR:  relation "public.opportunities" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1354: ERROR:  relation "public.opportunities" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1362: ERROR:  relation "public.pipelines" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1370: ERROR:  relation "public.status_filters" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1378: ERROR:  relation "public.user_companies" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1386: ERROR:  relation "public.user_companies" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1394: ERROR:  relation "public.work_sessions" does not exist
+psql:/var/www/client-queue-manager/database_export.sql:1402: ERROR:  relation "public.work_sessions" does not exist

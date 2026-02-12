@@ -1,0 +1,45 @@
+root@srv1365851:/var/www/client-queue-manager# pm2 delete client-queue-manager
+pm2 start ecosystem.config.cjs
+[PM2] Applying action deleteProcessId on app [client-queue-manager](ids: [ 1 ])
+[PM2] [client-queue-manager](1) ✓
+┌────┬───────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name              │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼───────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ meetingroadmap    │ default     │ N/A     │ fork    │ 21024    │ 107m   │ 16   │ online    │ 0%       │ 74.5mb   │ root     │ disabled │
+└────┴───────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications client-queue-manager not running, starting...
+[PM2] App [client-queue-manager] launched (1 instances)
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 2  │ client-queue-manager    │ default     │ 1.0.0   │ fork    │ 23202    │ 0s     │ 0    │ online    │ 0%       │ 16.8mb   │ root     │ disabled │
+│ 0  │ meetingroadmap          │ default     │ N/A     │ fork    │ 21024    │ 107m   │ 16   │ online    │ 0%       │ 74.5mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 5
+[TAILING] Tailing last 5 lines for [client-queue-manager] process (change the value with --lines option)
+/var/www/client-queue-manager/logs/client-queue-error.log last 5 lines:
+/var/www/client-queue-manager/logs/client-queue-out.log last 5 lines:
+2|client-q | 2026-02-12 07:30:33: 7:30:33 AM [express] serving on port 3000
+2|client-q | 2026-02-12 07:33:58: 7:33:58 AM [express] serving on port 3000
+2|client-q | 2026-02-12 07:34:40: 7:34:40 AM [express] serving on port 3000
+2|client-q | 2026-02-12 07:35:23: 7:35:23 AM [express] serving on port 3001
+
+^C
+root@srv1365851:/var/www/client-queue-manager# pm2 delete client-queue-manager
+PORT=3001 pm2 start ecosystem.config.cjs
+[PM2] Applying action deleteProcessId on app [client-queue-manager](ids: [ 2 ])
+[PM2] [client-queue-manager](2) ✓
+┌────┬───────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name              │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼───────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ meetingroadmap    │ default     │ N/A     │ fork    │ 21024    │ 107m   │ 16   │ online    │ 0%       │ 74.5mb   │ root     │ disabled │
+└────┴───────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications client-queue-manager not running, starting...
+[PM2] App [client-queue-manager] launched (1 instances)
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 3  │ client-queue-manager    │ default     │ 1.0.0   │ fork    │ 23245    │ 0s     │ 0    │ online    │ 0%       │ 15.6mb   │ root     │ disabled │
+│ 0  │ meetingroadmap          │ default     │ N/A     │ fork    │ 21024    │ 107m   │ 16   │ online    │ 0%       │ 74.5mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1365851:/var/www/client-queue-manager# 

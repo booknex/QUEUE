@@ -1,0 +1,41 @@
+root@srv1365851:/var/www/client-queue-manager# ^C
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 20
+[TAILING] Tailing last 20 lines for [client-queue-manager] process (change the value with --lines option)
+/var/www/client-queue-manager/logs/client-queue-error.log last 20 lines:
+/var/www/client-queue-manager/logs/client-queue-out.log last 20 lines:
+1|client-q | 2026-02-12 07:30:33: 7:30:33 AM [express] serving on port 3000
+
+d^C
+root@srv1365851:/var/www/client-queue-manager# curl http://localhost:3001
+curl: (7) Failed to connect to localhost port 3001 after 0 ms: Couldn't connect to server
+root@srv1365851:/var/www/client-queue-manager# curl http://localhost:3000
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="description" content="Client File Queue Management System - Organize and prioritize your daily client work with automatic time tracking and visual urgency indicators." />
+    <title>Client Queue Manager</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-RI5qx2Ze.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DH_LOFYT.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>root@srv1365851:/var/www/client-queue-manager# pm2 logs meetingroadmap --lines 5
+[TAILING] Tailing last 5 lines for [meetingroadmap] process (change the value with --lines option)
+/root/.pm2/logs/meetingroadmap-error.log last 5 lines:
+0|meetingr | (Use `node --trace-deprecation ...` to show where the warning was created)
+0|meetingr | (node:20937) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+0|meetingr | (Use `node --trace-deprecation ...` to show where the warning was created)
+0|meetingr | (node:21036) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+0|meetingr | (Use `node --trace-deprecation ...` to show where the warning was created)
+
+/root/.pm2/logs/meetingroadmap-out.log last 5 lines:
+0|meetingr | 1-20T16:30:35.849Z","clientName":"Bogar Fernandez","scheduledDate":"2026-01-20","scheduledTime":"13:30","employeeInitials":"YA"},{"id":"86c28f33-2999-4258-8e36-81f95cd5ca6c","reason":"REVIEW  CONDITIONS AGAIN","completed":true,"createdAt":"2026-01-20T16:48:04.851Z","clientName":"Diana Gutierrez","scheduledDate":"2026-01-20","scheduledTime":"15:30","employeeInitials":"HL"},{"id":"61557f2b-62d1-4e12-bbb3-70fddb695829","reason":"CONTACT REALTOR TO FIND OUT HOW CLIENT WANTS TO MOVE FORWARD","completed":true,"createdAt":"2026-01-20T16:50:02.241Z","clientName":"BRIAN FUNDORA","scheduledDate":"2026-01-20","scheduledTime":"14:00","employeeInitials":"YA"},{"id":"5f352712-269d-48a3-8531-87739805265f","reason":"CALL TO FOLLOW UP ON COMPANY CREATION","completed":true,"createdAt":"2026-01-20T17:03:28.162Z","clientName":"XADIEL","scheduledDate":"2026-01-20","scheduledTime":"13:30","employeeInitials":"HL"}]}
+0|meetingr | WebSocket client connected. Total clients: 3
+0|meetingr | WebSocket client disconnected. Total clients: 2
