@@ -302,7 +302,13 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
     if (!messageText.trim()) return;
     let toNumber = contact.phone.replace(/[\s\-\(\)]/g, "");
     if (!toNumber.startsWith("+")) {
-      toNumber = "+" + toNumber;
+      if (toNumber.length === 10) {
+        toNumber = "+1" + toNumber;
+      } else if (toNumber.length === 11 && toNumber.startsWith("1")) {
+        toNumber = "+" + toNumber;
+      } else {
+        toNumber = "+" + toNumber;
+      }
     }
     smsMutation.mutate({ to: toNumber, message: messageText });
   };

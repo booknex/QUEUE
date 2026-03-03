@@ -1,0 +1,71 @@
+utils.js:232 Uncaught TypeError: Cannot read properties of undefined (reading 'onChanged')
+    at utils.js:232:16Understand this error
+tabutils.js:2 Uncaught TypeError: Cannot read properties of undefined (reading 'onUpdated')
+    at tabutils.js:2:13Understand this error
+contextmenu.js:124 Uncaught TypeError: Cannot read properties of undefined (reading 'onClicked')
+    at contextmenu.js:124:21Understand this error
+download.js:9 Uncaught TypeError: Cannot read properties of undefined (reading 'onCreated')
+    at download.js:9:18Understand this error
+index-g7n0rHHx.js:430 WebSocket connected
+/api/files?companyId=1:1  Failed to load resource: the server responded with a status of 403 (Forbidden)Understand this error
+/api/pipelines?companyId=1:1  Failed to load resource: the server responded with a status of 403 (Forbidden)Understand this error
+/api/columns?pipelineId=6:1  Failed to load resource: the server responded with a status of 403 (Forbidden)Understand this error
+/api/filters?companyId=1:1  Failed to load resource: the server responded with a status of 403 (Forbidden)Understand this error
+index-g7n0rHHx.js:416 [TwilioVoice][Device] Set logger default level to 1
+index-g7n0rHHx.js:416 [TwilioVoice][Device] .constructor {"logLevel":1,"codecPreferences":["opus","pcmu"]}
+index-g7n0rHHx.js:416 [TwilioVoice][Device] .updateToken
+index-g7n0rHHx.js:416 [TwilioVoice][Device] .updateOptions {"logLevel":1,"codecPreferences":["opus","pcmu"]}
+index-g7n0rHHx.js:416 [TwilioVoice][Device] Set logger default level to 1
+index-g7n0rHHx.js:416 [TwilioVoice][AudioProcessorEventObserver] Creating AudioProcessorEventObserver instance
+index-g7n0rHHx.js:416 [TwilioVoice][Device] .register
+index-g7n0rHHx.js:416 [TwilioVoice][Device] #registering
+index-g7n0rHHx.js:416 [TwilioVoice][Device] Setting up VSP
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Initializing preferred transport backoff using config:  Object
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Initializing primary transport backoff using config:  Object
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] WSTransport.open() called...
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Attempting to connect...
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Closing and cleaning up WebSocket...
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] No WebSocket to clean up.
+15The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. <URL>Understand this warning
+index-g7n0rHHx.js:416 [TwilioVoice][AudioHelper] #deviceChange Array(0)
+index-g7n0rHHx.js:416 [TwilioVoice][EventPublisher] Publishing cancelled {"isEnabled":true}
+index-g7n0rHHx.js:416 [TwilioVoice][AudioHelper] #deviceChange Array(0)
+index-g7n0rHHx.js:416 [TwilioVoice][EventPublisher] Publishing cancelled {"isEnabled":true}
+2index-g7n0rHHx.js:416 [TwilioVoice][OutputDeviceCollection] .set default
+2index-g7n0rHHx.js:416 [TwilioVoice][EventPublisher] Publishing cancelled {"isEnabled":true}
+2index-g7n0rHHx.js:416 [TwilioVoice][OutputDeviceCollection] .set default
+2index-g7n0rHHx.js:416 [TwilioVoice][EventPublisher] Publishing cancelled {"isEnabled":true}
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] WebSocket opened successfully.
+index-g7n0rHHx.js:416 [TwilioVoice][PStream] Setting token and publishing listen
+index-g7n0rHHx.js:416 [TwilioVoice][PStream] maxPreferredDurationMs:0
+index-g7n0rHHx.js:416 [TwilioVoice][PStream] reconnectTimeout:0
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Sending: {"payload":{"browserinfo":{"browser":{"platform":"Win32","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"},"p":"browser","plugin":"rtc","v":"2.16.0"},"reconnectTimeout":0,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTS2RkZWVhZTYyYjViYWIyY2Q3ZWUzZThkMTI4MzEwZDM2LTE3NzI1MTU3NzMiLCJncmFudHMiOnsiaWRlbnRpdHkiOiJicm93c2VyX2NsaWVudCIsInZvaWNlIjp7ImluY29taW5nIjp7ImFsbG93Ijp0cnVlfSwib3V0Z29pbmciOnsiYXBwbGljYXRpb25fc2lkIjoiQVA2MmYzMzEyOGM0MmZlMzI3YzNjZmE5MGEzNzg1MDE2OCJ9fX0sImlhdCI6MTc3MjUxNTc3MywiZXhwIjoxNzcyNTE5MzczLCJpc3MiOiJTS2RkZWVhZTYyYjViYWIyY2Q3ZWUzZThkMTI4MzEwZDM2Iiwic3ViIjoiQUNhYmJhM2MzNzdhODU4MzlkZDkxNDViOTc5Y2M3ZWU5NSJ9.z7RFakTQNNQJdrEMapYBBuMBZ7JlgQMnN0FczZocE9E"},"type":"listen","version":"1.6"}
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Received: {"payload":{"edge":"ashburn","region":"US_EAST_VIRGINIA","home":"us1","token":{"identity":"browser_client","ttl":3599}},"type":"connected","version":"1.6"}
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Sending: {"payload":{"media":{"audio":true}},"type":"register","version":"1.6"}
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Received: {"payload":{},"type":"ready","version":""}
+index-g7n0rHHx.js:416 [TwilioVoice][Device] Stream is ready
+index-g7n0rHHx.js:416 [TwilioVoice][Device] #registered
+index-g7n0rHHx.js:430 Twilio Device registered - ready for calls
+/api/contacts?companyId=1:1  Failed to load resource: the server responded with a status of 403 (Forbidden)Understand this error
+/api/twilio/sms:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+index-g7n0rHHx.js:430 SMS failed: Error: 500: {"error":"Invalid 'To' Phone Number: +727237XXXX"}
+    at ME (index-g7n0rHHx.js:48:42893)
+    at async De (index-g7n0rHHx.js:48:43094)
+    at async Object.mutationFn (index-g7n0rHHx.js:430:74469)
+onError @ index-g7n0rHHx.js:430Understand this error
+/api/twilio/sms:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+index-g7n0rHHx.js:430 SMS failed: Error: 500: {"error":"Invalid 'To' Phone Number: +727237XXXX"}
+    at ME (index-g7n0rHHx.js:48:42893)
+    at async De (index-g7n0rHHx.js:48:43094)
+    at async Object.mutationFn (index-g7n0rHHx.js:430:74469)
+onError @ index-g7n0rHHx.js:430Understand this error
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] heartbeat
+/api/twilio/sms:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+index-g7n0rHHx.js:430 SMS failed: Error: 500: {"error":"Invalid 'To' Phone Number: +727237XXXX"}
+    at ME (index-g7n0rHHx.js:48:42893)
+    at async De (index-g7n0rHHx.js:48:43094)
+    at async Object.mutationFn (index-g7n0rHHx.js:430:74469)
+onError @ index-g7n0rHHx.js:430Understand this error
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] heartbeat
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] Sending: {"payload":{"media":{"audio":true}},"type":"register","version":"1.6"}
+index-g7n0rHHx.js:416 [TwilioVoice][WSTransport] heartbeat

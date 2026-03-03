@@ -264,10 +264,17 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
       return;
     }
 
-    // Normalize to E.164 format — Twilio requires a leading +
-    targetNumber = targetNumber.replace(/\s|-|\(|\)/g, "");
+    // Normalize to E.164 format — Twilio requires +1XXXXXXXXXX for US numbers
+    targetNumber = targetNumber.replace(/[\s\-\(\)]/g, "");
     if (!targetNumber.startsWith("+")) {
-      targetNumber = "+" + targetNumber;
+      // 10-digit US number → add +1, 11-digit starting with 1 → add +, otherwise add +
+      if (targetNumber.length === 10) {
+        targetNumber = "+1" + targetNumber;
+      } else if (targetNumber.length === 11 && targetNumber.startsWith("1")) {
+        targetNumber = "+" + targetNumber;
+      } else {
+        targetNumber = "+" + targetNumber;
+      }
     }
 
     try {
@@ -345,7 +352,13 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
     }
     let toNumber = phoneNumber.replace(/[\s\-\(\)]/g, "");
     if (!toNumber.startsWith("+")) {
-      toNumber = "+" + toNumber;
+      if (toNumber.length === 10) {
+        toNumber = "+1" + toNumber;
+      } else if (toNumber.length === 11 && toNumber.startsWith("1")) {
+        toNumber = "+" + toNumber;
+      } else {
+        toNumber = "+" + toNumber;
+      }
     }
     smsMutation.mutate({ to: toNumber, message: smsMessage });
   };
