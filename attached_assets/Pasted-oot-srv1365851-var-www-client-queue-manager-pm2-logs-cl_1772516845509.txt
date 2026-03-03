@@ -1,0 +1,32 @@
+oot@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 10 --nostream | grep "SMS"
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:44: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:48: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:49: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:29: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:30: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:31: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 15 --nostream | grep -E "SMS|sent|error"
+/var/www/client-queue-manager/logs/client-queue-error.log last 15 lines:
+3|client-q | 2026-03-03 05:27:27: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:27: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:37: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:37: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:38: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:44: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:48: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:49: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:29: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:30: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:31: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:46:54: 5:46:54 AM [express] GET /api/contacts 403 in 20ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 05:47:04: SMS request received: { to: '+17272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:47:05: SMS sent successfully: SM8e23b149254584b91490047a366d996b
+root@srv1365851:/var/www/client-queue-manager# 
