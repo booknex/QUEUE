@@ -1,0 +1,45 @@
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 20 --nostream | grep -A5 "SMS"
+3|client-q | 2026-03-03 05:27:25: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:25: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:26: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:26: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:27: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:27: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:27: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:37: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:37: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:27:38: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:43: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:29:44: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:48: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:49: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:35:50: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:29: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:30: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+3|client-q | 2026-03-03 05:41:31: Twilio SMS error: Invalid 'To' Phone Number: +727237XXXX 21211 400
+
+/var/www/client-queue-manager/logs/client-queue-out.log last 20 lines:
+3|client-q | 2026-03-03 05:41:15: 5:41:15 AM [express] GET /api/contacts 403 in 4ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 05:41:28: SMS request received: { to: '+7272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:41:28: Twilio config: { hasSid: true, hasToken: true, hasPhone: true, phone: '72777...' }
+3|client-q | 2026-03-03 05:41:29: 5:41:29 AM [express] POST /api/twilio/sms 500 in 324ms :: {"error":"Invalid 'To' Phone Number: +7272…
+3|client-q | 2026-03-03 05:41:30: SMS request received: { to: '+7272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:41:30: Twilio config: { hasSid: true, hasToken: true, hasPhone: true, phone: '72777...' }
+3|client-q | 2026-03-03 05:41:30: 5:41:30 AM [express] POST /api/twilio/sms 500 in 94ms :: {"error":"Invalid 'To' Phone Number: +72723…
+3|client-q | 2026-03-03 05:41:30: SMS request received: { to: '+7272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:41:30: Twilio config: { hasSid: true, hasToken: true, hasPhone: true, phone: '72777...' }
+3|client-q | 2026-03-03 05:41:31: 5:41:31 AM [express] POST /api/twilio/sms 500 in 87ms :: {"error":"Invalid 'To' Phone Number: +72723…
+3|client-q | 2026-03-03 05:41:34: SMS request received: { to: '+17272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:41:34: Twilio config: { hasSid: true, hasToken: true, hasPhone: true, phone: '72777...' }
+3|client-q | 2026-03-03 05:41:34: SMS sent successfully: SMa5121f15f6e90c1c1d42bf21d6329b31
+3|client-q | 2026-03-03 05:41:34: 5:41:34 AM [express] POST /api/twilio/sms 200 in 162ms :: {"success":true,"messageSid":"SMa5121f15f6…
+3|client-q | 2026-03-03 05:41:52: SMS request received: { to: '+17272374096', hasMessage: true }
+3|client-q | 2026-03-03 05:41:52: Twilio config: { hasSid: true, hasToken: true, hasPhone: true, phone: '72777...' }
+3|client-q | 2026-03-03 05:41:52: SMS sent successfully: SM2c0b59e61807018ba6d62236b4fd3d69
+3|client-q | 2026-03-03 05:41:52: 5:41:52 AM [express] POST /api/twilio/sms 200 in 169ms :: {"success":true,"messageSid":"SM2c0b59e618…
+3|client-q | 2026-03-03 05:42:15: WebSocket client disconnected
+3|client-q | 2026-03-03 05:42:17: WebSocket client connected
+
+root@srv1365851:/var/www/client-queue-manager# 
