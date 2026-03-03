@@ -2123,9 +2123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Outbound call from browser to phone number
         console.log(`Outbound call: Dialing ${toNumber} from ${twilioNumber}`);
-        response.dial({ 
-          callerId: twilioNumber 
-        }, toNumber);
+        const outDial = response.dial({ callerId: twilioNumber });
+        outDial.number(toNumber);
       }
 
       const twiml = response.toString();
