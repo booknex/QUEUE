@@ -1,0 +1,101 @@
+root@srv1365851:/var/www/client-queue-manager# python3 << 'PYEOF'
+import re
+
+with open('client/src/components/PhoneWidget.tsx', 'r') as f:
+    code = f.read()
+
+# Replace the entire handleLiveCall function with the correct version
+correct_func = '''  const handleLiveCall = async (numberToCall?: string, skipInboxOpen?: boolean) => {
+    if (!device) {
+      setCallStatus("Device not ready");
+      return;
+    }
+
+    let targetNumber = numberToCall || phoneNumber;
+    if (!targetNumber.trim()) {
+      setCallStatus("Phone number required");
+      return;
+    }
+
+    // Normalize to E.164 format
+    targetNumber = targetNumber.replace(/[\\s\\-\\(\\)]/g, "");
+    if (targetNumber[0] !== "+") {
+      targetNumber = "+" + targetNumber;
+    }
+
+    try {
+      setCallStatus("Calling...");
+      const call = await device.connect({
+        params: { To: targetNumber }
+      });
+
+      setActiveCall(call);
+      setupCallListeners(call);
+      startCallTimer();
+
+      if (numberToCall && numberToCall !== phoneNumber) {
+        setPhoneNumber(numberToCall);
+      }
+
+      if (!skipInboxOpen) {
+        const matchingContact = contacts.find(c => c.phone === targetNumber);
+        if (matchingContact && (!inboxContact || inboxContact.id !== matchingContact.id)) {
+          setInboxContact(matchingContact);
+        }
+      }
+    } catch (error: any) {
+      console.error("Call failed:", error);
+      setCallStatus("Failed: " + (error.message || error.code || "Check console"));
+      cleanupCall();
+    }
+  };'''
+
+# Match from handleLiveCall declaration to the closing }; of the function
+new_code = re.sub(
+    r'  const handleLiveCall[^;]*?cleanupCall\(\);\s*\}\s*\};',
+PYEOFrint("async check:", "handleLiveCall = async" in new_code)f:
+Traceback (most recent call last):
+  File "<stdin>", line 53, in <module>
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 334, in _compile_template
+    return _sre.template(pattern, _parser.parse_template(repl, pattern))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/_parser.py", line 1075, in parse_template
+    raise s.error('bad escape %s' % this, len(this)) from None
+re.error: bad escape \s at position 392 (line 14, column 43)
+root@srv1365851:/var/www/client-queue-manager# npm run build && pm2 restart client-queue-manager
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.21 building for production...
+transforming (4) src/App.tsx
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 99 modules transformed.
+x Build failed in 2.43s
+error during build:
+[vite:esbuild] Transform failed with 1 error:
+/var/www/client-queue-manager/client/src/components/PhoneWidget.tsx:273:19: ERROR: "await" can only be used inside an "async" function
+file: /var/www/client-queue-manager/client/src/components/PhoneWidget.tsx:273:19
+
+"await" can only be used inside an "async" function
+271|      try {
+272|        setCallStatus("Calling...");
+273|        const call = await device.connect({
+   |                     ^
+274|          params: { To: targetNumber }
+275|        });
+
+    at failureErrorWithLog (/var/www/client-queue-manager/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+    at /var/www/client-queue-manager/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+    at responseCallbacks.<computed> (/var/www/client-queue-manager/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+    at handleIncomingPacket (/var/www/client-queue-manager/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+    at Socket.readFromStdout (/var/www/client-queue-manager/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+root@srv1365851:/var/www/client-queue-manager# 
