@@ -135,6 +135,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
 
       twilioDevice.on("error", (error) => {
         console.error("Device error:", error);
+        setCallStatus(`Error: ${error.message || error.code || "Unknown error"}`);
       });
 
       twilioDevice.on("incoming", (call) => {
@@ -257,10 +258,16 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
       return;
     }
 
-    const targetNumber = numberToCall || phoneNumber;
+    let targetNumber = numberToCall || phoneNumber;
     if (!targetNumber.trim()) {
       setCallStatus("Phone number required");
       return;
+    }
+
+    // Normalize to E.164 format — Twilio requires a leading +
+    targetNumber = targetNumber.replace(/\s|-|\(|\)/g, "");
+    if (!targetNumber.startsWith("+")) {
+      targetNumber = "+" + targetNumber;
     }
 
     try {
@@ -288,7 +295,7 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
       }
     } catch (error: any) {
       console.error("Call failed:", error);
-      setCallStatus("Call failed");
+      setCallStatus(`Failed: ${error.message || error.code || "Check console"}`);
       cleanupCall();
     }
   };
