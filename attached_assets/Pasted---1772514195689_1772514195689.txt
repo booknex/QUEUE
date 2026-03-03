@@ -1,0 +1,92 @@
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 10 │ christmas-bonus         │ default     │ 1.0.0   │ fork    │ 385178   │ 71s    │ 3    │ online    │ 0%       │ 86.2mb   │ root     │ disabled │
+│ 3  │ client-queue-manager    │ default     │ 1.0.0   │ fork    │ 385286   │ 0s     │ 11   │ online    │ 0%       │ 14.4mb   │ root     │ disabled │
+│ 28 │ meetingroadmap          │ default     │ 1.0.0   │ fork    │ 385193   │ 71s    │ 1    │ online    │ 0%       │ 96.6mb   │ root     │ disabled │
+│ 19 │ office-inventory        │ default     │ 1.0.0   │ cluster │ 385180   │ 71s    │ 3    │ online    │ 0%       │ 87.9mb   │ root     │ disabled │
+│ 7  │ taxportal               │ default     │ 1.0.0   │ fork    │ 385166   │ 72s    │ 23   │ online    │ 0%       │ 90.6mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1365851:/var/www/client-queue-manager# pm2 logs client-queue-manager --lines 50 --nostream
+[TAILING] Tailing last 50 lines for [client-queue-manager] process (change the value with --lines option)
+/var/www/client-queue-manager/logs/client-queue-out.log last 50 lines:
+3|client-q | 2026-03-03 04:45:12: 4:45:12 AM [express] GET /api/user 401 in 1ms :: {"message":"Unauthorized"}
+3|client-q | 2026-03-03 04:45:12: WebSocket client connected
+3|client-q | 2026-03-03 04:45:15: WebSocket client disconnected
+3|client-q | 2026-03-03 04:49:03: 4:49:03 AM [express] GET /api/user 401 in 1ms :: {"message":"Unauthorized"}
+3|client-q | 2026-03-03 04:49:03: WebSocket client connected
+3|client-q | 2026-03-03 04:49:04: WebSocket client disconnected
+3|client-q | 2026-03-03 04:51:26: 4:51:26 AM [express] GET /api/user 401 in 1ms :: {"message":"Unauthorized"}
+3|client-q | 2026-03-03 04:51:26: WebSocket client connected
+3|client-q | 2026-03-03 04:52:17: WebSocket client disconnected
+3|client-q | 2026-03-03 04:57:28: 4:57:28 AM [express] GET /api/user 401 in 1ms :: {"message":"Unauthorized"}
+3|client-q | 2026-03-03 04:57:28: WebSocket client connected
+3|client-q | 2026-03-03 04:57:42: 4:57:42 AM [express] POST /api/login 401 in 13ms :: {"message":"Invalid username or password"}
+3|client-q | 2026-03-03 04:57:47: 4:57:47 AM [express] POST /api/login 401 in 2ms :: {"message":"Invalid username or password"}
+3|client-q | 2026-03-03 04:58:01: 4:58:01 AM [express] POST /api/register 201 in 446ms :: {"id":"e5490d93-8dc5-4261-a68c-1c9619198767"…
+3|client-q | 2026-03-03 04:58:01: 4:58:01 AM [express] GET /api/user 200 in 12ms :: {"id":"e5490d93-8dc5-4261-a68c-1c9619198767","user…
+3|client-q | 2026-03-03 04:58:01: 4:58:01 AM [express] GET /api/companies 200 in 15ms :: []
+3|client-q | 2026-03-03 04:58:01: 4:58:01 AM [express] GET /api/files 403 in 5ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:01: 4:58:01 AM [express] GET /api/pipelines 403 in 12ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:01: Token request - Config check: {
+3|client-q | 2026-03-03 04:58:01:   hasSid: true,
+3|client-q | 2026-03-03 04:58:01:   hasApiKey: true,
+3|client-q | 2026-03-03 04:58:01:   hasApiSecret: true,
+3|client-q | 2026-03-03 04:58:01:   hasTwimlApp: true
+3|client-q | 2026-03-03 04:58:01: }
+3|client-q | 2026-03-03 04:58:01: Access token generated for identity: browser_client
+3|client-q | 2026-03-03 04:58:02: 4:58:02 AM [express] GET /api/columns 403 in 166ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:02: 4:58:02 AM [express] GET /api/twilio/token 200 in 167ms :: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp…
+3|client-q | 2026-03-03 04:58:02: 4:58:02 AM [express] GET /api/filters 403 in 233ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:02: 4:58:02 AM [express] GET /api/opportunities 200 in 215ms :: []
+3|client-q | 2026-03-03 04:58:09: 4:58:09 AM [express] GET /api/contacts 403 in 3ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/pipelines 403 in 55ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/filters 403 in 67ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/files 403 in 73ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/columns 403 in 72ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: Token request - Config check: {
+3|client-q | 2026-03-03 04:58:46:   hasSid: true,
+3|client-q | 2026-03-03 04:58:46:   hasApiKey: true,
+3|client-q | 2026-03-03 04:58:46:   hasApiSecret: true,
+3|client-q | 2026-03-03 04:58:46:   hasTwimlApp: true
+3|client-q | 2026-03-03 04:58:46: }
+3|client-q | 2026-03-03 04:58:46: Access token generated for identity: browser_client
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/twilio/token 200 in 4ms :: {"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV…
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/pipelines 403 in 4ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:58:46: 4:58:46 AM [express] GET /api/filters 403 in 5ms :: {"error":"Access denied to this company"}
+3|client-q | 2026-03-03 04:59:01: WebSocket client disconnected
+3|client-q | 2026-03-03 04:59:04: WebSocket client connected
+3|client-q | 2026-03-03 05:00:04: WebSocket client disconnected
+3|client-q | 2026-03-03 05:00:07: WebSocket client connected
+3|client-q | 2026-03-03 05:01:07: WebSocket client disconnected
+3|client-q | 2026-03-03 05:01:10: WebSocket client connected
+
+/var/www/client-queue-manager/logs/client-queue-error.log last 50 lines:
+3|client-q | 2026-03-03 05:01:27: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@neondatabase/serverless' imported from /var/www/client-queue-manager/dist/index.js
+3|client-q | 2026-03-03 05:01:27:     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+3|client-q | 2026-03-03 05:01:27:     at packageResolve (node:internal/modules/esm/resolve:769:81)
+3|client-q | 2026-03-03 05:01:27:     at moduleResolve (node:internal/modules/esm/resolve:860:18)
+3|client-q | 2026-03-03 05:01:27:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+3|client-q | 2026-03-03 05:01:27:     at #cachedDefaultResolve (node:internal/modules/esm/loader:719:20)
+3|client-q | 2026-03-03 05:01:27:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:736:38)
+3|client-q | 2026-03-03 05:01:27:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:765:52)
+3|client-q | 2026-03-03 05:01:27:     at #resolve (node:internal/modules/esm/loader:701:17)
+3|client-q | 2026-03-03 05:01:27:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:621:35)
+3|client-q | 2026-03-03 05:01:27:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:160:33) {
+3|client-q | 2026-03-03 05:01:27:   code: 'ERR_MODULE_NOT_FOUND'
+3|client-q | 2026-03-03 05:01:27: }
+3|client-q | 2026-03-03 05:02:34: Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@neondatabase/serverless' imported from /var/www/client-queue-manager/dist/index.js
+3|client-q | 2026-03-03 05:02:34:     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+3|client-q | 2026-03-03 05:02:34:     at packageResolve (node:internal/modules/esm/resolve:769:81)
+3|client-q | 2026-03-03 05:02:34:     at moduleResolve (node:internal/modules/esm/resolve:860:18)
+3|client-q | 2026-03-03 05:02:34:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+3|client-q | 2026-03-03 05:02:34:     at #cachedDefaultResolve (node:internal/modules/esm/loader:719:20)
+3|client-q | 2026-03-03 05:02:34:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:736:38)
+3|client-q | 2026-03-03 05:02:34:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:765:52)
+3|client-q | 2026-03-03 05:02:34:     at #resolve (node:internal/modules/esm/loader:701:17)
+3|client-q | 2026-03-03 05:02:34:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:621:35)
+3|client-q | 2026-03-03 05:02:34:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:160:33) {
+3|client-q | 2026-03-03 05:02:34:   code: 'ERR_MODULE_NOT_FOUND'
+3|client-q | 2026-03-03 05:02:34: }
+
+root@srv1365851:/var/www/client-queue-manager# 
