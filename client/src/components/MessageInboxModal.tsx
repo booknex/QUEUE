@@ -298,7 +298,11 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
   const handleSendMessage = () => {
     if (!contact?.phone) return;
     if (!messageText.trim()) return;
-    smsMutation.mutate({ to: contact.phone, message: messageText });
+    let toNumber = contact.phone.replace(/[\s\-\(\)]/g, "");
+    if (!toNumber.startsWith("+")) {
+      toNumber = "+" + toNumber;
+    }
+    smsMutation.mutate({ to: toNumber, message: messageText });
   };
 
   const handleCallContact = () => {

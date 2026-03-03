@@ -340,7 +340,11 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
     if (!smsMessage.trim()) {
       return;
     }
-    smsMutation.mutate({ to: phoneNumber, message: smsMessage });
+    let toNumber = phoneNumber.replace(/[\s\-\(\)]/g, "");
+    if (!toNumber.startsWith("+")) {
+      toNumber = "+" + toNumber;
+    }
+    smsMutation.mutate({ to: toNumber, message: smsMessage });
   };
 
   return (
