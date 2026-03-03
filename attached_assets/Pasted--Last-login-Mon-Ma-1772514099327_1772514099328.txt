@@ -1,0 +1,61 @@
+********************************************************************************
+Last login: Mon Mar  2 18:31:25 2026 from 169.254.0.1
+root@srv1365851:~# cd /var/www/client-queue-manager
+git pull
+npm install
+npm run build
+pm2 restart all
+fatal: unable to look up gitsafe (port 5418) (Temporary failure in name resolution)
+
+up to date, audited 555 packages in 5s
+
+73 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (5 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.21 building for production...
+transforming (4) src/App.tsx
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 2135 modules transformed.
+../dist/public/index.html                   0.96 kB │ gzip:   0.52 kB
+../dist/public/assets/index-DH_LOFYT.css   77.67 kB │ gzip:  12.83 kB
+../dist/public/assets/index-RI5qx2Ze.js   932.21 kB │ gzip: 269.01 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.53s
+
+  dist/index.js  112.6kb
+
+⚡ Done in 28ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [all](ids: [ 3, 7, 10, 19, 28 ])
+[PM2] [client-queue-manager](3) ✓
+[PM2] [taxportal](7) ✓
+[PM2] [christmas-bonus](10) ✓
+[PM2] [meetingroadmap](28) ✓
+[PM2] [office-inventory](19) ✓
+┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 10 │ christmas-bonus         │ default     │ 1.0.0   │ fork    │ 385178   │ 0s     │ 3    │ online    │ 0%       │ 46.6mb   │ root     │ disabled │
+│ 3  │ client-queue-manager    │ default     │ 1.0.0   │ fork    │ 385164   │ 0s     │ 10   │ online    │ 0%       │ 55.8mb   │ root     │ disabled │
+│ 28 │ meetingroadmap          │ default     │ 1.0.0   │ fork    │ 385193   │ 0s     │ 1    │ online    │ 0%       │ 32.4mb   │ root     │ disabled │
+│ 19 │ office-inventory        │ default     │ 1.0.0   │ cluster │ 385180   │ 0s     │ 3    │ online    │ 0%       │ 45.8mb   │ root     │ disabled │
+│ 7  │ taxportal               │ default     │ 1.0.0   │ fork    │ 385166   │ 0s     │ 23   │ online    │ 0%       │ 52.6mb   │ root     │ disabled │
+└────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1365851:/var/www/client-queue-manager# 
