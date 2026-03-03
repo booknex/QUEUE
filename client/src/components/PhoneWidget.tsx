@@ -322,14 +322,17 @@ export function PhoneWidget({ selectedCompanyId, pendingCallNumber, onCallNumber
   const smsMutation = useMutation({
     mutationFn: async ({ to, message }: { to: string; message: string }) => {
       const response = await apiRequest("POST", "/api/twilio/sms", { to, message });
-      return await response.json();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send SMS");
+      return data;
     },
     onSuccess: () => {
-      setPhoneNumber("");
       setSmsMessage("");
+      toast({ title: "SMS sent", description: "Message delivered successfully." });
     },
     onError: (error: Error) => {
       console.error("SMS failed:", error);
+      toast({ title: "SMS failed", description: error.message, variant: "destructive" });
     },
   });
 

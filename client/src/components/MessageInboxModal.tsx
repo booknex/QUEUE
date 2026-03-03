@@ -275,7 +275,9 @@ export default function MessageInboxModal({ contact, open, onOpenChange, onCallC
   const smsMutation = useMutation({
     mutationFn: async ({ to, message }: { to: string; message: string }) => {
       const response = await apiRequest("POST", "/api/twilio/sms", { to, message });
-      return await response.json();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send SMS");
+      return data;
     },
     onSuccess: () => {
       setMessageText("");
