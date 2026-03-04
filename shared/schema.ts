@@ -105,6 +105,8 @@ export const clientFiles = pgTable("client_files", {
   lenderBContact: text("lender_b_contact"),
   lenderBPhone: text("lender_b_phone"),
   lenderBEmail: text("lender_b_email"),
+  lenderANotes: text("lender_a_notes"),
+  lenderBNotes: text("lender_b_notes"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -190,6 +192,8 @@ export const updateClientFileSchema = z.object({
   lenderBContact: z.string().optional(),
   lenderBPhone: z.string().optional(),
   lenderBEmail: z.string().optional(),
+  lenderANotes: z.string().optional(),
+  lenderBNotes: z.string().optional(),
 });
 
 export const closeFileSchema = z.object({

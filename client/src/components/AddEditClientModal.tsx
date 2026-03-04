@@ -109,6 +109,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [lenderBContact, setLenderBContact] = useState("");
   const [lenderBPhone, setLenderBPhone] = useState("");
   const [lenderBEmail, setLenderBEmail] = useState("");
+  const [lenderANotes, setLenderANotes] = useState("");
+  const [lenderBNotes, setLenderBNotes] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -269,8 +271,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
     mutationFn: async () => {
       if (!editingFile?.id) return;
       return await apiRequest("PATCH", `/api/files/${editingFile.id}`, {
-        lenderAName, lenderAContact, lenderAPhone, lenderAEmail,
-        lenderBName, lenderBContact, lenderBPhone, lenderBEmail,
+        lenderAName, lenderAContact, lenderAPhone, lenderAEmail, lenderANotes,
+        lenderBName, lenderBContact, lenderBPhone, lenderBEmail, lenderBNotes,
       });
     },
     onSuccess: () => {
@@ -432,9 +434,11 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setLenderBContact(editingFile.lenderBContact || "");
       setLenderBPhone(editingFile.lenderBPhone || "");
       setLenderBEmail(editingFile.lenderBEmail || "");
+      setLenderANotes(editingFile.lenderANotes || "");
+      setLenderBNotes(editingFile.lenderBNotes || "");
     } else {
-      setLenderAName(""); setLenderAContact(""); setLenderAPhone(""); setLenderAEmail("");
-      setLenderBName(""); setLenderBContact(""); setLenderBPhone(""); setLenderBEmail("");
+      setLenderAName(""); setLenderAContact(""); setLenderAPhone(""); setLenderAEmail(""); setLenderANotes("");
+      setLenderBName(""); setLenderBContact(""); setLenderBPhone(""); setLenderBEmail(""); setLenderBNotes("");
     }
   }, [editingFile]);
 
@@ -746,13 +750,13 @@ export const AddEditClientModal = memo(function AddEditClientModal({
             setIsTouchesOpen(!isTouchesOpen);
           }}
           className={cn(
-            "fixed top-8 w-[36rem] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-8 w-[36rem] max-h-[82vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
           data-testid="panel-lender-finder"
         >
-          <div className="flex flex-col p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col h-full p-4">
+            <div className="flex items-center justify-between mb-3 flex-shrink-0">
               <h3 className="text-sm font-semibold">Lender Finder</h3>
               {editingFile && (
                 <Button
@@ -773,7 +777,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
             {!editingFile ? (
               <p className="text-xs text-muted-foreground text-center py-4">Save the client first to use Lender Finder.</p>
             ) : (
-              <div className="space-y-4">
+              <ScrollArea className="flex-1">
+              <div className="space-y-4 pr-2">
                 {/* Lender A */}
                 <div className="border rounded-md p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender A</p>
@@ -818,6 +823,17 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         data-testid="input-lender-a-email"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
+                    <Textarea
+                      value={lenderANotes}
+                      onChange={(e) => setLenderANotes(e.target.value)}
+                      placeholder="Notes about this lender..."
+                      className="text-xs resize-none"
+                      rows={3}
+                      data-testid="input-lender-a-notes"
+                    />
                   </div>
                 </div>
 
@@ -866,8 +882,20 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
+                    <Textarea
+                      value={lenderBNotes}
+                      onChange={(e) => setLenderBNotes(e.target.value)}
+                      placeholder="Notes about this lender..."
+                      className="text-xs resize-none"
+                      rows={3}
+                      data-testid="input-lender-b-notes"
+                    />
+                  </div>
                 </div>
               </div>
+              </ScrollArea>
             )}
           </div>
         </aside>
