@@ -739,11 +739,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         </aside>
       )}
 
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogPortal>
-        <DialogOverlay className="pointer-events-none" />
-        
-        {/* Right Sliding Panel - Lender Finder */}
+      {/* Right Sliding Panel - Lender Finder (Outside DialogPortal, same as Meeting Notes) */}
+      {open && (
         <aside
           className={cn(
             "fixed top-8 w-[36rem] max-h-[82vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
@@ -759,10 +756,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                   size="sm"
                   variant="default"
                   disabled={saveLenderMutation.isPending}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    saveLenderMutation.mutate();
-                  }}
+                  onClick={() => saveLenderMutation.mutate()}
                   data-testid="button-save-lender"
                 >
                   {saveLenderMutation.isPending ? "Saving..." : "Save"}
@@ -774,137 +768,132 @@ export const AddEditClientModal = memo(function AddEditClientModal({
               <p className="text-xs text-muted-foreground text-center py-4">Save the client first to use Lender Finder.</p>
             ) : (
               <ScrollArea className="flex-1">
-              <div className="space-y-4 pr-2">
-                {/* Lender A */}
-                <div className="border rounded-md p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender A</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
-                      <Input
-                        value={lenderAName}
-                        onChange={(e) => setLenderAName(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="e.g. Wells Fargo"
-                        className="text-xs h-8"
-                        data-testid="input-lender-a-name"
-                      />
+                <div className="space-y-4 pr-2">
+                  {/* Lender A */}
+                  <div className="border rounded-md p-3 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender A</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
+                        <Input
+                          value={lenderAName}
+                          onChange={(e) => setLenderAName(e.target.value)}
+                          placeholder="e.g. Wells Fargo"
+                          className="text-xs h-8"
+                          data-testid="input-lender-a-name"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
+                        <Input
+                          value={lenderAContact}
+                          onChange={(e) => setLenderAContact(e.target.value)}
+                          placeholder="e.g. John Smith"
+                          className="text-xs h-8"
+                          data-testid="input-lender-a-contact"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+                        <Input
+                          value={lenderAPhone}
+                          onChange={(e) => setLenderAPhone(e.target.value)}
+                          placeholder="(555) 000-0000"
+                          className="text-xs h-8"
+                          data-testid="input-lender-a-phone"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                        <Input
+                          value={lenderAEmail}
+                          onChange={(e) => setLenderAEmail(e.target.value)}
+                          placeholder="email@lender.com"
+                          className="text-xs h-8"
+                          data-testid="input-lender-a-email"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
-                      <Input
-                        value={lenderAContact}
-                        onChange={(e) => setLenderAContact(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="e.g. John Smith"
-                        className="text-xs h-8"
-                        data-testid="input-lender-a-contact"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
-                      <Input
-                        value={lenderAPhone}
-                        onChange={(e) => setLenderAPhone(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="(555) 000-0000"
-                        className="text-xs h-8"
-                        data-testid="input-lender-a-phone"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Email</label>
-                      <Input
-                        value={lenderAEmail}
-                        onChange={(e) => setLenderAEmail(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="email@lender.com"
-                        className="text-xs h-8"
-                        data-testid="input-lender-a-email"
+                      <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
+                      <Textarea
+                        value={lenderANotes}
+                        onChange={(e) => setLenderANotes(e.target.value)}
+                        placeholder="Notes about this lender..."
+                        className="text-xs resize-none"
+                        rows={3}
+                        data-testid="input-lender-a-notes"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
-                    <Textarea
-                      value={lenderANotes}
-                      onChange={(e) => setLenderANotes(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      placeholder="Notes about this lender..."
-                      className="text-xs resize-none"
-                      rows={3}
-                      data-testid="input-lender-a-notes"
-                    />
-                  </div>
-                </div>
 
-                {/* Lender B */}
-                <div className="border rounded-md p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender B</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
-                      <Input
-                        value={lenderBName}
-                        onChange={(e) => setLenderBName(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="e.g. Chase Bank"
-                        className="text-xs h-8"
-                        data-testid="input-lender-b-name"
-                      />
+                  {/* Lender B */}
+                  <div className="border rounded-md p-3 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender B</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
+                        <Input
+                          value={lenderBName}
+                          onChange={(e) => setLenderBName(e.target.value)}
+                          placeholder="e.g. Chase Bank"
+                          className="text-xs h-8"
+                          data-testid="input-lender-b-name"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
+                        <Input
+                          value={lenderBContact}
+                          onChange={(e) => setLenderBContact(e.target.value)}
+                          placeholder="e.g. Jane Doe"
+                          className="text-xs h-8"
+                          data-testid="input-lender-b-contact"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+                        <Input
+                          value={lenderBPhone}
+                          onChange={(e) => setLenderBPhone(e.target.value)}
+                          placeholder="(555) 000-0000"
+                          className="text-xs h-8"
+                          data-testid="input-lender-b-phone"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                        <Input
+                          value={lenderBEmail}
+                          onChange={(e) => setLenderBEmail(e.target.value)}
+                          placeholder="email@lender.com"
+                          className="text-xs h-8"
+                          data-testid="input-lender-b-email"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
-                      <Input
-                        value={lenderBContact}
-                        onChange={(e) => setLenderBContact(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="e.g. Jane Doe"
-                        className="text-xs h-8"
-                        data-testid="input-lender-b-contact"
+                      <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
+                      <Textarea
+                        value={lenderBNotes}
+                        onChange={(e) => setLenderBNotes(e.target.value)}
+                        placeholder="Notes about this lender..."
+                        className="text-xs resize-none"
+                        rows={3}
+                        data-testid="input-lender-b-notes"
                       />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
-                      <Input
-                        value={lenderBPhone}
-                        onChange={(e) => setLenderBPhone(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="(555) 000-0000"
-                        className="text-xs h-8"
-                        data-testid="input-lender-b-phone"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Email</label>
-                      <Input
-                        value={lenderBEmail}
-                        onChange={(e) => setLenderBEmail(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="email@lender.com"
-                        className="text-xs h-8"
-                        data-testid="input-lender-b-email"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Description / Notes</label>
-                    <Textarea
-                      value={lenderBNotes}
-                      onChange={(e) => setLenderBNotes(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      placeholder="Notes about this lender..."
-                      className="text-xs resize-none"
-                      rows={3}
-                      data-testid="input-lender-b-notes"
-                    />
                   </div>
                 </div>
-              </div>
               </ScrollArea>
             )}
           </div>
         </aside>
+      )}
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="pointer-events-none" />
         
         {/* Main Modal Dialog Content (z-[52] - Above panels) */}
         <DialogPrimitive.Content
