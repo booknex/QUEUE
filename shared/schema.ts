@@ -97,6 +97,14 @@ export const clientFiles = pgTable("client_files", {
   closedAt: timestamp("closed_at"),
   loanType: text("loan_type"),
   interestRate: text("interest_rate"),
+  lenderAName: text("lender_a_name"),
+  lenderAContact: text("lender_a_contact"),
+  lenderAPhone: text("lender_a_phone"),
+  lenderAEmail: text("lender_a_email"),
+  lenderBName: text("lender_b_name"),
+  lenderBContact: text("lender_b_contact"),
+  lenderBPhone: text("lender_b_phone"),
+  lenderBEmail: text("lender_b_email"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -174,6 +182,14 @@ export const updateClientFileSchema = z.object({
   closedAt: z.date().optional(),
   loanType: z.string().optional(),
   interestRate: z.string().optional(),
+  lenderAName: z.string().optional(),
+  lenderAContact: z.string().optional(),
+  lenderAPhone: z.string().optional(),
+  lenderAEmail: z.string().optional(),
+  lenderBName: z.string().optional(),
+  lenderBContact: z.string().optional(),
+  lenderBPhone: z.string().optional(),
+  lenderBEmail: z.string().optional(),
 });
 
 export const closeFileSchema = z.object({

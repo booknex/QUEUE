@@ -337,6 +337,14 @@ export class DatabaseStorage implements IStorage {
         closedAt: clientFiles.closedAt,
         loanType: clientFiles.loanType,
         interestRate: clientFiles.interestRate,
+        lenderAName: clientFiles.lenderAName,
+        lenderAContact: clientFiles.lenderAContact,
+        lenderAPhone: clientFiles.lenderAPhone,
+        lenderAEmail: clientFiles.lenderAEmail,
+        lenderBName: clientFiles.lenderBName,
+        lenderBContact: clientFiles.lenderBContact,
+        lenderBPhone: clientFiles.lenderBPhone,
+        lenderBEmail: clientFiles.lenderBEmail,
         touchCount: sql<number>`CAST(COUNT(${workSessions.id}) AS INTEGER)`,
       })
       .from(clientFiles)

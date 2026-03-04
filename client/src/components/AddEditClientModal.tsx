@@ -101,6 +101,14 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [editSessionNotes, setEditSessionNotes] = useState("");
   const [editingMeetingNoteId, setEditingMeetingNoteId] = useState<number | null>(null);
   const [editMeetingNoteText, setEditMeetingNoteText] = useState("");
+  const [lenderAName, setLenderAName] = useState("");
+  const [lenderAContact, setLenderAContact] = useState("");
+  const [lenderAPhone, setLenderAPhone] = useState("");
+  const [lenderAEmail, setLenderAEmail] = useState("");
+  const [lenderBName, setLenderBName] = useState("");
+  const [lenderBContact, setLenderBContact] = useState("");
+  const [lenderBPhone, setLenderBPhone] = useState("");
+  const [lenderBEmail, setLenderBEmail] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -257,6 +265,23 @@ export const AddEditClientModal = memo(function AddEditClientModal({
     },
   });
 
+  const saveLenderMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingFile?.id) return;
+      return await apiRequest("PATCH", `/api/files/${editingFile.id}`, {
+        lenderAName, lenderAContact, lenderAPhone, lenderAEmail,
+        lenderBName, lenderBContact, lenderBPhone, lenderBEmail,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      toast({ title: "Lender info saved" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to save lender info.", variant: "destructive" });
+    },
+  });
+
   const handleToggleMeetingNote = (note: MeetingNote, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -396,6 +421,22 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       });
     }
   }, [editingFile, form, defaultStatus]);
+
+  useEffect(() => {
+    if (editingFile) {
+      setLenderAName(editingFile.lenderAName || "");
+      setLenderAContact(editingFile.lenderAContact || "");
+      setLenderAPhone(editingFile.lenderAPhone || "");
+      setLenderAEmail(editingFile.lenderAEmail || "");
+      setLenderBName(editingFile.lenderBName || "");
+      setLenderBContact(editingFile.lenderBContact || "");
+      setLenderBPhone(editingFile.lenderBPhone || "");
+      setLenderBEmail(editingFile.lenderBEmail || "");
+    } else {
+      setLenderAName(""); setLenderAContact(""); setLenderAPhone(""); setLenderAEmail("");
+      setLenderBName(""); setLenderBContact(""); setLenderBPhone(""); setLenderBEmail("");
+    }
+  }, [editingFile]);
 
   const handleContactSelect = (contact: Contact) => {
     setSelectedContactId(contact.id);
@@ -698,25 +739,136 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       <DialogPortal>
         <DialogOverlay className="pointer-events-none" />
         
-        {/* Right Sliding Panel - Coming Soon (inside DialogPortal for proper stacking context) */}
+        {/* Right Sliding Panel - Lender Finder */}
         <aside
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsTouchesOpen(!isTouchesOpen);
+          }}
           className={cn(
-            "fixed top-8 w-[36rem] h-[400px] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
+            "fixed top-8 w-[36rem] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
-          data-testid="panel-right"
+          data-testid="panel-lender-finder"
         >
-          <div className="h-full flex flex-col p-4">
-            <div className="flex items-center justify-end mb-4">
-              <h3 className="text-sm font-semibold">
-                Coming Soon
-              </h3>
+          <div className="flex flex-col p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold">Lender Finder</h3>
+              {editingFile && (
+                <Button
+                  size="sm"
+                  variant="default"
+                  disabled={saveLenderMutation.isPending}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    saveLenderMutation.mutate();
+                  }}
+                  data-testid="button-save-lender"
+                >
+                  {saveLenderMutation.isPending ? "Saving..." : "Save"}
+                </Button>
+              )}
             </div>
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground text-center">
-                Additional features coming soon.
-              </p>
-            </div>
+
+            {!editingFile ? (
+              <p className="text-xs text-muted-foreground text-center py-4">Save the client first to use Lender Finder.</p>
+            ) : (
+              <div className="space-y-4">
+                {/* Lender A */}
+                <div className="border rounded-md p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender A</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
+                      <Input
+                        value={lenderAName}
+                        onChange={(e) => setLenderAName(e.target.value)}
+                        placeholder="e.g. Wells Fargo"
+                        className="text-xs h-8"
+                        data-testid="input-lender-a-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
+                      <Input
+                        value={lenderAContact}
+                        onChange={(e) => setLenderAContact(e.target.value)}
+                        placeholder="e.g. John Smith"
+                        className="text-xs h-8"
+                        data-testid="input-lender-a-contact"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+                      <Input
+                        value={lenderAPhone}
+                        onChange={(e) => setLenderAPhone(e.target.value)}
+                        placeholder="(555) 000-0000"
+                        className="text-xs h-8"
+                        data-testid="input-lender-a-phone"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                      <Input
+                        value={lenderAEmail}
+                        onChange={(e) => setLenderAEmail(e.target.value)}
+                        placeholder="email@lender.com"
+                        className="text-xs h-8"
+                        data-testid="input-lender-a-email"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lender B */}
+                <div className="border rounded-md p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lender B</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Company / Lender Name</label>
+                      <Input
+                        value={lenderBName}
+                        onChange={(e) => setLenderBName(e.target.value)}
+                        placeholder="e.g. Chase Bank"
+                        className="text-xs h-8"
+                        data-testid="input-lender-b-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Contact Name</label>
+                      <Input
+                        value={lenderBContact}
+                        onChange={(e) => setLenderBContact(e.target.value)}
+                        placeholder="e.g. Jane Doe"
+                        className="text-xs h-8"
+                        data-testid="input-lender-b-contact"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+                      <Input
+                        value={lenderBPhone}
+                        onChange={(e) => setLenderBPhone(e.target.value)}
+                        placeholder="(555) 000-0000"
+                        className="text-xs h-8"
+                        data-testid="input-lender-b-phone"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+                      <Input
+                        value={lenderBEmail}
+                        onChange={(e) => setLenderBEmail(e.target.value)}
+                        placeholder="email@lender.com"
+                        className="text-xs h-8"
+                        data-testid="input-lender-b-email"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
         
