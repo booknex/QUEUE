@@ -745,12 +745,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         
         {/* Right Sliding Panel - Lender Finder */}
         <aside
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsTouchesOpen(!isTouchesOpen);
-          }}
           className={cn(
-            "fixed top-8 w-[36rem] max-h-[82vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden cursor-pointer pointer-events-auto",
+            "fixed top-8 w-[36rem] max-h-[82vh] bg-background border rounded-md shadow-xl transition-all duration-300 ease-in-out z-[51] overflow-hidden pointer-events-auto",
             isTouchesOpen ? "right-[calc(50%-58.25rem)]" : "right-[calc(50%-38rem)]"
           )}
           data-testid="panel-lender-finder"
