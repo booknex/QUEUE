@@ -788,6 +788,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderAName}
                         onChange={(e) => setLenderAName(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="e.g. Wells Fargo"
                         className="text-xs h-8"
                         data-testid="input-lender-a-name"
@@ -798,6 +799,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderAContact}
                         onChange={(e) => setLenderAContact(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="e.g. John Smith"
                         className="text-xs h-8"
                         data-testid="input-lender-a-contact"
@@ -808,6 +810,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderAPhone}
                         onChange={(e) => setLenderAPhone(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="(555) 000-0000"
                         className="text-xs h-8"
                         data-testid="input-lender-a-phone"
@@ -818,6 +821,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderAEmail}
                         onChange={(e) => setLenderAEmail(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="email@lender.com"
                         className="text-xs h-8"
                         data-testid="input-lender-a-email"
@@ -829,6 +833,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                     <Textarea
                       value={lenderANotes}
                       onChange={(e) => setLenderANotes(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
                       placeholder="Notes about this lender..."
                       className="text-xs resize-none"
                       rows={3}
@@ -846,6 +851,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderBName}
                         onChange={(e) => setLenderBName(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="e.g. Chase Bank"
                         className="text-xs h-8"
                         data-testid="input-lender-b-name"
@@ -856,6 +862,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderBContact}
                         onChange={(e) => setLenderBContact(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="e.g. Jane Doe"
                         className="text-xs h-8"
                         data-testid="input-lender-b-contact"
@@ -866,6 +873,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderBPhone}
                         onChange={(e) => setLenderBPhone(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="(555) 000-0000"
                         className="text-xs h-8"
                         data-testid="input-lender-b-phone"
@@ -876,6 +884,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Input
                         value={lenderBEmail}
                         onChange={(e) => setLenderBEmail(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         placeholder="email@lender.com"
                         className="text-xs h-8"
                         data-testid="input-lender-b-email"
@@ -887,6 +896,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                     <Textarea
                       value={lenderBNotes}
                       onChange={(e) => setLenderBNotes(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
                       placeholder="Notes about this lender..."
                       className="text-xs resize-none"
                       rows={3}
