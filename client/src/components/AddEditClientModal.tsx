@@ -111,6 +111,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [lenderBEmail, setLenderBEmail] = useState("");
   const [lenderANotes, setLenderANotes] = useState("");
   const [lenderBNotes, setLenderBNotes] = useState("");
+  const [isLenderEditing, setIsLenderEditing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -477,6 +478,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setSelectedContactId(null);
       setIsNotesOpen(false);
       setIsTouchesOpen(false);
+      setIsLenderEditing(false);
     }
     onOpenChange(newOpen);
   };
@@ -752,15 +754,30 @@ export const AddEditClientModal = memo(function AddEditClientModal({
             <div className="flex items-center justify-between mb-3 flex-shrink-0">
               <h3 className="text-sm font-semibold">Lender Finder</h3>
               {editingFile && (
-                <Button
-                  size="sm"
-                  variant="default"
-                  disabled={saveLenderMutation.isPending}
-                  onClick={() => saveLenderMutation.mutate()}
-                  data-testid="button-save-lender"
-                >
-                  {saveLenderMutation.isPending ? "Saving..." : "Save"}
-                </Button>
+                <div className="flex items-center gap-2">
+                  {isLenderEditing && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      disabled={saveLenderMutation.isPending}
+                      onClick={() => {
+                        saveLenderMutation.mutate();
+                        setIsLenderEditing(false);
+                      }}
+                      data-testid="button-save-lender"
+                    >
+                      {saveLenderMutation.isPending ? "Saving..." : "Save"}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant={isLenderEditing ? "outline" : "secondary"}
+                    onClick={() => setIsLenderEditing(!isLenderEditing)}
+                    data-testid="button-toggle-lender-edit"
+                  >
+                    {isLenderEditing ? "Done" : "Edit"}
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -778,8 +795,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderAName}
                           onChange={(e) => setLenderAName(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="e.g. Wells Fargo"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-a-name"
                         />
                       </div>
@@ -788,8 +806,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderAContact}
                           onChange={(e) => setLenderAContact(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="e.g. John Smith"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-a-contact"
                         />
                       </div>
@@ -798,8 +817,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderAPhone}
                           onChange={(e) => setLenderAPhone(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="(555) 000-0000"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-a-phone"
                         />
                       </div>
@@ -808,8 +828,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderAEmail}
                           onChange={(e) => setLenderAEmail(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="email@lender.com"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-a-email"
                         />
                       </div>
@@ -819,8 +840,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Textarea
                         value={lenderANotes}
                         onChange={(e) => setLenderANotes(e.target.value)}
+                        readOnly={!isLenderEditing}
                         placeholder="Notes about this lender..."
-                        className="text-xs resize-none"
+                        className={cn("text-xs resize-none", !isLenderEditing && "bg-muted/50 cursor-default")}
                         rows={3}
                         data-testid="input-lender-a-notes"
                       />
@@ -836,8 +858,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderBName}
                           onChange={(e) => setLenderBName(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="e.g. Chase Bank"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-b-name"
                         />
                       </div>
@@ -846,8 +869,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderBContact}
                           onChange={(e) => setLenderBContact(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="e.g. Jane Doe"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-b-contact"
                         />
                       </div>
@@ -856,8 +880,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderBPhone}
                           onChange={(e) => setLenderBPhone(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="(555) 000-0000"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-b-phone"
                         />
                       </div>
@@ -866,8 +891,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         <Input
                           value={lenderBEmail}
                           onChange={(e) => setLenderBEmail(e.target.value)}
+                          readOnly={!isLenderEditing}
                           placeholder="email@lender.com"
-                          className="text-xs h-8"
+                          className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")}
                           data-testid="input-lender-b-email"
                         />
                       </div>
@@ -877,8 +903,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       <Textarea
                         value={lenderBNotes}
                         onChange={(e) => setLenderBNotes(e.target.value)}
+                        readOnly={!isLenderEditing}
                         placeholder="Notes about this lender..."
-                        className="text-xs resize-none"
+                        className={cn("text-xs resize-none", !isLenderEditing && "bg-muted/50 cursor-default")}
                         rows={3}
                         data-testid="input-lender-b-notes"
                       />
@@ -891,7 +918,7 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         </aside>
       )}
 
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
       <DialogPortal>
         <DialogOverlay className="pointer-events-none" />
         
