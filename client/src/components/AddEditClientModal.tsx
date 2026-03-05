@@ -66,6 +66,10 @@ const formSchema = z.object({
   pipelineId: z.number().nullable().optional(),
   loanType: z.string().optional(),
   interestRate: z.string().optional(),
+  occupancy: z.string().optional(),
+  loanPurpose: z.string().optional(),
+  propertyValue: z.string().optional(),
+  purchasePrice: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -396,6 +400,10 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       pipelineId: null,
       loanType: "",
       interestRate: "",
+      occupancy: "",
+      loanPurpose: "",
+      propertyValue: "",
+      purchasePrice: "",
     },
   });
 
@@ -410,6 +418,10 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         pipelineId: editingFile.pipelineId || null,
         loanType: editingFile.loanType || "",
         interestRate: editingFile.interestRate || "",
+        occupancy: editingFile.occupancy || "",
+        loanPurpose: editingFile.loanPurpose || "",
+        propertyValue: editingFile.propertyValue || "",
+        purchasePrice: editingFile.purchasePrice || "",
       });
     } else {
       form.reset({
@@ -421,6 +433,10 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         pipelineId: null,
         loanType: "",
         interestRate: "",
+        occupancy: "",
+        loanPurpose: "",
+        propertyValue: "",
+        purchasePrice: "",
       });
     }
   }, [editingFile, form, defaultStatus]);
@@ -1127,6 +1143,108 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         />
 
                                               </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Loan Details</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                          control={form.control}
+                          name="occupancy"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Occupancy</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-sm" data-testid="select-occupancy">
+                                    <SelectValue placeholder="Select occupancy" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="primary">Primary</SelectItem>
+                                  <SelectItem value="investment">Investment</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="loanPurpose"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Loan Purpose</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-sm" data-testid="select-loan-purpose">
+                                    <SelectValue placeholder="Select purpose" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="purchase">Purchase</SelectItem>
+                                  <SelectItem value="refinance-cashout">Refinance - Cash Out</SelectItem>
+                                  <SelectItem value="heloc">HELOC</SelectItem>
+                                  <SelectItem value="refinance-rate-term">Refinance - Rate &amp; Term</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      {form.watch("loanPurpose") === "purchase" && (
+                        <div className="mt-2">
+                          <FormField
+                            control={form.control}
+                            name="purchasePrice"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Purchase Price</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g. $450,000"
+                                    className="h-8 text-sm"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    name={field.name}
+                                    ref={field.ref}
+                                    data-testid="input-purchase-price"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                      {form.watch("loanPurpose") === "refinance-cashout" && (
+                        <div className="mt-2">
+                          <FormField
+                            control={form.control}
+                            name="propertyValue"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Property Value</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g. $550,000"
+                                    className="h-8 text-sm"
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    name={field.name}
+                                    ref={field.ref}
+                                    data-testid="input-property-value"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div>
