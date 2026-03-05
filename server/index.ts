@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupWebSocket } from "./websocket";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
@@ -10,6 +12,10 @@ declare module 'http' {
     rawBody: unknown
   }
 }
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {

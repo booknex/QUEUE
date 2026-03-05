@@ -29,7 +29,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { X, FileText, Upload } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -136,6 +136,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [lenderBCompensationType, setLenderBCompensationType] = useState("");
   const [lenderBFeesForLoan, setLenderBFeesForLoan] = useState("");
   const [isLenderEditing, setIsLenderEditing] = useState(false);
+  const [lenderAPdfDragOver, setLenderAPdfDragOver] = useState(false);
+  const [lenderBPdfDragOver, setLenderBPdfDragOver] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState<"A" | "B" | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: filters = [], isLoading: isLoadingFilters } = useQuery<StatusFilter[]>({
@@ -316,6 +319,54 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       toast({ title: "Error", description: "Failed to save lender info.", variant: "destructive" });
     },
   });
+
+  const uploadPdfFile = async (file: File, lender: "A" | "B") => {
+    if (!editingFile?.id) return;
+    setUploadingPdf(lender);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", file);
+      const res = await fetch(`/api/files/${editingFile.id}/lender-pdf?lender=${lender}`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      toast({ title: `Lender ${lender} PDF uploaded` });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setUploadingPdf(null);
+    }
+  };
+
+  const removePdfFile = async (lender: "A" | "B") => {
+    if (!editingFile?.id) return;
+    try {
+      const res = await fetch(`/api/files/${editingFile.id}/lender-pdf?lender=${lender}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Remove failed");
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      toast({ title: `Lender ${lender} PDF removed` });
+    } catch {
+      toast({ title: "Remove failed", variant: "destructive" });
+    }
+  };
+
+  const handlePdfDrop = (e: React.DragEvent, lender: "A" | "B") => {
+    e.preventDefault();
+    if (lender === "A") setLenderAPdfDragOver(false);
+    else setLenderBPdfDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (!file || file.type !== "application/pdf") {
+      toast({ title: "Please drop a PDF file", variant: "destructive" });
+      return;
+    }
+    uploadPdfFile(file, lender);
+  };
 
   const handleToggleMeetingNote = (note: MeetingNote, e: React.MouseEvent) => {
     e.preventDefault();
@@ -950,6 +1001,28 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         </Select>
                       </div>
                     </div>
+                    {editingFile && (
+                      editingFile.lenderAPdfPath ? (
+                        <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
+                          <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          <a href={`/uploads/${editingFile.lenderAPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-a-pdf">{editingFile.lenderAPdfName}</a>
+                          <button type="button" onClick={() => removePdfFile("A")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-a-pdf"><X className="w-3 h-3" /></button>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => { e.preventDefault(); setLenderAPdfDragOver(true); }}
+                          onDragLeave={() => setLenderAPdfDragOver(false)}
+                          onDrop={(e) => handlePdfDrop(e, "A")}
+                          onClick={() => (document.getElementById("pdf-input-a") as HTMLInputElement)?.click()}
+                          className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderAPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
+                          data-testid="dropzone-lender-a-pdf"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span>{uploadingPdf === "A" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
+                          <input id="pdf-input-a" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "A"); e.target.value = ""; }} />
+                        </div>
+                      )
+                    )}
                   </div>
 
                   {/* Lender B */}
@@ -1042,6 +1115,28 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         </Select>
                       </div>
                     </div>
+                    {editingFile && (
+                      editingFile.lenderBPdfPath ? (
+                        <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
+                          <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+                          <a href={`/uploads/${editingFile.lenderBPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-b-pdf">{editingFile.lenderBPdfName}</a>
+                          <button type="button" onClick={() => removePdfFile("B")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-b-pdf"><X className="w-3 h-3" /></button>
+                        </div>
+                      ) : (
+                        <div
+                          onDragOver={(e) => { e.preventDefault(); setLenderBPdfDragOver(true); }}
+                          onDragLeave={() => setLenderBPdfDragOver(false)}
+                          onDrop={(e) => handlePdfDrop(e, "B")}
+                          onClick={() => (document.getElementById("pdf-input-b") as HTMLInputElement)?.click()}
+                          className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderBPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
+                          data-testid="dropzone-lender-b-pdf"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span>{uploadingPdf === "B" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
+                          <input id="pdf-input-b" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "B"); e.target.value = ""; }} />
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               </ScrollArea>

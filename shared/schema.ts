@@ -131,6 +131,10 @@ export const clientFiles = pgTable("client_files", {
   lenderBPrepaymentPenalty: text("lender_b_prepayment_penalty"),
   lenderBCompensationType: text("lender_b_compensation_type"),
   lenderBFeesForLoan: text("lender_b_fees_for_loan"),
+  lenderAPdfName: text("lender_a_pdf_name"),
+  lenderAPdfPath: text("lender_a_pdf_path"),
+  lenderBPdfName: text("lender_b_pdf_name"),
+  lenderBPdfPath: text("lender_b_pdf_path"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -242,6 +246,10 @@ export const updateClientFileSchema = z.object({
   lenderBPrepaymentPenalty: z.string().optional(),
   lenderBCompensationType: z.string().optional(),
   lenderBFeesForLoan: z.string().optional(),
+  lenderAPdfName: z.string().optional().nullable(),
+  lenderAPdfPath: z.string().optional().nullable(),
+  lenderBPdfName: z.string().optional().nullable(),
+  lenderBPdfPath: z.string().optional().nullable(),
 });
 
 export const closeFileSchema = z.object({

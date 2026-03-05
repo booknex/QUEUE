@@ -7,6 +7,31 @@ import type { ClientFile, WorkSession, MeetingNote, Pipeline, KanbanColumn, Cont
 import { broadcast } from "./websocket";
 import twilio from "twilio";
 import { setupAuth, hashPassword } from "./auth";
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const pdfStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${path.extname(file.originalname)}`);
+  },
+});
+const uploadPdf = multer({
+  storage: pdfStorage,
+  limits: { fileSize: 20 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === "application/pdf") cb(null, true);
+    else cb(new Error("Only PDF files are allowed"));
+  },
+});
 
 // Middleware to check if user is authenticated
 const isAuthenticated: RequestHandler = (req, res, next) => {
@@ -861,6 +886,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid request data", details: error.errors });
       }
       res.status(500).json({ error: "Failed to update file" });
+    }
+  });
+
+  // PDF upload for Lender A or Lender B
+  app.post("/api/files/:id/lender-pdf", isAuthenticated, uploadPdf.single("pdf"), async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const lender = req.query.lender as string;
+      if (isNaN(id) || (lender !== "A" && lender !== "B")) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+      const file = await storage.getFile(id);
+      if (!file) return res.status(404).json({ error: "File not found" });
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) return res.status(403).json({ error: "Access denied" });
+      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+      // Delete old PDF if it exists
+      const oldPath = lender === "A" ? file.lenderAPdfPath : file.lenderBPdfPath;
+      if (oldPath) {
+        const fullOldPath = path.join(uploadsDir, oldPath);
+        if (fs.existsSync(fullOldPath)) fs.unlinkSync(fullOldPath);
+      }
+
+      const updates = lender === "A"
+        ? { lenderAPdfName: req.file.originalname, lenderAPdfPath: req.file.filename }
+        : { lenderBPdfName: req.file.originalname, lenderBPdfPath: req.file.filename };
+
+      const updated = await storage.updateFile(id, updates);
+      broadcast({ type: "file:updated", companyId: file.companyId });
+      res.json(serializeFile(updated!));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to upload PDF" });
+    }
+  });
+
+  // Remove PDF for Lender A or Lender B
+  app.delete("/api/files/:id/lender-pdf", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const lender = req.query.lender as string;
+      if (isNaN(id) || (lender !== "A" && lender !== "B")) {
+        return res.status(400).json({ error: "Invalid parameters" });
+      }
+      const file = await storage.getFile(id);
+      if (!file) return res.status(404).json({ error: "File not found" });
+      const hasAccess = await checkCompanyAccess(req.user.id, file.companyId);
+      if (!hasAccess) return res.status(403).json({ error: "Access denied" });
+
+      const pdfPath = lender === "A" ? file.lenderAPdfPath : file.lenderBPdfPath;
+      if (pdfPath) {
+        const fullPath = path.join(uploadsDir, pdfPath);
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      }
+
+      const updates = lender === "A"
+        ? { lenderAPdfName: null, lenderAPdfPath: null }
+        : { lenderBPdfName: null, lenderBPdfPath: null };
+
+      const updated = await storage.updateFile(id, updates);
+      broadcast({ type: "file:updated", companyId: file.companyId });
+      res.json(serializeFile(updated!));
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove PDF" });
     }
   });
 
