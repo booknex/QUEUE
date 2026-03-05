@@ -136,6 +136,10 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [lenderBCompensationType, setLenderBCompensationType] = useState("");
   const [lenderBFeesForLoan, setLenderBFeesForLoan] = useState("");
   const [isLenderEditing, setIsLenderEditing] = useState(false);
+  const [lenderAPdfPath, setLenderAPdfPath] = useState<string | null>(null);
+  const [lenderAPdfName, setLenderAPdfName] = useState<string | null>(null);
+  const [lenderBPdfPath, setLenderBPdfPath] = useState<string | null>(null);
+  const [lenderBPdfName, setLenderBPdfName] = useState<string | null>(null);
   const [lenderAPdfDragOver, setLenderAPdfDragOver] = useState(false);
   const [lenderBPdfDragOver, setLenderBPdfDragOver] = useState(false);
   const [uploadingPdf, setUploadingPdf] = useState<"A" | "B" | null>(null);
@@ -332,6 +336,14 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         credentials: "include",
       });
       if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      if (lender === "A") {
+        setLenderAPdfPath(data.lenderAPdfPath || null);
+        setLenderAPdfName(data.lenderAPdfName || null);
+      } else {
+        setLenderBPdfPath(data.lenderBPdfPath || null);
+        setLenderBPdfName(data.lenderBPdfName || null);
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({ title: `Lender ${lender} PDF uploaded` });
     } catch {
@@ -349,6 +361,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         credentials: "include",
       });
       if (!res.ok) throw new Error("Remove failed");
+      if (lender === "A") { setLenderAPdfPath(null); setLenderAPdfName(null); }
+      else { setLenderBPdfPath(null); setLenderBPdfName(null); }
       queryClient.invalidateQueries({ queryKey: ["/api/files"] });
       toast({ title: `Lender ${lender} PDF removed` });
     } catch {
@@ -556,6 +570,10 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setLenderBPrepaymentPenalty(editingFile.lenderBPrepaymentPenalty || "");
       setLenderBCompensationType(editingFile.lenderBCompensationType || "");
       setLenderBFeesForLoan(editingFile.lenderBFeesForLoan || "");
+      setLenderAPdfPath(editingFile.lenderAPdfPath || null);
+      setLenderAPdfName(editingFile.lenderAPdfName || null);
+      setLenderBPdfPath(editingFile.lenderBPdfPath || null);
+      setLenderBPdfName(editingFile.lenderBPdfName || null);
     } else {
       setLenderAName(""); setLenderAContact(""); setLenderAPhone(""); setLenderAEmail(""); setLenderANotes("");
       setLenderATermOffered(""); setLenderAMinCreditScore(""); setLenderAMinLoanAmount("");
@@ -565,6 +583,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setLenderBTermOffered(""); setLenderBMinCreditScore(""); setLenderBMinLoanAmount("");
       setLenderBHighestLtv(""); setLenderBHighestDti(""); setLenderBMaxCashout("");
       setLenderBPrepaymentPenalty(""); setLenderBCompensationType(""); setLenderBFeesForLoan("");
+      setLenderAPdfPath(null); setLenderAPdfName(null);
+      setLenderBPdfPath(null); setLenderBPdfName(null);
     }
   }, [editingFile]);
 
@@ -1001,27 +1021,27 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         </Select>
                       </div>
                     </div>
-                    {editingFile && (
-                      editingFile.lenderAPdfPath ? (
-                        <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
-                          <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
-                          <a href={`/uploads/${editingFile.lenderAPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-a-pdf">{editingFile.lenderAPdfName}</a>
-                          <button type="button" onClick={() => removePdfFile("A")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-a-pdf"><X className="w-3 h-3" /></button>
-                        </div>
-                      ) : (
-                        <div
-                          onDragOver={(e) => { e.preventDefault(); setLenderAPdfDragOver(true); }}
-                          onDragLeave={() => setLenderAPdfDragOver(false)}
-                          onDrop={(e) => handlePdfDrop(e, "A")}
-                          onClick={() => (document.getElementById("pdf-input-a") as HTMLInputElement)?.click()}
-                          className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderAPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
-                          data-testid="dropzone-lender-a-pdf"
-                        >
-                          <Upload className="w-4 h-4" />
-                          <span>{uploadingPdf === "A" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
-                          <input id="pdf-input-a" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "A"); e.target.value = ""; }} />
-                        </div>
-                      )
+                    {lenderAPdfPath ? (
+                      <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
+                        <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+                        <a href={`/uploads/${lenderAPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-a-pdf">{lenderAPdfName}</a>
+                        <button type="button" onClick={() => removePdfFile("A")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-a-pdf"><X className="w-3 h-3" /></button>
+                      </div>
+                    ) : editingFile?.id ? (
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setLenderAPdfDragOver(true); }}
+                        onDragLeave={() => setLenderAPdfDragOver(false)}
+                        onDrop={(e) => handlePdfDrop(e, "A")}
+                        onClick={() => (document.getElementById("pdf-input-a") as HTMLInputElement)?.click()}
+                        className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderAPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
+                        data-testid="dropzone-lender-a-pdf"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>{uploadingPdf === "A" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
+                        <input id="pdf-input-a" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "A"); e.target.value = ""; }} />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center py-2 border-2 border-dashed border-border rounded-md">Save the client first to upload a PDF</p>
                     )}
                   </div>
 
@@ -1115,27 +1135,27 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         </Select>
                       </div>
                     </div>
-                    {editingFile && (
-                      editingFile.lenderBPdfPath ? (
-                        <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
-                          <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
-                          <a href={`/uploads/${editingFile.lenderBPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-b-pdf">{editingFile.lenderBPdfName}</a>
-                          <button type="button" onClick={() => removePdfFile("B")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-b-pdf"><X className="w-3 h-3" /></button>
-                        </div>
-                      ) : (
-                        <div
-                          onDragOver={(e) => { e.preventDefault(); setLenderBPdfDragOver(true); }}
-                          onDragLeave={() => setLenderBPdfDragOver(false)}
-                          onDrop={(e) => handlePdfDrop(e, "B")}
-                          onClick={() => (document.getElementById("pdf-input-b") as HTMLInputElement)?.click()}
-                          className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderBPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
-                          data-testid="dropzone-lender-b-pdf"
-                        >
-                          <Upload className="w-4 h-4" />
-                          <span>{uploadingPdf === "B" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
-                          <input id="pdf-input-b" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "B"); e.target.value = ""; }} />
-                        </div>
-                      )
+                    {lenderBPdfPath ? (
+                      <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-xs">
+                        <FileText className="w-4 h-4 shrink-0 text-muted-foreground" />
+                        <a href={`/uploads/${lenderBPdfPath}`} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-primary hover:underline" data-testid="link-lender-b-pdf">{lenderBPdfName}</a>
+                        <button type="button" onClick={() => removePdfFile("B")} className="shrink-0 text-muted-foreground hover:text-destructive" data-testid="button-remove-lender-b-pdf"><X className="w-3 h-3" /></button>
+                      </div>
+                    ) : editingFile?.id ? (
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setLenderBPdfDragOver(true); }}
+                        onDragLeave={() => setLenderBPdfDragOver(false)}
+                        onDrop={(e) => handlePdfDrop(e, "B")}
+                        onClick={() => (document.getElementById("pdf-input-b") as HTMLInputElement)?.click()}
+                        className={cn("border-2 border-dashed rounded-md p-3 flex flex-col items-center gap-1 text-xs text-muted-foreground cursor-pointer transition-colors", lenderBPdfDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50")}
+                        data-testid="dropzone-lender-b-pdf"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>{uploadingPdf === "B" ? "Uploading..." : "Drop PDF here or click to upload"}</span>
+                        <input id="pdf-input-b" type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdfFile(f, "B"); e.target.value = ""; }} />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center py-2 border-2 border-dashed border-border rounded-md">Save the client first to upload a PDF</p>
                     )}
                   </div>
                 </div>
