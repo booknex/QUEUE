@@ -72,24 +72,6 @@ const formSchema = z.object({
   purchasePrice: z.string().optional(),
   ltvPayoffAmount: z.string().optional(),
   fileClosing: z.string().optional(),
-  termOffered: z.string().optional(),
-  minCreditScore: z.string().optional(),
-  minLoanAmount: z.string().optional(),
-  highestLtv: z.string().optional(),
-  highestDti: z.string().optional(),
-  maxCashout: z.string().optional(),
-  prepaymentPenalty: z.string().optional(),
-  compensationType: z.string().optional(),
-  feesForLoan: z.string().optional(),
-  lenderBTermOffered: z.string().optional(),
-  lenderBMinCreditScore: z.string().optional(),
-  lenderBMinLoanAmount: z.string().optional(),
-  lenderBHighestLtv: z.string().optional(),
-  lenderBHighestDti: z.string().optional(),
-  lenderBMaxCashout: z.string().optional(),
-  lenderBPrepaymentPenalty: z.string().optional(),
-  lenderBCompensationType: z.string().optional(),
-  lenderBFeesForLoan: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -126,16 +108,33 @@ export const AddEditClientModal = memo(function AddEditClientModal({
   const [editingMeetingNoteId, setEditingMeetingNoteId] = useState<number | null>(null);
   const [editMeetingNoteText, setEditMeetingNoteText] = useState("");
   const [lenderAName, setLenderAName] = useState("");
-  const [activeLenderTab, setActiveLenderTab] = useState<"lenderA" | "lenderB">("lenderA");
   const [lenderAContact, setLenderAContact] = useState("");
   const [lenderAPhone, setLenderAPhone] = useState("");
   const [lenderAEmail, setLenderAEmail] = useState("");
+  const [lenderANotes, setLenderANotes] = useState("");
+  const [lenderATermOffered, setLenderATermOffered] = useState("");
+  const [lenderAMinCreditScore, setLenderAMinCreditScore] = useState("");
+  const [lenderAMinLoanAmount, setLenderAMinLoanAmount] = useState("");
+  const [lenderAHighestLtv, setLenderAHighestLtv] = useState("");
+  const [lenderAHighestDti, setLenderAHighestDti] = useState("");
+  const [lenderAMaxCashout, setLenderAMaxCashout] = useState("");
+  const [lenderAPrepaymentPenalty, setLenderAPrepaymentPenalty] = useState("");
+  const [lenderACompensationType, setLenderACompensationType] = useState("");
+  const [lenderAFeesForLoan, setLenderAFeesForLoan] = useState("");
   const [lenderBName, setLenderBName] = useState("");
   const [lenderBContact, setLenderBContact] = useState("");
   const [lenderBPhone, setLenderBPhone] = useState("");
   const [lenderBEmail, setLenderBEmail] = useState("");
-  const [lenderANotes, setLenderANotes] = useState("");
   const [lenderBNotes, setLenderBNotes] = useState("");
+  const [lenderBTermOffered, setLenderBTermOffered] = useState("");
+  const [lenderBMinCreditScore, setLenderBMinCreditScore] = useState("");
+  const [lenderBMinLoanAmount, setLenderBMinLoanAmount] = useState("");
+  const [lenderBHighestLtv, setLenderBHighestLtv] = useState("");
+  const [lenderBHighestDti, setLenderBHighestDti] = useState("");
+  const [lenderBMaxCashout, setLenderBMaxCashout] = useState("");
+  const [lenderBPrepaymentPenalty, setLenderBPrepaymentPenalty] = useState("");
+  const [lenderBCompensationType, setLenderBCompensationType] = useState("");
+  const [lenderBFeesForLoan, setLenderBFeesForLoan] = useState("");
   const [isLenderEditing, setIsLenderEditing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -298,7 +297,15 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       if (!editingFile?.id) return;
       return await apiRequest("PATCH", `/api/files/${editingFile.id}`, {
         lenderAName, lenderAContact, lenderAPhone, lenderAEmail, lenderANotes,
+        termOffered: lenderATermOffered, minCreditScore: lenderAMinCreditScore,
+        minLoanAmount: lenderAMinLoanAmount, highestLtv: lenderAHighestLtv,
+        highestDti: lenderAHighestDti, maxCashout: lenderAMaxCashout,
+        prepaymentPenalty: lenderAPrepaymentPenalty, compensationType: lenderACompensationType,
+        feesForLoan: lenderAFeesForLoan,
         lenderBName, lenderBContact, lenderBPhone, lenderBEmail, lenderBNotes,
+        lenderBTermOffered, lenderBMinCreditScore, lenderBMinLoanAmount,
+        lenderBHighestLtv, lenderBHighestDti, lenderBMaxCashout,
+        lenderBPrepaymentPenalty, lenderBCompensationType, lenderBFeesForLoan,
       });
     },
     onSuccess: () => {
@@ -427,24 +434,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       purchasePrice: "",
       ltvPayoffAmount: "",
       fileClosing: "",
-      termOffered: "",
-      minCreditScore: "",
-      minLoanAmount: "",
-      highestLtv: "",
-      highestDti: "",
-      maxCashout: "",
-      prepaymentPenalty: "",
-      compensationType: "",
-      feesForLoan: "",
-      lenderBTermOffered: "",
-      lenderBMinCreditScore: "",
-      lenderBMinLoanAmount: "",
-      lenderBHighestLtv: "",
-      lenderBHighestDti: "",
-      lenderBMaxCashout: "",
-      lenderBPrepaymentPenalty: "",
-      lenderBCompensationType: "",
-      lenderBFeesForLoan: "",
     },
   });
 
@@ -465,24 +454,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         purchasePrice: editingFile.purchasePrice || "",
         ltvPayoffAmount: editingFile.ltvPayoffAmount || "",
         fileClosing: editingFile.fileClosing || "",
-        termOffered: editingFile.termOffered || "",
-        minCreditScore: editingFile.minCreditScore || "",
-        minLoanAmount: editingFile.minLoanAmount || "",
-        highestLtv: editingFile.highestLtv || "",
-        highestDti: editingFile.highestDti || "",
-        maxCashout: editingFile.maxCashout || "",
-        prepaymentPenalty: editingFile.prepaymentPenalty || "",
-        compensationType: editingFile.compensationType || "",
-        feesForLoan: editingFile.feesForLoan || "",
-        lenderBTermOffered: editingFile.lenderBTermOffered || "",
-        lenderBMinCreditScore: editingFile.lenderBMinCreditScore || "",
-        lenderBMinLoanAmount: editingFile.lenderBMinLoanAmount || "",
-        lenderBHighestLtv: editingFile.lenderBHighestLtv || "",
-        lenderBHighestDti: editingFile.lenderBHighestDti || "",
-        lenderBMaxCashout: editingFile.lenderBMaxCashout || "",
-        lenderBPrepaymentPenalty: editingFile.lenderBPrepaymentPenalty || "",
-        lenderBCompensationType: editingFile.lenderBCompensationType || "",
-        lenderBFeesForLoan: editingFile.lenderBFeesForLoan || "",
       });
     } else {
       form.reset({
@@ -500,24 +471,6 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         purchasePrice: "",
         ltvPayoffAmount: "",
         fileClosing: "",
-        termOffered: "",
-        minCreditScore: "",
-        minLoanAmount: "",
-        highestLtv: "",
-        highestDti: "",
-        maxCashout: "",
-        prepaymentPenalty: "",
-        compensationType: "",
-        feesForLoan: "",
-        lenderBTermOffered: "",
-        lenderBMinCreditScore: "",
-        lenderBMinLoanAmount: "",
-        lenderBHighestLtv: "",
-        lenderBHighestDti: "",
-        lenderBMaxCashout: "",
-        lenderBPrepaymentPenalty: "",
-        lenderBCompensationType: "",
-        lenderBFeesForLoan: "",
       });
     }
   }, [editingFile, form, defaultStatus]);
@@ -528,15 +481,39 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       setLenderAContact(editingFile.lenderAContact || "");
       setLenderAPhone(editingFile.lenderAPhone || "");
       setLenderAEmail(editingFile.lenderAEmail || "");
+      setLenderANotes(editingFile.lenderANotes || "");
+      setLenderATermOffered(editingFile.termOffered || "");
+      setLenderAMinCreditScore(editingFile.minCreditScore || "");
+      setLenderAMinLoanAmount(editingFile.minLoanAmount || "");
+      setLenderAHighestLtv(editingFile.highestLtv || "");
+      setLenderAHighestDti(editingFile.highestDti || "");
+      setLenderAMaxCashout(editingFile.maxCashout || "");
+      setLenderAPrepaymentPenalty(editingFile.prepaymentPenalty || "");
+      setLenderACompensationType(editingFile.compensationType || "");
+      setLenderAFeesForLoan(editingFile.feesForLoan || "");
       setLenderBName(editingFile.lenderBName || "");
       setLenderBContact(editingFile.lenderBContact || "");
       setLenderBPhone(editingFile.lenderBPhone || "");
       setLenderBEmail(editingFile.lenderBEmail || "");
-      setLenderANotes(editingFile.lenderANotes || "");
       setLenderBNotes(editingFile.lenderBNotes || "");
+      setLenderBTermOffered(editingFile.lenderBTermOffered || "");
+      setLenderBMinCreditScore(editingFile.lenderBMinCreditScore || "");
+      setLenderBMinLoanAmount(editingFile.lenderBMinLoanAmount || "");
+      setLenderBHighestLtv(editingFile.lenderBHighestLtv || "");
+      setLenderBHighestDti(editingFile.lenderBHighestDti || "");
+      setLenderBMaxCashout(editingFile.lenderBMaxCashout || "");
+      setLenderBPrepaymentPenalty(editingFile.lenderBPrepaymentPenalty || "");
+      setLenderBCompensationType(editingFile.lenderBCompensationType || "");
+      setLenderBFeesForLoan(editingFile.lenderBFeesForLoan || "");
     } else {
       setLenderAName(""); setLenderAContact(""); setLenderAPhone(""); setLenderAEmail(""); setLenderANotes("");
+      setLenderATermOffered(""); setLenderAMinCreditScore(""); setLenderAMinLoanAmount("");
+      setLenderAHighestLtv(""); setLenderAHighestDti(""); setLenderAMaxCashout("");
+      setLenderAPrepaymentPenalty(""); setLenderACompensationType(""); setLenderAFeesForLoan("");
       setLenderBName(""); setLenderBContact(""); setLenderBPhone(""); setLenderBEmail(""); setLenderBNotes("");
+      setLenderBTermOffered(""); setLenderBMinCreditScore(""); setLenderBMinLoanAmount("");
+      setLenderBHighestLtv(""); setLenderBHighestDti(""); setLenderBMaxCashout("");
+      setLenderBPrepaymentPenalty(""); setLenderBCompensationType(""); setLenderBFeesForLoan("");
     }
   }, [editingFile]);
 
@@ -944,6 +921,35 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         data-testid="input-lender-a-notes"
                       />
                     </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: "Term Offered", placeholder: "e.g. 30 Year", value: lenderATermOffered, set: setLenderATermOffered, testid: "input-lender-a-term-offered" },
+                        { label: "Min Credit Score", placeholder: "e.g. 620", value: lenderAMinCreditScore, set: setLenderAMinCreditScore, testid: "input-lender-a-min-credit-score" },
+                        { label: "Min Loan Amount", placeholder: "e.g. $100,000", value: lenderAMinLoanAmount, set: setLenderAMinLoanAmount, testid: "input-lender-a-min-loan-amount" },
+                        { label: "Highest LTV", placeholder: "e.g. 80%", value: lenderAHighestLtv, set: setLenderAHighestLtv, testid: "input-lender-a-highest-ltv" },
+                        { label: "Highest DTI", placeholder: "e.g. 50%", value: lenderAHighestDti, set: setLenderAHighestDti, testid: "input-lender-a-highest-dti" },
+                        { label: "MAX Cashout", placeholder: "e.g. $500,000", value: lenderAMaxCashout, set: setLenderAMaxCashout, testid: "input-lender-a-max-cashout" },
+                        { label: "Prepayment Penalty", placeholder: "e.g. 3 years", value: lenderAPrepaymentPenalty, set: setLenderAPrepaymentPenalty, testid: "input-lender-a-prepayment-penalty" },
+                        { label: "Fees for Loan", placeholder: "e.g. $3,500", value: lenderAFeesForLoan, set: setLenderAFeesForLoan, testid: "input-lender-a-fees-for-loan" },
+                      ].map(({ label, placeholder, value, set, testid }) => (
+                        <div key={testid}>
+                          <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
+                          <Input value={value} onChange={(e) => set(e.target.value)} readOnly={!isLenderEditing} placeholder={placeholder} className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")} data-testid={testid} />
+                        </div>
+                      ))}
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Compensation</label>
+                        <Select value={lenderACompensationType} onValueChange={setLenderACompensationType} disabled={!isLenderEditing}>
+                          <SelectTrigger className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")} data-testid="select-lender-a-compensation">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="lender-paid">Lender Paid</SelectItem>
+                            <SelectItem value="borrower-paid">Borrower Paid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Lender B */}
@@ -1006,6 +1012,35 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                         rows={3}
                         data-testid="input-lender-b-notes"
                       />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: "Term Offered", placeholder: "e.g. 30 Year", value: lenderBTermOffered, set: setLenderBTermOffered, testid: "input-lender-b-term-offered" },
+                        { label: "Min Credit Score", placeholder: "e.g. 620", value: lenderBMinCreditScore, set: setLenderBMinCreditScore, testid: "input-lender-b-min-credit-score" },
+                        { label: "Min Loan Amount", placeholder: "e.g. $100,000", value: lenderBMinLoanAmount, set: setLenderBMinLoanAmount, testid: "input-lender-b-min-loan-amount" },
+                        { label: "Highest LTV", placeholder: "e.g. 80%", value: lenderBHighestLtv, set: setLenderBHighestLtv, testid: "input-lender-b-highest-ltv" },
+                        { label: "Highest DTI", placeholder: "e.g. 50%", value: lenderBHighestDti, set: setLenderBHighestDti, testid: "input-lender-b-highest-dti" },
+                        { label: "MAX Cashout", placeholder: "e.g. $500,000", value: lenderBMaxCashout, set: setLenderBMaxCashout, testid: "input-lender-b-max-cashout" },
+                        { label: "Prepayment Penalty", placeholder: "e.g. 3 years", value: lenderBPrepaymentPenalty, set: setLenderBPrepaymentPenalty, testid: "input-lender-b-prepayment-penalty" },
+                        { label: "Fees for Loan", placeholder: "e.g. $3,500", value: lenderBFeesForLoan, set: setLenderBFeesForLoan, testid: "input-lender-b-fees-for-loan" },
+                      ].map(({ label, placeholder, value, set, testid }) => (
+                        <div key={testid}>
+                          <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
+                          <Input value={value} onChange={(e) => set(e.target.value)} readOnly={!isLenderEditing} placeholder={placeholder} className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")} data-testid={testid} />
+                        </div>
+                      ))}
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Compensation</label>
+                        <Select value={lenderBCompensationType} onValueChange={setLenderBCompensationType} disabled={!isLenderEditing}>
+                          <SelectTrigger className={cn("text-xs h-8", !isLenderEditing && "bg-muted/50 cursor-default")} data-testid="select-lender-b-compensation">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="lender-paid">Lender Paid</SelectItem>
+                            <SelectItem value="borrower-paid">Borrower Paid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1374,27 +1409,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-1 mb-1.5">
-                        <button
-                          type="button"
-                          data-testid="tab-lender-a"
-                          onClick={() => setActiveLenderTab("lenderA")}
-                          className={`px-3 py-1 text-xs font-semibold rounded-md border transition-colors ${activeLenderTab === "lenderA" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent text-muted-foreground border-border hover-elevate"}`}
-                        >
-                          Lender A
-                        </button>
-                        <button
-                          type="button"
-                          data-testid="tab-lender-b"
-                          onClick={() => setActiveLenderTab("lenderB")}
-                          className={`px-3 py-1 text-xs font-semibold rounded-md border transition-colors ${activeLenderTab === "lenderB" ? "bg-primary text-primary-foreground border-primary" : "bg-transparent text-muted-foreground border-border hover-elevate"}`}
-                        >
-                          Lender B
-                        </button>
-                      </div>
-
-                      <div className={activeLenderTab === "lenderA" ? "" : "hidden"}>
+                    <div className="hidden">
+                      <div>
                         <div className="grid grid-cols-3 gap-2">
                           <FormField control={form.control} name="termOffered" render={({ field }) => (
                             <FormItem>
@@ -1462,17 +1478,9 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                               <FormMessage />
                             </FormItem>
                           )} />
-                          <FormField control={form.control} name="feesForLoan" render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs">Fees for Loan</FormLabel>
-                              <FormControl><Input placeholder="e.g. $3,500" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-fees-for-loan-a" /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )} />
                         </div>
                       </div>
-
-                      <div className={activeLenderTab === "lenderB" ? "" : "hidden"}>
+                      <div>
                         <div className="grid grid-cols-3 gap-2">
                           <FormField control={form.control} name="lenderBTermOffered" render={({ field }) => (
                             <FormItem>
