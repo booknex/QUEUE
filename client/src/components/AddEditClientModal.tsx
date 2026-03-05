@@ -70,6 +70,8 @@ const formSchema = z.object({
   loanPurpose: z.string().optional(),
   propertyValue: z.string().optional(),
   purchasePrice: z.string().optional(),
+  ltvPayoffAmount: z.string().optional(),
+  fileClosing: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -404,6 +406,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       loanPurpose: "",
       propertyValue: "",
       purchasePrice: "",
+      ltvPayoffAmount: "",
+      fileClosing: "",
     },
   });
 
@@ -422,6 +426,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanPurpose: editingFile.loanPurpose || "",
         propertyValue: editingFile.propertyValue || "",
         purchasePrice: editingFile.purchasePrice || "",
+        ltvPayoffAmount: editingFile.ltvPayoffAmount || "",
+        fileClosing: editingFile.fileClosing || "",
       });
     } else {
       form.reset({
@@ -437,6 +443,8 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         loanPurpose: "",
         propertyValue: "",
         purchasePrice: "",
+        ltvPayoffAmount: "",
+        fileClosing: "",
       });
     }
   }, [editingFile, form, defaultStatus]);
@@ -1245,6 +1253,52 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                           />
                         </div>
                       )}
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <FormField
+                          control={form.control}
+                          name="ltvPayoffAmount"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">LTV (Payoff Amount)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. $320,000"
+                                  className="h-8 text-sm"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  name={field.name}
+                                  ref={field.ref}
+                                  data-testid="input-ltv-payoff-amount"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="fileClosing"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">File Closing</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-sm" data-testid="select-file-closing">
+                                    <SelectValue placeholder="Select closing type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="personal-name">Personal Name</SelectItem>
+                                  <SelectItem value="llc">LLC</SelectItem>
+                                  <SelectItem value="trust">Trust</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
                     <div>
