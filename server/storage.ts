@@ -362,6 +362,15 @@ export class DatabaseStorage implements IStorage {
         prepaymentPenalty: clientFiles.prepaymentPenalty,
         compensationType: clientFiles.compensationType,
         feesForLoan: clientFiles.feesForLoan,
+        lenderBTermOffered: clientFiles.lenderBTermOffered,
+        lenderBMinCreditScore: clientFiles.lenderBMinCreditScore,
+        lenderBMinLoanAmount: clientFiles.lenderBMinLoanAmount,
+        lenderBHighestLtv: clientFiles.lenderBHighestLtv,
+        lenderBHighestDti: clientFiles.lenderBHighestDti,
+        lenderBMaxCashout: clientFiles.lenderBMaxCashout,
+        lenderBPrepaymentPenalty: clientFiles.lenderBPrepaymentPenalty,
+        lenderBCompensationType: clientFiles.lenderBCompensationType,
+        lenderBFeesForLoan: clientFiles.lenderBFeesForLoan,
         touchCount: sql<number>`CAST(COUNT(${workSessions.id}) AS INTEGER)`,
       })
       .from(clientFiles)

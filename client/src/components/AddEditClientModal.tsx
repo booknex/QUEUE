@@ -81,6 +81,15 @@ const formSchema = z.object({
   prepaymentPenalty: z.string().optional(),
   compensationType: z.string().optional(),
   feesForLoan: z.string().optional(),
+  lenderBTermOffered: z.string().optional(),
+  lenderBMinCreditScore: z.string().optional(),
+  lenderBMinLoanAmount: z.string().optional(),
+  lenderBHighestLtv: z.string().optional(),
+  lenderBHighestDti: z.string().optional(),
+  lenderBMaxCashout: z.string().optional(),
+  lenderBPrepaymentPenalty: z.string().optional(),
+  lenderBCompensationType: z.string().optional(),
+  lenderBFeesForLoan: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;

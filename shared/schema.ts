@@ -122,6 +122,15 @@ export const clientFiles = pgTable("client_files", {
   prepaymentPenalty: text("prepayment_penalty"),
   compensationType: text("compensation_type"),
   feesForLoan: text("fees_for_loan"),
+  lenderBTermOffered: text("lender_b_term_offered"),
+  lenderBMinCreditScore: text("lender_b_min_credit_score"),
+  lenderBMinLoanAmount: text("lender_b_min_loan_amount"),
+  lenderBHighestLtv: text("lender_b_highest_ltv"),
+  lenderBHighestDti: text("lender_b_highest_dti"),
+  lenderBMaxCashout: text("lender_b_max_cashout"),
+  lenderBPrepaymentPenalty: text("lender_b_prepayment_penalty"),
+  lenderBCompensationType: text("lender_b_compensation_type"),
+  lenderBFeesForLoan: text("lender_b_fees_for_loan"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -224,6 +233,15 @@ export const updateClientFileSchema = z.object({
   prepaymentPenalty: z.string().optional(),
   compensationType: z.string().optional(),
   feesForLoan: z.string().optional(),
+  lenderBTermOffered: z.string().optional(),
+  lenderBMinCreditScore: z.string().optional(),
+  lenderBMinLoanAmount: z.string().optional(),
+  lenderBHighestLtv: z.string().optional(),
+  lenderBHighestDti: z.string().optional(),
+  lenderBMaxCashout: z.string().optional(),
+  lenderBPrepaymentPenalty: z.string().optional(),
+  lenderBCompensationType: z.string().optional(),
+  lenderBFeesForLoan: z.string().optional(),
 });
 
 export const closeFileSchema = z.object({
