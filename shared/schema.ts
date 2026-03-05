@@ -113,6 +113,15 @@ export const clientFiles = pgTable("client_files", {
   purchasePrice: text("purchase_price"),
   ltvPayoffAmount: text("ltv_payoff_amount"),
   fileClosing: text("file_closing"),
+  termOffered: text("term_offered"),
+  minCreditScore: text("min_credit_score"),
+  minLoanAmount: text("min_loan_amount"),
+  highestLtv: text("highest_ltv"),
+  highestDti: text("highest_dti"),
+  maxCashout: text("max_cashout"),
+  prepaymentPenalty: text("prepayment_penalty"),
+  compensationType: text("compensation_type"),
+  feesForLoan: text("fees_for_loan"),
 });
 
 export const workSessions = pgTable("work_sessions", {
@@ -206,6 +215,15 @@ export const updateClientFileSchema = z.object({
   purchasePrice: z.string().optional(),
   ltvPayoffAmount: z.string().optional(),
   fileClosing: z.string().optional(),
+  termOffered: z.string().optional(),
+  minCreditScore: z.string().optional(),
+  minLoanAmount: z.string().optional(),
+  highestLtv: z.string().optional(),
+  highestDti: z.string().optional(),
+  maxCashout: z.string().optional(),
+  prepaymentPenalty: z.string().optional(),
+  compensationType: z.string().optional(),
+  feesForLoan: z.string().optional(),
 });
 
 export const closeFileSchema = z.object({

@@ -72,6 +72,15 @@ const formSchema = z.object({
   purchasePrice: z.string().optional(),
   ltvPayoffAmount: z.string().optional(),
   fileClosing: z.string().optional(),
+  termOffered: z.string().optional(),
+  minCreditScore: z.string().optional(),
+  minLoanAmount: z.string().optional(),
+  highestLtv: z.string().optional(),
+  highestDti: z.string().optional(),
+  maxCashout: z.string().optional(),
+  prepaymentPenalty: z.string().optional(),
+  compensationType: z.string().optional(),
+  feesForLoan: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -408,6 +417,15 @@ export const AddEditClientModal = memo(function AddEditClientModal({
       purchasePrice: "",
       ltvPayoffAmount: "",
       fileClosing: "",
+      termOffered: "",
+      minCreditScore: "",
+      minLoanAmount: "",
+      highestLtv: "",
+      highestDti: "",
+      maxCashout: "",
+      prepaymentPenalty: "",
+      compensationType: "",
+      feesForLoan: "",
     },
   });
 
@@ -428,6 +446,15 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         purchasePrice: editingFile.purchasePrice || "",
         ltvPayoffAmount: editingFile.ltvPayoffAmount || "",
         fileClosing: editingFile.fileClosing || "",
+        termOffered: editingFile.termOffered || "",
+        minCreditScore: editingFile.minCreditScore || "",
+        minLoanAmount: editingFile.minLoanAmount || "",
+        highestLtv: editingFile.highestLtv || "",
+        highestDti: editingFile.highestDti || "",
+        maxCashout: editingFile.maxCashout || "",
+        prepaymentPenalty: editingFile.prepaymentPenalty || "",
+        compensationType: editingFile.compensationType || "",
+        feesForLoan: editingFile.feesForLoan || "",
       });
     } else {
       form.reset({
@@ -445,6 +472,15 @@ export const AddEditClientModal = memo(function AddEditClientModal({
         purchasePrice: "",
         ltvPayoffAmount: "",
         fileClosing: "",
+        termOffered: "",
+        minCreditScore: "",
+        minLoanAmount: "",
+        highestLtv: "",
+        highestDti: "",
+        maxCashout: "",
+        prepaymentPenalty: "",
+        compensationType: "",
+        feesForLoan: "",
       });
     }
   }, [editingFile, form, defaultStatus]);
@@ -1298,6 +1334,85 @@ export const AddEditClientModal = memo(function AddEditClientModal({
                             </FormItem>
                           )}
                         />
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-semibold text-muted-foreground mb-1.5">Loan Terms</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        <FormField control={form.control} name="termOffered" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Term Offered</FormLabel>
+                            <FormControl><Input placeholder="e.g. 30 Year" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-term-offered" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="minCreditScore" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Min Credit Score</FormLabel>
+                            <FormControl><Input placeholder="e.g. 620" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-min-credit-score" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="minLoanAmount" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Min Loan Amount</FormLabel>
+                            <FormControl><Input placeholder="e.g. $100,000" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-min-loan-amount" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="highestLtv" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Highest LTV</FormLabel>
+                            <FormControl><Input placeholder="e.g. 80%" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-highest-ltv" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="highestDti" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Highest DTI</FormLabel>
+                            <FormControl><Input placeholder="e.g. 50%" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-highest-dti" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="maxCashout" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">MAX Cashout</FormLabel>
+                            <FormControl><Input placeholder="e.g. $500,000" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-max-cashout" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="prepaymentPenalty" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Prepayment Penalty</FormLabel>
+                            <FormControl><Input placeholder="e.g. 3 years" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-prepayment-penalty" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="compensationType" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Compensation</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormControl>
+                                <SelectTrigger className="h-8 text-sm" data-testid="select-compensation-type">
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="lender-paid">Lender Paid</SelectItem>
+                                <SelectItem value="borrower-paid">Borrower Paid</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="feesForLoan" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">Fees for Loan</FormLabel>
+                            <FormControl><Input placeholder="e.g. $3,500" className="h-8 text-sm" value={field.value || ""} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} data-testid="input-fees-for-loan" /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                       </div>
                     </div>
 
